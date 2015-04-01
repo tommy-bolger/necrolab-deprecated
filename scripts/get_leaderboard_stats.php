@@ -489,6 +489,8 @@ if(!empty($leaderboards->leaderboard)) {
     }
 }
 
+db()->exec('VACUUM');
+
 if($verbose_output) {
     $framework->cout("Done!.\n");
 }
