@@ -1,0 +1,7 @@
+input.area_code, input.exchange {
+    width: 25px;
+}
+
+input.line_number {
+    width: 30px;
+}

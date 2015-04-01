@@ -1,0 +1,157 @@
+html,
+body {
+    height: 100%;
+    background-color: rgb(51, 51, 51);
+    font-family: Arial,Helvetica,sans-serif;
+    color: #FFFFFF;
+}
+
+.wrap {
+    min-height: 100%;
+    height: auto;
+    margin: 0 auto -60px;
+    padding: 0 0 60px;
+    width: 1240px;
+}
+
+.wrap > .container {
+    padding: 0px 15px 20px 0px;
+}
+
+.footer {
+    height: 60px;
+    padding-top: 20px;
+}
+
+.footer > .container {
+    width: 1240px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+.container {
+    width: 100%;
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
+.navbar {
+    margin-bottom: 10px;
+    border: 0px solid #000000;
+}
+
+.navbar .container {
+    padding: 0px;
+    padding-left: 16px;
+}
+
+.navbar .container .collapse {
+    padding: 0px;
+}
+
+.navbar .nav > li {
+    float:none;
+    display:inline-block;
+    *display:inline; /* ie7 fix */
+    *zoom:1; /* hasLayout ie7 trigger */
+    vertical-align: bottom;
+}
+
+.navbar-nav > li > a {
+    padding-left: 0px;
+    padding-right: 40px;
+    padding-bottom: 0px;
+}
+
+.navbar-nav > li > a.site-header:hover {
+    background-color: inherit;
+}
+
+.navbar-nav > li > a.last {
+    padding-left: 20px;
+    padding-right: 0px;
+}
+
+.table {
+    width: 1234px;
+    border: 0px solid #FFFFFF;
+}
+
+.table-striped > tbody > tr:nth-child(2n+1) {
+    background-color: inherit;
+}
+
+.table-bordered > thead > tr > th, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > tbody > tr > td, .table-bordered > tfoot > tr > td {
+    border: 0px solid #FFFFFF;
+}
+
+.jumbotron {
+    text-align: center;
+    background-color: transparent;
+}
+
+.jumbotron .btn {
+    font-size: 21px;
+    padding: 14px 24px;
+}
+
+.not-set {
+    color: #c55;
+    font-style: italic;
+}
+
+/* add sorting icons to gridview sort links */
+a.asc:after, a.desc:after {
+    position: relative;
+    top: 1px;
+    display: inline-block;
+    font-family: 'Glyphicons Halflings';
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    padding-left: 5px;
+}
+
+a.asc:after {
+    content: /*"\e113"*/ "\e151";
+}
+
+a.desc:after {
+    content: /*"\e114"*/ "\e152";
+}
+
+.sort-numerical a.asc:after {
+    content: "\e153";
+}
+
+.sort-numerical a.desc:after {
+    content: "\e154";
+}
+
+.sort-ordinal a.asc:after {
+    content: "\e155";
+}
+
+.sort-ordinal a.desc:after {
+    content: "\e156";
+}
+
+.grid-view th {
+    white-space: nowrap;
+}
+
+.hint-block {
+    display: block;
+    margin-top: 5px;
+    color: #999;
+}
+
+.error-summary {
+    color: #a94442;
+    background: #fdf7f7;
+    border-left: 3px solid #eed3d7;
+    padding: 10px 20px;
+    margin: 0 0 15px 0;
+}

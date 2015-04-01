@@ -1,0 +1,7 @@
+input.user_name, input.domain_name {
+    width: 100px;
+}
+
+input.domain_extension {
+    width: 35px;
+}

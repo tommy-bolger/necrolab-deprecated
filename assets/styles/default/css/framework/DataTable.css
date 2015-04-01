@@ -1,0 +1,51 @@
+.data_table input.textbox {
+    width: auto;
+}
+
+.data_table div.top_menu {
+    clear: both;
+}
+
+.data_table div.table_menu {
+    clear: both;
+    text-align: right;
+}
+
+.data_table input.rows_submit {
+    width: 10px;
+}
+
+.data_table ul.page_numbers {
+    display: inline;
+}
+
+.data_table div.pagination {
+    float: left;
+    display: inline;
+}
+
+.data_table li.page_number, .data_table li.current_page_number {
+    display: inline;
+}
+
+.data_table li.current_page_number {
+    background-color: #CCCCCC;
+    font-weight: bold;
+    color: #FFFFFF;
+}
+
+.data_table li.page_number a {
+    color: #FFFFFF;
+}
+
+.data_table .table_header {
+    vertical-align: middle;
+}
+
+.data_table .filters th {    
+    background: none repeat scroll 0 0 #E3EFF1;
+}
+
+.data_table th .center {
+    text-align: center;
+}

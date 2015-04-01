@@ -1,0 +1,22 @@
+table {
+    border: 0px solid #DADFE0;
+    width: 100%;
+}
+
+table a, table a:hover, table a:link, table a:active, table a:visited {
+    font-size: 12px;
+}
+
+table th, table td {
+    text-align: left;
+    font-size: 12px;
+    vertical-align: middle;
+    padding: 5px;
+}
+
+table th {
+}
+
+table td {
+    border: 0px solid #DADFE0;
+}
