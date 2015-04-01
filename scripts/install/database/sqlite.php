@@ -375,23 +375,23 @@ CREATE INDEX IDX_POWER_RANKINGS_LEADERBOARD_SNAPSHOTS_leaderboard_snapshot_id ON
 
 CREATE INDEX IDX_POWER_RANKING_ENTRIES_rank ON power_ranking_entries(
     rank  ASC
-)
+);
 
 CREATE INDEX IDX_POWER_RANKING_ENTRIES_power_ranking_id ON power_ranking_entries(
     power_ranking_id  ASC
-)
+);
 
 CREATE INDEX IDX_POWER_RANKING_ENTRIES_steam_user_id ON power_ranking_entries(
     steam_user_id  ASC
-)
+);
 
 CREATE INDEX IDX_POWER_RANKING_ENTRIES_weighted_asc ON power_ranking_entries(
     weighted  ASC
-)
+);
 
 CREATE INDEX IDX_POWER_RANKING_ENTRIES_weighted_desc ON power_ranking_entries(
     weighted  DESC
-)
+);
 
 CREATE UNIQUE INDEX IDX_STEAM_USERS_steam_user_id ON steam_users(
     steam_user_id  ASC
