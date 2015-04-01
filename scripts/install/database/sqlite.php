@@ -255,7 +255,7 @@ CREATE TABLE daily_ranking_entries (
     rank INTEGER  NOT NULL,
     FOREIGN KEY (daily_ranking_id) REFERENCES daily_rankings (daily_ranking_id),
     FOREIGN KEY (steam_user_id) REFERENCES steam_users (steam_user_id)
-)
+);
 
 CREATE INDEX IDX_LEADERBOARD_ENTRIES_leaderboard_id ON leaderboard_entries(
     leaderboard_id  ASC
