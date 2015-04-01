@@ -180,7 +180,7 @@ extends Controller {
         $resultset->setSortCriteria('pre.rank', 'ASC');
         
         //Set default rows per page
-        $resultset->setRowsPerPage(25);
+        $resultset->setRowsPerPage(100);
         
         $data_table = new DataTable("power_rankings", true);
         
