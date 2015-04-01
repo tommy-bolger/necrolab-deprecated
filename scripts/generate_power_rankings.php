@@ -77,7 +77,9 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_co_op = 0
         AND l.is_seeded = 0
         AND l.is_daily = 0
-        AND l.is_story_mode = 0;
+        AND l.is_all_character = 0
+        AND l.is_deathless = 0
+        AND l.is_story_mode = 0
 ");
 
 /* ----- First pass to gather rank information ----- */
