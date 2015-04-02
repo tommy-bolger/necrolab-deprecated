@@ -257,11 +257,11 @@ extends Controller {
             'eli_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/eli.png\" />",
             'melody_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/melody.png\" />",
             'dorian_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
-            'speed_total' => 'Speed',
-            'score_total' => 'Score',
-            'base' => 'Base',
-            'top_10_bonus' => 'Bonus',
-            'weighted' => 'Weighted',
+            'speed_total' => "<img src=\"{$this->page->getImagesHttpPath()}/speed.png\" />",
+            'score_total' => "<img src=\"{$this->page->getImagesHttpPath()}/score.png\" />",
+            'base' => "<img src=\"{$this->page->getImagesHttpPath()}/score.png\" />",
+            'top_10_bonus' => "<img src=\"{$this->page->getImagesHttpPath()}/bonus.png\" />",
+            'weighted' => "<img src=\"{$this->page->getImagesHttpPath()}/weight.png\" />"
         ));
         
         $data_table->addFilterTextbox('personaname', 'su.personaname = ?', 'Contains', 'personaname');
