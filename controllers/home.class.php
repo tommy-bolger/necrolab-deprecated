@@ -259,9 +259,9 @@ extends Controller {
             'dorian_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
             'speed_total' => "<img src=\"{$this->page->getImagesHttpPath()}/speed.png\" />",
             'score_total' => "<img src=\"{$this->page->getImagesHttpPath()}/score.png\" />",
-            'base' => "<img src=\"{$this->page->getImagesHttpPath()}/score.png\" />",
-            'top_10_bonus' => "<img src=\"{$this->page->getImagesHttpPath()}/bonus.png\" />",
-            'weighted' => "<img src=\"{$this->page->getImagesHttpPath()}/weight.png\" />"
+            'base' => "<img src=\"{$this->page->getImagesHttpPath()}/basic.png\" />",
+            'weighted' => "<img src=\"{$this->page->getImagesHttpPath()}/weight.png\" />",
+            'top_10_bonus' => "<img src=\"{$this->page->getImagesHttpPath()}/bonus.png\" />"
         ));
         
         /*
