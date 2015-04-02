@@ -32,12 +32,14 @@
 */
 namespace Modules\Necrolab\Controllers;
 
+use \Framework\Core\Framework;
 use \Framework\Core\Controller;
 use \Framework\Utilities\Http;
 use \Framework\Modules\ModulePage;
 use \Framework\Html\Misc\TemplateElement;
 use \Framework\Html\Table\DataTable;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis;
 
 class Home
 extends Controller {   
@@ -140,47 +142,57 @@ extends Controller {
             $this->loadModule();
         }
     
-        $resultset = new SQL('power_rankings');
+        $resultset = NULL;
+
+        if(!Framework::getInstance()->enable_cache) {
+            $resultset = new SQL('power_rankings');
         
-        $resultset->setBaseQuery("
-            SELECT
-                pre.rank,
-                su.personaname,
-                pre.cadence_speed_rank,
-                pre.bard_speed_rank,
-                pre.monk_speed_rank,
-                pre.aria_speed_rank,
-                pre.bolt_speed_rank,
-                pre.dove_speed_rank,
-                pre.eli_speed_rank,
-                pre.melody_speed_rank,
-                pre.dorian_speed_rank,
-                pre.cadence_score_rank,
-                pre.bard_score_rank,
-                pre.monk_score_rank,
-                pre.aria_score_rank,
-                pre.bolt_score_rank,
-                pre.dove_score_rank,
-                pre.eli_score_rank,
-                pre.melody_score_rank,
-                pre.dorian_score_rank,
-                pre.speed_total,
-                pre.score_total,
-                pre.base,
-                pre.weighted,
-                pre.top_10_bonus
-            FROM power_rankings pr
-            JOIN power_ranking_entries pre ON pre.power_ranking_id = pr.power_ranking_id
-            JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
-            WHERE pr.latest = 1
-            {{WHERE_CRITERIA}}
-        ");
+            $resultset->setBaseQuery("
+                SELECT
+                    pre.rank,
+                    su.personaname,
+                    pre.cadence_speed_rank,
+                    pre.bard_speed_rank,
+                    pre.monk_speed_rank,
+                    pre.aria_speed_rank,
+                    pre.bolt_speed_rank,
+                    pre.dove_speed_rank,
+                    pre.eli_speed_rank,
+                    pre.melody_speed_rank,
+                    pre.dorian_speed_rank,
+                    pre.cadence_score_rank,
+                    pre.bard_score_rank,
+                    pre.monk_score_rank,
+                    pre.aria_score_rank,
+                    pre.bolt_score_rank,
+                    pre.dove_score_rank,
+                    pre.eli_score_rank,
+                    pre.melody_score_rank,
+                    pre.dorian_score_rank,
+                    pre.speed_total,
+                    pre.score_total,
+                    pre.base,
+                    pre.weighted,
+                    pre.top_10_bonus
+                FROM power_rankings pr
+                JOIN power_ranking_entries pre ON pre.power_ranking_id = pr.power_ranking_id
+                JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
+                WHERE pr.latest = 1
+                {{WHERE_CRITERIA}}
+            ");
+            
+            //Set default sort criteria
+            $resultset->setSortCriteria('pre.rank', 'ASC');
+            
+            //Set default rows per page
+            $resultset->setRowsPerPage(100);        
+        }
+        else {
+            $resultset = new Redis('latest_power_rankings');
         
-        //Set default sort criteria
-        $resultset->setSortCriteria('pre.rank', 'ASC');
-        
-        //Set default rows per page
-        $resultset->setRowsPerPage(100);
+            $resultset->setRowsPerPage(100);
+            $resultset->enableTotalRecordCount();        
+        }        
         
         $data_table = new DataTable("power_rankings", true);
         
@@ -234,8 +246,8 @@ extends Controller {
             'bolt_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bolt.png\" />",
             'dove_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dove.png\" />",
             'eli_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/eli.png\" />",
-            'melody_speed_rank' => 'Melody',
-            'dorian_speed_rank' => 'Dorian',
+            'melody_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/melody.png\" />",
+            'dorian_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
             'cadence_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/cadence.png\" />",
             'bard_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bard.png\" />",
             'monk_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/monk.png\" />",
@@ -243,8 +255,8 @@ extends Controller {
             'bolt_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bolt.png\" />",
             'dove_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dove.png\" />",
             'eli_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/eli.png\" />",
-            'melody_score_rank' => 'Melody',
-            'dorian_score_rank' => 'Dorian',
+            'melody_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/melody.png\" />",
+            'dorian_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
             'speed_total' => 'Speed',
             'score_total' => 'Score',
             'base' => 'Base',
@@ -252,16 +264,12 @@ extends Controller {
             'weighted' => 'Weighted',
         ));
         
-        //$data_table->setRowsPerPageOptions(array(25, 50, 100));
-        
         $data_table->addFilterTextbox('personaname', 'su.personaname = ?', 'Contains', 'personaname');
         
         $data_table->process($resultset, function($query_rows) {
             if(!empty($query_rows)) {            
                 foreach($query_rows as $row_index => $query_row) {
-                    if(strlen($query_row['personaname']) > 14) {
-                        $query_row['personaname'] = substr($query_row['personaname'], 0, 14) . '...';
-                    }
+                    
                     
                     $query_rows[$row_index] = $query_row;
                 }

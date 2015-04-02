@@ -32,6 +32,7 @@
 */
 namespace Modules\Necrolab\Controllers;
 
+use \Framework\Core\Framework;
 use \Framework\Core\Controller;
 use \Framework\Utilities\Http;
 use \Framework\Modules\ModulePage;
@@ -55,36 +56,46 @@ extends Home {
         if(!isset($this->page)) {
             $this->loadModule();
         }
+        
+        $resultset = NULL;
     
-        $resultset = new SQL('daily_rankings');
+        if(!Framework::getInstance()->enable_cache) {
+            $resultset = new SQL('daily_rankings');
+            
+            $resultset->setBaseQuery("
+                SELECT
+                    dre.rank,
+                    su.personaname,
+                    dre.first_place_ranks,
+                    dre.top_5_ranks,
+                    dre.top_10_ranks,
+                    dre.top_20_ranks,
+                    dre.top_50_ranks,
+                    dre.top_100_ranks,
+                    dre.total_points,
+                    dre.points_per_day,
+                    dre.total_dailies,
+                    dre.total_wins,
+                    dre.average_place                
+                FROM daily_rankings dr
+                JOIN daily_ranking_entries dre ON dre.daily_ranking_id = dr.daily_ranking_id
+                JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
+                WHERE dr.latest = 1
+                {{WHERE_CRITERIA}}
+            ");
+            
+            //Set default sort criteria
+            $resultset->setSortCriteria('dre.rank', 'ASC');
+            
+            //Set default rows per page
+            $resultset->setRowsPerPage(100);
+        }
+        else {
+            $resultset = new Redis('latest_daily_rankings');
         
-        $resultset->setBaseQuery("
-            SELECT
-                dre.rank,
-                su.personaname,
-                dre.first_place_ranks,
-                dre.top_5_ranks,
-                dre.top_10_ranks,
-                dre.top_20_ranks,
-                dre.top_50_ranks,
-                dre.top_100_ranks,
-                dre.total_points,
-                dre.points_per_day,
-                dre.total_dailies,
-                dre.total_wins,
-                dre.average_place                
-            FROM daily_rankings dr
-            JOIN daily_ranking_entries dre ON dre.daily_ranking_id = dr.daily_ranking_id
-            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
-            WHERE dr.latest = 1
-            {{WHERE_CRITERIA}}
-        ");
-        
-        //Set default sort criteria
-        $resultset->setSortCriteria('dre.rank', 'ASC');
-        
-        //Set default rows per page
-        $resultset->setRowsPerPage(100);
+            $resultset->setRowsPerPage(100);
+            $resultset->enableTotalRecordCount();  
+        }
         
         $data_table = new DataTable("daily_rankings", true);
         
@@ -135,8 +146,6 @@ extends Home {
             'total_wins' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-totalwins.png\" />",
             'average_place' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-avgplace.png\" />"
         ));
-        
-        $data_table->addFilterTextbox('personaname', 'su.personaname = ?', 'Contains', 'personaname');
         
         $data_table->process($resultset, function($query_rows) {
             if(!empty($query_rows)) {            
