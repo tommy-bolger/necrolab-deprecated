@@ -299,7 +299,7 @@ foreach($leaderboard_stats as $leaderboard_user_index => &$leaderboard_user) {
         $base = 0;
     }
     
-    $weighted_rank_score = (303 * $number_of_weighted_speedrun_ranks + $number_of_weighted_score_ranks) - (3 * ($weighted_speed_rank_sum + $weighted_score_rank_sum));
+    $weighted_rank_score = (303 * ($number_of_weighted_speedrun_ranks + $number_of_weighted_score_ranks)) - (3 * ($weighted_speed_rank_sum + $weighted_score_rank_sum));
     
     if($weighted_rank_score < 0) {
         $weighted_rank_score = 0;

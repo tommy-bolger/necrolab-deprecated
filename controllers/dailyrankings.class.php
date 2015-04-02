@@ -39,6 +39,7 @@ use \Framework\Modules\ModulePage;
 use \Framework\Html\Misc\TemplateElement;
 use \Framework\Html\Table\DataTable;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis;
 
 class DailyRankings
 extends Home {    
@@ -147,7 +148,8 @@ extends Home {
             'average_place' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-avgplace.png\" />"
         ));
         
-        $data_table->process($resultset, function($query_rows) {
+        /*
+        function($query_rows) {
             if(!empty($query_rows)) {            
                 foreach($query_rows as $row_index => $query_row) {
                     if(strlen($query_row['personaname']) > 14) {
@@ -159,7 +161,10 @@ extends Home {
             }
             
             return $query_rows;
-        });
+        }
+        */
+        
+        $data_table->process($resultset);
         
         return $data_table;
     }
