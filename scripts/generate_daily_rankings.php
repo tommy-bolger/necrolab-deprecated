@@ -57,6 +57,8 @@ if(isset($framework->arguments->v)) {
     $verbose_output = true;
 }
 
+$current_date = date('Y-m-d');
+
 $latest_leaderboard_entries = db()->prepareExecuteQuery("
     SELECT 
         *,
@@ -164,19 +166,59 @@ while($latest_leaderboard_entry = $latest_leaderboard_entries->fetch(PDO::FETCH_
 }
 
 if($verbose_output) {
-    $framework->coutLine("Creating daily rank entry and marking it as the latest.");
+    $framework->coutLine("Checking to see if there is an existing daily ranking for today.");
 }
 
-//Mark all old daily rankings as not the latest
+$daily_ranking_id = db()->getOne("
+    SELECT daily_ranking_id
+    FROM daily_rankings
+    WHERE date = ?
+", array(
+    $current_date
+));
+
+if(empty($daily_ranking_id)) {
+    if($verbose_output) {
+        $framework->coutLine("No daily ranking for today was found. Creating a new one.");
+    }
+
+    $daily_ranking_id = db()->insert('daily_rankings', array(
+        'date' => $current_date,
+        'created' => date('Y-m-d H:i:s')
+    ));
+}
+else {
+    if($verbose_output) {
+        $framework->coutLine("A existing daily ranking for today was found. Deleting existing entries to replace with new ones.");
+    }
+    
+    db()->update('daily_rankings', array(
+        'updated' => date('Y-m-d H:i:s')
+    ), array(
+        'daily_ranking_id' => $daily_ranking_id
+    ));
+
+    db()->delete('daily_ranking_leaderboard_snapshots', array(
+        'daily_ranking_id' => $daily_ranking_id
+    ));
+    
+    db()->delete('daily_ranking_entries', array(
+        'daily_ranking_id' => $daily_ranking_id
+    ));
+}
+
+//Mark this new daily ranking as the latest one
 db()->update('daily_rankings', array(
     'latest' => 0
 ), array(
     'latest' => 1
 ));
 
-$daily_ranking_id = db()->insert('daily_rankings', array(
+db()->update('daily_rankings', array(
     'latest' => 1,
-    'created' => date('Y-m-d H:i:s')
+    'updated' => date('Y-m-d H:i:s')
+), array(
+    'daily_ranking_id' => $daily_ranking_id
 ));
 
 if($verbose_output) {

@@ -239,6 +239,8 @@ if(isset($framework->arguments->v)) {
 
 $module = new Module('necrolab');
 
+$current_date = date('Y-m-d');
+
 $leaderboards_xml = file_get_contents($module->configuration->leaderboard_url);
 
 $leaderboards = convertXmlToObject(new SimpleXMLElement($leaderboards_xml));
@@ -461,13 +463,43 @@ if(!empty($leaderboards->leaderboard)) {
         //If this leaderboard is not a daily or it is a daily and either today's or tomorrow's (an active daily) then proceed to create a snapshot
         if(empty($daily_date_timestamp) || $daily_date_timestamp >= $current_date_timestamp) {
             if($verbose_output) {
-                $framework->cout("Adding leaderboard snapshot.\n");
+                $framework->cout("Checking to see if a leaderboard snapshot exists for today.\n");
             }
-    
-            $leaderboard_snapshot_id = db()->insert('leaderboard_snapshots', array(
-                'leaderboard_id' => $leaderboard_id,
-                'created' => date('Y-m-d H:i:s')
+            
+            $leaderboard_snapshot_id = db()->getOne("
+                SELECT leaderboard_snapshot_id
+                FROM leaderboard_snapshots
+                WHERE date = ?
+            ", array(
+                $current_date
             ));
+    
+            if(empty($leaderboard_snapshot_id)) {
+                if($verbose_output) {
+                    $framework->cout("No existing leaderboard snapshot was found for today. Creating a new one.\n");
+                }
+            
+                $leaderboard_snapshot_id = db()->insert('leaderboard_snapshots', array(
+                    'leaderboard_id' => $leaderboard_id,
+                    'date' => $current_date,
+                    'created' => date('Y-m-d H:i:s')
+                ));
+            }
+            else {
+                if($verbose_output) {
+                    $framework->cout("An existing snapshot was found for today. Deleting existing data to replace with new records.\n");
+                }
+            
+                db()->update('leaderboard_snapshots', array(
+                    'updated' => date('Y-m-d H:i:s')
+                ), array(
+                    'leaderboard_snapshot_id' => $leaderboard_snapshot_id
+                ));
+            
+                db()->delete('leaderboard_entries', array(
+                    'leaderboard_snapshot_id' => $leaderboard_snapshot_id
+                ));
+            }
             
             if($verbose_output) {
                 $framework->cout("Updating leaderboard with latest snapshot.\n");
