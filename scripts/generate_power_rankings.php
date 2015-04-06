@@ -45,7 +45,7 @@ function display_help() {
     );
 }
 
-$framework = new Framework('vh', false);
+$framework = new Framework('vh', true);
 
 if(isset($framework->arguments->h)) {
     display_help();
@@ -148,7 +148,7 @@ if(empty($power_ranking_id)) {
 }
 else {
     if($verbose_output) {
-        $framework->coutLine("A existing power ranking for today was found. Deleting existing entries to replace with new ones.");
+        $framework->coutLine("An existing power ranking for today was found. Deleting existing entries to replace with new ones.");
     }
     
     db()->update('power_rankings', array(

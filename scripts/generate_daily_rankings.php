@@ -189,7 +189,7 @@ if(empty($daily_ranking_id)) {
 }
 else {
     if($verbose_output) {
-        $framework->coutLine("A existing daily ranking for today was found. Deleting existing entries to replace with new ones.");
+        $framework->coutLine("An existing daily ranking for today was found. Deleting existing entries to replace with new ones.");
     }
     
     db()->update('daily_rankings', array(

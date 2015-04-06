@@ -225,7 +225,7 @@ class Cache {
     public static $characters = array();
 }
 
-$framework = new Framework('vh', false);
+$framework = new Framework('vh', true);
 
 if(isset($framework->arguments->h)) {
     display_help();
@@ -469,8 +469,10 @@ if(!empty($leaderboards->leaderboard)) {
             $leaderboard_snapshot_id = db()->getOne("
                 SELECT leaderboard_snapshot_id
                 FROM leaderboard_snapshots
-                WHERE date = ?
+                WHERE leaderboard_id = ?
+                    AND date = ?
             ", array(
+                $leaderboard_id,
                 $current_date
             ));
     
