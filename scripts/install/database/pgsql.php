@@ -480,7 +480,7 @@ CREATE TABLE steam_users (
     personastateflags smallint,
     loccountrycode character varying(255),
     locstatecode character varying(255),
-    loccityid smallint,
+    loccityid integer,
     updated timestamp without time zone,
     twitch_username character varying(255),
     twitter_username character varying(255),
