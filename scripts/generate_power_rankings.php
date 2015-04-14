@@ -45,7 +45,7 @@ function display_help() {
     );
 }
 
-$framework = new Framework('vh', true);
+$framework = new Framework('vh', false);
 
 if(isset($framework->arguments->h)) {
     display_help();
@@ -82,6 +82,7 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_all_character = 0
         AND l.is_deathless = 0
         AND l.is_story_mode = 0
+        AND l.is_dev = 0
 ");
 
 /* ----- First pass to gather rank information ----- */

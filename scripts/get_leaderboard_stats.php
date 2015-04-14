@@ -376,6 +376,7 @@ if(!empty($leaderboards->leaderboard)) {
             $is_all_character = 0;
             $is_deathless = 0;
             $is_story_mode = 0;
+            $is_dev = 0;
             
             if(strpos($leaderboard_name, 'speedrun') !== false) {
                 $is_speedrun = 1;
@@ -394,7 +395,7 @@ if(!empty($leaderboards->leaderboard)) {
                 $is_seeded = 1;
             }
             
-            if(strpos($leaderboard_name, 'hardcore') !== false) {
+            if(strpos($leaderboard_name, 'hardcore') !== false || strpos($leaderboard_name, 'all zones') !== false) {
                 $is_speedrun = 0;
                 $is_score_run = 1;
             }
@@ -409,6 +410,10 @@ if(!empty($leaderboards->leaderboard)) {
             
             if(strpos($leaderboard_name, 'story') !== false) {
                 $is_story_mode = 1;
+            }
+            
+            if(strpos($leaderboard_name, 'dev') !== false) {
+                $is_dev = 1;
             }
             
             /*
@@ -450,7 +455,8 @@ if(!empty($leaderboards->leaderboard)) {
                 'is_score_run' => $is_score_run,
                 'is_all_character' => $is_all_character,
                 'is_deathless' => $is_deathless,
-                'is_story_mode' => $is_story_mode
+                'is_story_mode' => $is_story_mode,
+                'is_dev' => $is_dev
             );
         
             $leaderboard_id = db()->insert('leaderboards', $leaderboard_record);
