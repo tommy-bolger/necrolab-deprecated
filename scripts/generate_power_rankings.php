@@ -120,7 +120,6 @@ while($latest_leaderboard_entry = $latest_leaderboard_entries->fetch(PDO::FETCH_
     
     $leaderboard_stats[$steam_user_id]['steam_user_id'] = $steam_user_id; 
     $leaderboard_stats[$steam_user_id][$rank_column_name] = $latest_leaderboard_entry['rank'];
-    $leaderboard_stats[$steam_user_id][$leaderboard_entry_id_name] = $latest_leaderboard_entry['leaderboard_entry_id'];
     $leaderboard_stats[$steam_user_id]["{$character_column_prefix}_speed_time"] = $time;
     $leaderboard_stats[$steam_user_id]["{$character_column_prefix}_score"] = $score;
 }
