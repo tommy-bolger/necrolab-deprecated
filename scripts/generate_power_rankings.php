@@ -30,6 +30,9 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 * POSSIBILITY OF SUCH DAMAGE.
 */
+
+// ------------------ NOW ALGORITHM: 1.7/(log(x/100+1.03)/log(10))
+
 use \Framework\Core\Modes\Cli\Framework;
 use \Framework\Modules\Module;
 
@@ -83,6 +86,7 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_deathless = 0
         AND l.is_story_mode = 0
         AND l.is_dev = 0
+        AND l.is_prod = 0
 ");
 
 /* ----- First pass to gather rank information ----- */

@@ -32,17 +32,13 @@
 */
 namespace Modules\Necrolab\Controllers;
 
-use \Framework\Core\Framework;
-use \Framework\Core\Controller;
-use \Framework\Utilities\Http;
-use \Framework\Modules\ModulePage;
-use \Framework\Html\Misc\TemplateElement;
 use \Framework\Html\Table\DataTable;
-use \Framework\Data\ResultSet\SQL;
-use \Framework\Data\ResultSet\Redis;
+use \Modules\Necrolab\Models\DailyRankings as DailyRankingsModel;
 
 class DailyRankings
-extends Home {    
+extends Necrolab {    
+    protected $title = 'Daily Rankings';
+
     public function __construct() {
         parent::__construct();
         
@@ -58,45 +54,7 @@ extends Home {
             $this->loadModule();
         }
         
-        $resultset = NULL;
-    
-        if(!Framework::getInstance()->enable_cache) {
-            $resultset = new SQL('daily_rankings');
-            
-            $resultset->setBaseQuery("
-                SELECT
-                    dre.rank,
-                    su.personaname,
-                    dre.first_place_ranks,
-                    dre.top_5_ranks,
-                    dre.top_10_ranks,
-                    dre.top_20_ranks,
-                    dre.top_50_ranks,
-                    dre.top_100_ranks,
-                    dre.total_points,
-                    dre.points_per_day,
-                    dre.total_dailies,
-                    dre.total_wins,
-                    dre.average_place                
-                FROM daily_rankings dr
-                JOIN daily_ranking_entries dre ON dre.daily_ranking_id = dr.daily_ranking_id
-                JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
-                WHERE dr.latest = 1
-                {{WHERE_CRITERIA}}
-            ");
-            
-            //Set default sort criteria
-            $resultset->setSortCriteria('dre.rank', 'ASC');
-            
-            //Set default rows per page
-            $resultset->setRowsPerPage(100);
-        }
-        else {
-            $resultset = new Redis('latest_daily_rankings');
-        
-            $resultset->setRowsPerPage(100);
-            $resultset->enableTotalRecordCount();  
-        }
+        $resultset = DailyRankingsModel::getLatestRankings();   
         
         $data_table = new DataTable("daily_rankings", true);
         
@@ -148,30 +106,27 @@ extends Home {
             'average_place' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-avgplace.png\" />"
         ));
         
-        /*
-        function($query_rows) {
-            if(!empty($query_rows)) {            
-                foreach($query_rows as $row_index => $query_row) {
-                    if(strlen($query_row['personaname']) > 14) {
-                        $query_row['personaname'] = substr($query_row['personaname'], 0, 14) . '...';
-                    }
-                    
-                    $query_rows[$row_index] = $query_row;
-                }
-            }
-            
-            return $query_rows;
-        }
-        */
-        
         $data_table->process($resultset);
         
         return $data_table;
     }
     
-    public function updateTableState() {
-        $data_table = $this->getDataTable();
+    public function apiLatestRankings() {
+        $page_number = request()->get->getVariable('page', 'integer');
         
-        return $data_table->toJsonArray();
+        if(empty($page_number)) {
+            $page_number = 1;
+        }
+        
+        $resultset = DailyRankingsModel::getLatestRankings($page_number, 5000);
+        
+        $resultset->process();
+
+        return array(
+            'record_count' => $resultset->getTotalNumberOfRecords(),
+            'pages' => $resultset->getTotalPages(),
+            'current_page' => $page_number,
+            'data' => $resultset->getData()
+        );
     }
 }

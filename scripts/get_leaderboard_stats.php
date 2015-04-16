@@ -377,6 +377,7 @@ if(!empty($leaderboards->leaderboard)) {
             $is_deathless = 0;
             $is_story_mode = 0;
             $is_dev = 0;
+            $is_prod = 0;
             
             if(strpos($leaderboard_name, 'speedrun') !== false) {
                 $is_speedrun = 1;
@@ -402,6 +403,7 @@ if(!empty($leaderboards->leaderboard)) {
             
             if(strpos($leaderboard_name, 'all chars') !== false) {
                 $is_all_character = 1;
+                $character_id = Cache::$characters['all'];
             }
             
             if(strpos($leaderboard_name, 'deathless') !== false) {
@@ -414,6 +416,10 @@ if(!empty($leaderboards->leaderboard)) {
             
             if(strpos($leaderboard_name, 'dev') !== false) {
                 $is_dev = 1;
+            }
+            
+            if(strpos($leaderboard_name, 'prod') !== false) {
+                $is_prod = 1;
             }
             
             /*
@@ -456,7 +462,8 @@ if(!empty($leaderboards->leaderboard)) {
                 'is_all_character' => $is_all_character,
                 'is_deathless' => $is_deathless,
                 'is_story_mode' => $is_story_mode,
-                'is_dev' => $is_dev
+                'is_dev' => $is_dev,
+                'is_prod' => $is_prod
             );
         
             $leaderboard_id = db()->insert('leaderboards', $leaderboard_record);

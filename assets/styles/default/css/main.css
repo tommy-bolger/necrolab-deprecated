@@ -6,6 +6,14 @@ body {
     color: #FFFFFF;
 }
 
+a:link, a:visited, a:hover, a:active {
+    text-decoration: none;
+}
+
+.clear {
+    clear: both;
+}
+
 .wrap {
     min-height: 100%;
     height: auto;

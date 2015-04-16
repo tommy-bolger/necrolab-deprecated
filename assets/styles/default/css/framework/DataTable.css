@@ -20,22 +20,36 @@
 }
 
 .data_table div.pagination {
-    float: left;
-    display: inline;
+    font-size: 22px;
+    font-weight: bold;
+    display: inline-block;
 }
 
 .data_table li.page_number, .data_table li.current_page_number {
-    display: inline;
+    font-size: 22px;
+    font-weight: bold;
+    display: inline-block;
+    vertical-align: baseline;
+    text-align: center;
+}
+
+.data_table li.page_number a, .data_table li.page_number a:hover, .data_table li.current_page_number {
+    display: inline-block;
+    padding: 0px 10px;
+    color: #FFFFFF;
+}
+
+.data_table li.page_number a, .data_table li.current_page_number {
+    border: 2px solid #FFFFFF;
+}
+
+.data_table li.page_number a:hover {
+    background-color: #CCCCCC;
 }
 
 .data_table li.current_page_number {
     background-color: #CCCCCC;
     font-weight: bold;
-    color: #FFFFFF;
-}
-
-.data_table li.page_number a {
-    color: #FFFFFF;
 }
 
 .data_table .table_header {

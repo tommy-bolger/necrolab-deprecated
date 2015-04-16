@@ -18,7 +18,7 @@
             <div id="w1-collapse" class="collapse navbar-collapse">
                 <ul id="w2" class="navbar-nav nav">
                     <li class="active">
-                        <a class="first" href="/"><img src="<?php echo $this->power_rankings_button; ?>" alt=""></a></li>
+                        <a class="first" href="/power_rankings"><img src="<?php echo $this->power_rankings_button; ?>" alt=""></a></li>
                     <li>
                         <a href="/daily_rankings"><img src="<?php echo $this->daily_rankings_button; ?>" alt=""></a>
                     </li>
