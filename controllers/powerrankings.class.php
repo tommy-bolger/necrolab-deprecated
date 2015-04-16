@@ -58,7 +58,7 @@ extends NecroLab {
     
         $resultset = PowerRankingsModel::getLatestRankings();      
         
-        $data_table = new DataTable("power_rankings", true);
+        $data_table = new DataTable("power_rankings", false);
         
         $data_table->setNumberofColumns(25);
         

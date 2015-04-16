@@ -56,7 +56,7 @@ extends Necrolab {
         
         $resultset = DailyRankingsModel::getLatestRankings();   
         
-        $data_table = new DataTable("daily_rankings", true);
+        $data_table = new DataTable("daily_rankings", false);
         
         $data_table->setNumberofColumns(13);
         
