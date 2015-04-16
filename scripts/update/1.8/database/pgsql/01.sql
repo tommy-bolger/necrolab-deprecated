@@ -1,6 +1,3 @@
-ALTER SEQUENCE characters_character_id_seq
-RENAME TO characters_seq;
-
 SELECT pg_catalog.setval('characters_seq', 14, false);
 
 INSERT INTO characters (name, display_name, is_active, is_weighted)
