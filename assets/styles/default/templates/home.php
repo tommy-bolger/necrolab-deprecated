@@ -20,13 +20,7 @@
                         <span class="site_logo_medium">Necro Lab</span>
                     </a>
                 </div>
-                <div class="navbar-header"><button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#w1-collapse">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span></button>
-                </div>
-                <div id="w1-collapse" class="collapse navbar-collapse">
+                <div>
                     <ul id="w2" class="navbar-nav nav">
                         <li class="active">
                             <a class="first<?php if($this->active_page == 'power_rankings'): echo " selected_nav_button"; endif; ?>" href="/power_rankings">
