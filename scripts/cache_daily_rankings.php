@@ -62,8 +62,6 @@ $module = new Module('necrolab');
 
 $cache = cache();
 
-$current_rankings_exists = $cache->exists('latest_daily_rankings');
-
 $latest_daily_rankings = db()->prepareExecuteQuery("
     SELECT
         dre.rank,
@@ -87,6 +85,8 @@ $latest_daily_rankings = db()->prepareExecuteQuery("
     ORDER BY dre.rank ASC
 ");
 
+$transaction = $cache->multi();
+
 while($latest_daily_ranking = $latest_daily_rankings->fetch(PDO::FETCH_ASSOC)) {
     $daily_ranking_entry_id = $latest_daily_ranking['daily_ranking_entry_id'];
     
@@ -97,17 +97,17 @@ while($latest_daily_ranking = $latest_daily_rankings->fetch(PDO::FETCH_ASSOC)) {
     $hash_name = "latest_daily_rankings:{$daily_ranking_entry_id}";
 
     foreach($latest_daily_ranking as $column => $value) {
-        $cache->hSet($hash_name, $column, $value);
+        $transaction->hSet($hash_name, $column, $value);
     }
     
-    $cache->rPush('latest_daily_rankings_new', $hash_name);
+    $transaction->rPush('latest_daily_rankings_new', $hash_name);
 }
 
-if($current_rankings_exists) {
-    $cache->rename('latest_daily_rankings', 'latest_daily_rankings_old');
-}
+$transaction->rename('latest_daily_rankings', 'latest_daily_rankings_old');
 
-$cache->rename('latest_daily_rankings_new', 'latest_daily_rankings');
+$transaction->rename('latest_daily_rankings_new', 'latest_daily_rankings');
+
+$transaction->exec();
 
 $cache->set('total_count', $cache->lSize('latest_daily_rankings'), 'latest_daily_rankings');
 
@@ -115,14 +115,18 @@ if($verbose_output) {
     $framework->coutLine("Deleting old cached data.");
 }
 
-if($current_rankings_exists) {
-    while($old_leadboard_entry = $cache->rPop('latest_daily_rankings_old')) {
-        if($verbose_output) {
-            $framework->coutLine("Deleting daily ranking ID {$old_leadboard_entry}.");
-        }
+$old_daily_ranking_keys = $cache->lRange('latest_daily_rankings_old', 0, -1);
+
+$transaction = $cache->multi();
+
+if(!empty($old_daily_ranking_keys)) {
+    foreach($old_daily_ranking_keys as &$old_daily_ranking_key) {
+        $framework->coutLine("Deleting daily ranking ID {$old_daily_ranking_key}.");
     
-        $cache->delete($old_leadboard_entry);
+        $transaction->delete($old_daily_ranking_key);
     }
     
-    $cache->delete('latest_daily_rankings_old');
+    $transaction->delete('latest_daily_rankings_old');
 }
+
+$transaction->exec();

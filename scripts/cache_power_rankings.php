@@ -83,6 +83,9 @@ $latest_power_rankings = db()->prepareExecuteQuery("
     ORDER BY pre.rank ASC
 ");
 
+//Add new ranking entries
+$transaction = $cache->multi();
+
 while($latest_power_ranking = $latest_power_rankings->fetch(PDO::FETCH_ASSOC)) {
     $power_ranking_entry_id = $latest_power_ranking['power_ranking_entry_id'];
 
@@ -90,35 +93,40 @@ while($latest_power_ranking = $latest_power_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $hash_name = "latest_power_rankings:{$power_ranking_entry_id}";
     
-    $cache->hMset($hash_name, $latest_power_ranking);
+    $transaction->hMset($hash_name, $latest_power_ranking);
     
-    $cache->rPush('latest_power_rankings_new', $hash_name);
+    $transaction->rPush('latest_power_rankings_new', $hash_name);
     
     //Add the latest power ranking entry id to the steam user in cache
-    $cache->hSet("steam_users:{$latest_power_ranking['steam_user_id']}", 'latest_power_ranking_id', $power_ranking_entry_id);
+    $transaction->hSet("steam_users:{$latest_power_ranking['steam_user_id']}", 'latest_power_ranking_id', $power_ranking_entry_id);
 }
 
-$current_power_rankings_exists = $cache->exists('latest_power_rankings');
+$transaction->rename('latest_power_rankings', 'latest_power_rankings_old');
 
-if($current_power_rankings_exists) {
-    $cache->rename('latest_power_rankings', 'latest_power_rankings_old');
-}
+$transaction->rename('latest_power_rankings_new', 'latest_power_rankings');
 
-$cache->rename('latest_power_rankings_new', 'latest_power_rankings');
+$transaction->exec();
 
+//Delete ranking entries
 $cache->set('total_count', $cache->lSize('latest_power_rankings'), 'latest_power_rankings');
 
 $framework->coutLine("Deleting old cached data.");
 
-if($current_power_rankings_exists) {
-    while($old_leadboard_entry = $cache->rPop('latest_power_rankings_old')) {
-        $framework->coutLine("Deleting power ranking ID {$old_leadboard_entry}.");
+$old_power_ranking_keys = $cache->lRange('latest_power_rankings_old', 0, -1);
+
+$transaction = $cache->multi();
+
+if(!empty($old_power_ranking_keys)) {
+    foreach($old_power_ranking_keys as &$old_power_ranking_key) {
+        $framework->coutLine("Deleting power ranking ID {$old_power_ranking_key}.");
     
-        $cache->delete($old_leadboard_entry);
+        $transaction->delete($old_power_ranking_key);
     }
     
-    $cache->delete('latest_power_rankings_old');
+    $transaction->delete('latest_power_rankings_old');
 }
+
+$transaction->exec();
 
 
 /* ---------- Cache the latest score rankings ---------- */
@@ -165,6 +173,9 @@ $latest_score_rankings = db()->prepareExecuteQuery("
     ORDER BY pre.score_rank ASC
 ");
 
+//Add new ranking entries
+$transaction = $cache->multi();
+
 while($latest_score_ranking = $latest_score_rankings->fetch(PDO::FETCH_ASSOC)) {
     $power_ranking_entry_id = $latest_score_ranking['power_ranking_entry_id'];
     
@@ -172,35 +183,40 @@ while($latest_score_ranking = $latest_score_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $hash_name = "latest_score_rankings:{$power_ranking_entry_id}";
     
-    $cache->hMset($hash_name, $latest_score_ranking);
+    $transaction->hMset($hash_name, $latest_score_ranking);
     
-    $cache->rPush('latest_score_rankings_new', $hash_name);
+    $transaction->rPush('latest_score_rankings_new', $hash_name);
     
     //Add the latest power ranking entry id to the steam user in cache
-    $cache->hSet("steam_users:{$latest_score_ranking['steam_user_id']}", 'latest_score_ranking_id', $power_ranking_entry_id);
+    $transaction->hSet("steam_users:{$latest_score_ranking['steam_user_id']}", 'latest_score_ranking_id', $power_ranking_entry_id);
 }
 
-$current_score_rankings_exists = $cache->exists('latest_score_rankings');
+$transaction->rename('latest_score_rankings', 'latest_score_rankings_old');
 
-if($current_score_rankings_exists) {
-    $cache->rename('latest_score_rankings', 'latest_score_rankings_old');
-}
+$transaction->rename('latest_score_rankings_new', 'latest_score_rankings');
 
-$cache->rename('latest_score_rankings_new', 'latest_score_rankings');
+$transaction->exec();
 
+//Delete ranking entries
 $cache->set('total_count', $cache->lSize('latest_score_rankings'), 'latest_score_rankings');
 
 $framework->coutLine("Deleting old cached data.");
 
-if($current_score_rankings_exists) {
-    while($old_leadboard_entry = $cache->rPop('latest_score_rankings_old')) {
-        $framework->coutLine("Deleting score ranking ID {$old_leadboard_entry}.");
+$old_score_ranking_keys = $cache->lRange('latest_score_rankings_old', 0, -1);
+
+$transaction = $cache->multi();
+
+if(!empty($old_score_ranking_keys)) {
+    foreach($old_score_ranking_keys as &$old_score_ranking_key) {
+        $framework->coutLine("Deleting score ranking ID {$old_score_ranking_key}.");
     
-        $cache->delete($old_leadboard_entry);
+        $transaction->delete($old_score_ranking_key);
     }
     
-    $cache->delete('latest_score_rankings_old');
+    $transaction->delete('latest_score_rankings_old');
 }
+
+$transaction->exec();
 
 
 /* ---------- Cache the latest speed rankings ---------- */
@@ -247,6 +263,9 @@ $latest_speed_rankings = db()->prepareExecuteQuery("
     ORDER BY pre.speed_rank ASC
 ");
 
+//Add new ranking entries
+$transaction = $cache->multi();
+
 while($latest_speed_ranking = $latest_speed_rankings->fetch(PDO::FETCH_ASSOC)) {
     $power_ranking_entry_id = $latest_speed_ranking['power_ranking_entry_id'];
 
@@ -254,35 +273,40 @@ while($latest_speed_ranking = $latest_speed_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $hash_name = "latest_speed_rankings:{$power_ranking_entry_id}";
     
-    $cache->hMset($hash_name, $latest_speed_ranking);
+    $transaction->hMset($hash_name, $latest_speed_ranking);
     
-    $cache->rPush('latest_speed_rankings_new', $hash_name);
+    $transaction->rPush('latest_speed_rankings_new', $hash_name);
     
     //Add the latest power ranking entry id to the steam user in cache
-    $cache->hSet("steam_users:{$latest_speed_ranking['steam_user_id']}", 'latest_speed_ranking_id', $power_ranking_entry_id);
+    $transaction->hSet("steam_users:{$latest_speed_ranking['steam_user_id']}", 'latest_speed_ranking_id', $power_ranking_entry_id);
 }
 
-$current_speed_rankings_exists = $cache->exists('latest_speed_rankings');
+$transaction->rename('latest_speed_rankings', 'latest_speed_rankings_old');
 
-if($current_speed_rankings_exists) {
-    $cache->rename('latest_speed_rankings', 'latest_speed_rankings_old');
-}
+$transaction->rename('latest_speed_rankings_new', 'latest_speed_rankings');
 
-$cache->rename('latest_speed_rankings_new', 'latest_speed_rankings');
+$transaction->exec();
 
+//Delete ranking entries
 $cache->set('total_count', $cache->lSize('latest_speed_rankings'), 'latest_speed_rankings');
 
 $framework->coutLine("Deleting old cached data.");
 
-if($current_speed_rankings_exists) {
-    while($old_leadboard_entry = $cache->rPop('latest_speed_rankings_old')) {
-        $framework->coutLine("Deleting speed ranking ID {$old_leadboard_entry}.");
+$old_speed_ranking_keys = $cache->lRange('latest_speed_rankings_old', 0, -1);
+
+$transaction = $cache->multi();
+
+if(!empty($old_speed_ranking_keys)) {
+    foreach($old_speed_ranking_keys as &$old_speed_ranking_key) {
+        $framework->coutLine("Deleting speed ranking ID {$old_speed_ranking_key}.");
     
-        $cache->delete($old_leadboard_entry);
+        $transaction->delete($old_speed_ranking_key);
     }
     
-    $cache->delete('latest_speed_rankings_old');
+    $transaction->delete('latest_speed_rankings_old');
 }
+
+$transaction->exec();
 
 
 /* ---------- Cache the latest deathless score rankings ---------- */
@@ -327,6 +351,9 @@ $latest_deathless_score_rankings = db()->prepareExecuteQuery("
     ORDER BY pre.deathless_score_rank ASC
 ");
 
+//Add new ranking entries
+$transaction = $cache->multi();
+
 while($latest_deathless_score_ranking = $latest_deathless_score_rankings->fetch(PDO::FETCH_ASSOC)) {
     $power_ranking_entry_id = $latest_deathless_score_ranking['power_ranking_entry_id'];
     
@@ -334,32 +361,37 @@ while($latest_deathless_score_ranking = $latest_deathless_score_rankings->fetch(
     
     $hash_name = "latest_deathless_score_rankings:{$power_ranking_entry_id}";
     
-    $cache->hMset($hash_name, $latest_deathless_score_ranking);
+    $transaction->hMset($hash_name, $latest_deathless_score_ranking);
     
-    $cache->rPush('latest_deathless_score_rankings_new', $hash_name);
+    $transaction->rPush('latest_deathless_score_rankings_new', $hash_name);
     
     //Add the latest power ranking entry id to the steam user in cache
-    $cache->hSet("steam_users:{$latest_deathless_score_ranking['steam_user_id']}", 'latest_deathless_score_id', $power_ranking_entry_id);
+    $transaction->hSet("steam_users:{$latest_deathless_score_ranking['steam_user_id']}", 'latest_deathless_score_id', $power_ranking_entry_id);
 }
 
-$current_deathless_score_rankings_exists = $cache->exists('latest_deathless_score_rankings');
+$transaction->rename('latest_speed_rankings', 'latest_speed_rankings_old');
 
-if($current_deathless_score_rankings_exists) {
-    $cache->rename('latest_deathless_score_rankings', 'latest_deathless_score_rankings_old');
-}
+$transaction->rename('latest_speed_rankings_new', 'latest_speed_rankings');
 
-$cache->rename('latest_deathless_score_rankings_new', 'latest_deathless_score_rankings');
+$transaction->exec();
 
+//Delete ranking entries
 $cache->set('total_count', $cache->lSize('latest_deathless_score_rankings'), 'latest_deathless_score_rankings');
 
 $framework->coutLine("Deleting old cached data.");
 
-if($current_deathless_score_rankings_exists) {
-    while($old_leadboard_entry = $cache->rPop('latest_deathless_score_rankings_old')) {
-        $framework->coutLine("Deleting deathless score ranking ID {$old_leadboard_entry}.");
+$old_deathless_score_ranking_keys = $cache->lRange('latest_deathless_score_rankings_old', 0, -1);
+
+$transaction = $cache->multi();
+
+if(!empty($old_deathless_score_ranking_keys)) {
+    foreach($old_deathless_score_ranking_keys as &$old_deathless_score_ranking_key) {
+        $framework->coutLine("Deleting deathless score ranking ID {$old_deathless_score_ranking_key}.");
     
-        $cache->delete($old_leadboard_entry);
+        $transaction->delete($old_deathless_score_ranking_key);
     }
     
-    $cache->delete('latest_deathless_score_rankings_old');
+    $transaction->delete('latest_deathless_score_rankings_old');
 }
+
+$transaction->exec();

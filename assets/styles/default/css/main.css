@@ -38,6 +38,10 @@ a:link, a:visited, a:hover, a:active {
     padding-top: 20px;
 }
 
+.footer a {
+    text-decoration: underline;
+}
+
 .footer > .container {
     width: 1240px;
     margin-left: auto;
@@ -280,4 +284,8 @@ a.desc:after {
 
 .no_wrap {
     white-space: nowrap;
+}
+
+a.player_link {
+    text-decoration: underline;
 }

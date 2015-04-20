@@ -82,7 +82,7 @@ extends Controller {
     public function addSocialMediaToRow($row) {
         $personaname = $row['personaname'];
             
-        $row['personaname'] = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
+        $row['personaname'] = "<a class=\"player_link\" href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
         
         $social_media = '';
 

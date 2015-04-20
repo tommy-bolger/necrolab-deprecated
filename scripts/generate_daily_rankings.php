@@ -187,7 +187,7 @@ if(empty($daily_ranking_id)) {
     $daily_ranking_id = db()->insert('daily_rankings', array(
         'date' => $current_date,
         'created' => date('Y-m-d H:i:s')
-    ));
+    ), 'add_daily_ranking_record');
 }
 else {
     if($verbose_output) {
@@ -198,15 +198,15 @@ else {
         'updated' => date('Y-m-d H:i:s')
     ), array(
         'daily_ranking_id' => $daily_ranking_id
-    ));
+    ), array(), 'set_updated_time');
 
     db()->delete('daily_ranking_leaderboard_snapshots', array(
         'daily_ranking_id' => $daily_ranking_id
-    ));
+    ), array(), 'delete_existing_ranking_snapshots');
     
     db()->delete('daily_ranking_entries', array(
         'daily_ranking_id' => $daily_ranking_id
-    ));
+    ), array(), 'delete_existing_ranking_entries');
 }
 
 //Mark this new daily ranking as the latest one
@@ -233,7 +233,7 @@ if(!empty($leaderboard_snapshot_ids)) {
         db()->insert('daily_ranking_leaderboard_snapshots', array(
             'daily_ranking_id' => $daily_ranking_id,
             'leaderboard_snapshot_id' => $leaderboard_snapshot_id
-        ));
+        ), array(), 'add_ranking_snapshot');
     }
 }
 
@@ -275,6 +275,27 @@ if($verbose_output) {
     $framework->coutLine("Executing fourth pass to add finalized data into database.");
 }
 
+$empty_daily_ranking_entry_record = array(
+    'daily_ranking_id' => NULL,
+    'steam_user_id' => NULL,
+    'first_place_ranks' => NULL,
+    'top_5_ranks' => NULL,
+    'top_10_ranks' => NULL,
+    'top_20_ranks' => NULL,
+    'top_50_ranks' => NULL,
+    'top_100_ranks' => NULL,
+    'total_points' => NULL,
+    'points_per_day' => NULL,
+    'total_dailies' => NULL,
+    'total_wins' => NULL,
+    'average_place' => NULL,
+    'sum_of_ranks' => NULL,
+    'number_of_ranks' => NULL,
+    'rank' => NULL
+);
+
 foreach($leaderboard_stats as &$leaderboard_user) {
-    db()->insert('daily_ranking_entries', $leaderboard_user);
+    $daily_ranking_record = array_merge($empty_daily_ranking_entry_record, $leaderboard_user);
+
+    db()->insert('daily_ranking_entries', $daily_ranking_record, 'add_daily_entry');
 }
