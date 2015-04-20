@@ -109,7 +109,7 @@ if($current_rankings_exists) {
 
 $cache->rename('latest_daily_rankings_new', 'latest_daily_rankings');
 
-$cache->set('latest_power_rankings_total_count', $cache->lSize('latest_power_rankings'));
+$cache->set('total_count', $cache->lSize('latest_daily_rankings'), 'latest_daily_rankings');
 
 if($verbose_output) {
     $framework->coutLine("Deleting old cached data.");

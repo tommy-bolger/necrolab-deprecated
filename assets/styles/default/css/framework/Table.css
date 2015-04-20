@@ -4,19 +4,26 @@ table {
 }
 
 table a, table a:hover, table a:link, table a:active, table a:visited {
-    font-size: 12px;
+    font-size: 16px;
 }
 
 table th, table td {
     text-align: left;
-    font-size: 12px;
+    font-size: 16px;
     vertical-align: middle;
     padding: 5px;
 }
 
 table th {
+    font-size: 22px;
 }
 
 table td {
     border: 0px solid #DADFE0;
+}
+
+.large_table_header {
+    font-size: 62px;
+    font-weight: normal;
+    letter-spacing: 2px;
 }

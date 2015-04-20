@@ -1,12 +1,18 @@
+@font-face {
+    font-family: NecroSans;
+    src: url(/assets/files/modules/necrolab/NecroSans.ttf);
+}
+
 html,
 body {
     height: 100%;
     background-color: rgb(51, 51, 51);
-    font-family: Arial,Helvetica,sans-serif;
+    font-family: NecroSans,Arial,Helvetica,sans-serif;
     color: #FFFFFF;
 }
 
 a:link, a:visited, a:hover, a:active {
+    color: #FFFFFF;
     text-decoration: none;
 }
 
@@ -68,9 +74,15 @@ a:link, a:visited, a:hover, a:active {
 }
 
 .navbar-nav > li > a {
+    color: #999999;
     padding-left: 0px;
-    padding-right: 40px;
+    padding-right: 20px;
     padding-bottom: 0px;
+    line-height: 20px;
+}
+
+.navbar-nav > li > a.selected_nav_button {
+    color: #FFFFFF;
 }
 
 .navbar-nav > li > a.site-header:hover {
@@ -78,8 +90,44 @@ a:link, a:visited, a:hover, a:active {
 }
 
 .navbar-nav > li > a.last {
-    padding-left: 20px;
+    padding-left: 0px;
     padding-right: 0px;
+}
+
+.menu_large {
+    font-size: 55px;
+}
+
+.menu_small {
+    font-size: 36px;
+}
+
+.navbar-nav > li > a.site_logo {
+    padding-right: 0px;
+}
+
+.site_logo_container {
+    padding-top: 30px;
+}
+
+.site_logo span {
+    color: #FFFFFF;
+}
+
+.site_logo_small {
+    font-size: 36px;
+    line-height: 20px;
+}
+
+.site_logo_medium {
+    font-size: 135px;
+    line-height: 81px;
+}
+
+.site_logo_large {
+    font-size: 210px;
+    line-height: 127px;
+    letter-spacing: 15px;
 }
 
 .table {
@@ -162,4 +210,73 @@ a.desc:after {
     border-left: 3px solid #eed3d7;
     padding: 10px 20px;
     margin: 0 0 15px 0;
+}
+
+.cadence_header, .bard_header, .monk_header, .aria_header, .bolt_header, .dove_header, .eli_header, .melody_header, .dorian_header, .coda_header  {
+    background-image: url('/assets/images/modules/necrolab/characters.png');
+    background-repeat: no-repeat;
+}
+
+.cadence_header {
+    width: 43px;
+    height: 53px;
+    background-position: 0 0px;
+}
+
+.bard_header {
+    width: 43px;
+    height: 53px;
+    background-position: -53px 0px;
+}
+
+.monk_header {
+    width: 43px;
+    height: 53px;
+    background-position: -108px 0px;
+}
+
+.aria_header {
+    width: 43px;
+    height: 53px;
+    background-position: -163px 0px;
+}
+
+.bolt_header {
+    width: 43px;
+    height: 53px;
+    background-position: -216px 0px;
+}
+
+.dove_header {
+    width: 43px;
+    height: 53px;
+    background-position: -265px 0px;
+}
+
+.eli_header {
+    width: 43px;
+    height: 53px;
+    background-position: -317px 0px;
+}
+
+.melody_header {
+    width: 43px;
+    height: 53px;
+    background-position: -372px 0px;
+}
+
+.dorian_header {
+    width: 43px;
+    height: 53px;
+    background-position: -427px 0px;
+}
+
+.coda_header {
+    width: 43px;
+    height: 53px;
+    background-position: -472px 0px;
+}
+
+.no_wrap {
+    white-space: nowrap;
 }

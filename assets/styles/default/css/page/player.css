@@ -1,0 +1,24 @@
+#steam_user_info {
+    width: 500px;
+}
+
+.login_bar {
+    vertical-align: middle;
+}
+
+.login_text {
+    display: inline-block;
+    float: left; 
+    vertical-align: middle;
+    padding-top: 7px;
+    padding-right: 15px;
+}
+
+.login_form {
+    float: left; 
+    vertical-align: middle;
+}
+
+.login_form form .form_button {
+    border: 0px solid #000000;
+}

@@ -1,24 +1,18 @@
 input.form_button {
     width: 154px;
+    font-family: NecroSans, Verdana, Arial, Helvetica, sans-serif;
+    font-size: 18px; 
 }
 
 input.form_button, input.button {
     z-index: 9998px;
-    background-color: #F56C06;
+    background-color: rgb(51, 51, 51);
     color: #FFFFFF;
-	border-color: #ED6502 #A04300 #A04300 #ED6502;
+	border-color: #FFFFFF #FFFFFF #FFFFFF #FFFFFF;
 	font-weight: bold;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#FFAC47), to(#F56C06)); 
-    background: -webkit-linear-gradient(top, #FFAC47, #F56C06);
-    background: -ms-linear-gradient(top, #FFAC47, #F56C06);
-    background: -o-linear-gradient(top, #FFAC47, #F56C06); 
-    background: -moz-linear-gradient(top, #FFAC47, #F56C06);
-    background: linear-gradient(#FFAC47, #F56C06);
-    -pie-background: linear-gradient(#FFAC47, #F56C06);
-    behavior: url(/assets/htc/modules/admin/pie);
 }
 
 input.button {
 	font-size: 11px; 
-	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-family: NecroSans, Verdana, Arial, Helvetica, sans-serif;
 }

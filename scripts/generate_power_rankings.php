@@ -48,6 +48,16 @@ function display_help() {
     );
 }
 
+function assign_ranks_to_points($rank_column_name, &$leaderboard_stats, &$user_point_totals) {
+    $rank = 1;
+
+    foreach($user_point_totals as $steam_user_id => &$user_point_total) {
+        $leaderboard_stats[$steam_user_id][$rank_column_name] = $rank;
+        
+        $rank += 1;
+    }
+}
+
 $framework = new Framework('vh', false);
 
 if(isset($framework->arguments->h)) {
@@ -77,22 +87,22 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
     JOIN leaderboard_entries le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
     JOIN characters c ON c.character_id = l.character_id
     WHERE c.is_active = 1
-        AND (l.is_score_run = 1 OR l.is_speedrun = 1)
+        AND (
+            l.is_score_run = 1 
+            OR l.is_speedrun = 1
+        )
         AND l.is_custom = 0
         AND l.is_co_op = 0
         AND l.is_seeded = 0
         AND l.is_daily = 0
-        AND l.is_all_character = 0
-        AND l.is_deathless = 0
-        AND l.is_story_mode = 0
         AND l.is_dev = 0
-        AND l.is_prod = 0
+        AND l.is_prod = 0               
 ");
 
 /* ----- First pass to gather rank information ----- */
 
 if($verbose_output) {
-    $framework->coutLine("Executing first pass to gather rank information.");
+    $framework->coutLine("Executing first pass to gather rank information and calculate points.");
 }
 
 $leaderboard_snapshot_ids = array();
@@ -105,25 +115,58 @@ while($latest_leaderboard_entry = $latest_leaderboard_entries->fetch(PDO::FETCH_
 
     $steam_user_id = $latest_leaderboard_entry['steam_user_id'];
     $character_column_prefix = $latest_leaderboard_entry['character_name'];
+    $total_points_column_name = '';
+    
+    $is_deathless = $latest_leaderboard_entry['is_deathless'];        
+    
+    if(!empty($is_deathless)) {
+        $character_column_prefix .= "_deathless";
+        $total_points_column_name = 'deathless_';
+    }
     
     $rank_column_name = $character_column_prefix;
-    $leaderboard_entry_id_name = $character_column_prefix;
+    $rank_points_column_name = $character_column_prefix;
     $time = NULL;
     $score = NULL;
 
     if(!empty($latest_leaderboard_entry['is_speedrun'])) {
         $rank_column_name .= "_speed_rank";
-        $leaderboard_entry_id_name .= '_speed_leaderboard_entry_id';
+        $rank_points_column_name .= "_speed_rank_points";
+        $total_points_column_name .= 'speed_rank_points_total';
         $time = $latest_leaderboard_entry['time'];
     }
     else {
         $rank_column_name .= "_score_rank";
-        $leaderboard_entry_id_name .= '_score_leaderboard_entry_id';
+        $rank_points_column_name .= "_score_rank_points";
+        $total_points_column_name .= 'score_rank_points_total';
         $score = $latest_leaderboard_entry['score'];
     }
     
+    $rank = $latest_leaderboard_entry['rank'];
+    
+    $rank_points = 1.7 / (log($rank / 100 + 1.03) / log(10));
+    
+    if(!isset($leaderboard_stats[$steam_user_id][$total_points_column_name])) {
+        $leaderboard_stats[$steam_user_id][$total_points_column_name] = 0;
+    }
+    
+    if(empty($leaderboard_stats[$steam_user_id]['total_points'])) {
+        $leaderboard_stats[$steam_user_id]['total_points'] = 0;
+    }
+    
     $leaderboard_stats[$steam_user_id]['steam_user_id'] = $steam_user_id; 
-    $leaderboard_stats[$steam_user_id][$rank_column_name] = $latest_leaderboard_entry['rank'];
+    $leaderboard_stats[$steam_user_id][$rank_column_name] = $rank;
+    $leaderboard_stats[$steam_user_id][$rank_points_column_name] = $rank_points;
+    
+    /*
+        Deathless score is only supported by the game at the moment. Speedrun, all character, and story mode are not.
+        These ranks will be collected but not added into the overall ranks and point total.
+    */
+    if(empty($is_deathless) || (!empty($is_deathless) && empty($latest_leaderboard_entry['is_story']) && empty($latest_leaderboard_entry['is_all_character']) && empty($latest_leaderboard_entry['is_speedrun']))) {
+        $leaderboard_stats[$steam_user_id][$total_points_column_name] += $rank_points;
+        $leaderboard_stats[$steam_user_id]['total_points'] += $rank_points;
+    }
+    
     $leaderboard_stats[$steam_user_id]["{$character_column_prefix}_speed_time"] = $time;
     $leaderboard_stats[$steam_user_id]["{$character_column_prefix}_score"] = $score;
 }
@@ -197,201 +240,67 @@ if(!empty($leaderboard_snapshot_ids)) {
     }
 }
 
-/* ----- Second pass to calculate rankings ----- */
+/* ----- Second pass to group rankings ----- */
 
 if($verbose_output) {
-    $framework->coutLine("Executing second pass to calculate rankings.");
+    $framework->coutLine("Executing second pass to group rankings and sort them.");
 }
 
-$user_top_10_bonus_scores = array();
+$user_speed_point_totals = array();
+$user_deathless_speed_point_totals = array();
+$user_score_point_totals = array();
+$user_deathless_score_point_totals = array();
+$user_total_point_totals = array();
 
 foreach($leaderboard_stats as $leaderboard_user_index => &$leaderboard_user) {
-    $leaderboard_user['power_ranking_id'] = $power_ranking_id;
+    $steam_user_id = $leaderboard_user['steam_user_id'];
 
-    $speed_total = NULL;
-    $score_total = NULL;
-    $base = NULL;
-    $weighted = NULL;
-    $top_10_bonus = NULL;
-    
-    $number_of_speed_ranks = 0;
-    $speed_rank_sum = 0;
-    
-    $number_of_score_ranks = 0;
-    $score_rank_sum = 0;
-    
-    $total_number_of_ranks = 0;
-    $total_rank_sum = 0;
-    
-    $weighted_speed_rank_sum = 0;
-    $unweighted_speed_rank_sum = 0;
-    $number_of_weighted_speedrun_ranks = 0;
-    $number_of_unweighted_speedrun_ranks = 0;
-    
-    $weighted_score_rank_sum = 0;
-    $unweighted_score_rank_sum = 0;
-    $number_of_weighted_score_ranks = 0;
-    $number_of_unweighted_score_ranks = 0;
-    
-    $total_1st_ranks = 0;
-    $total_2nd_ranks = 0;
-    $total_3rd_ranks = 0;
-    $total_4th_ranks = 0;
-    $total_5th_ranks = 0;
-    $total_6th_ranks = 0;
-    $total_7th_ranks = 0;
-    $total_8th_ranks = 0;
-    $total_9th_ranks = 0;
-    $total_10th_ranks = 0;
-
-    foreach($leaderboard_user as $leaderboard_stat_name => &$leaderboard_stat) {    
-        if(strpos($leaderboard_stat_name, '_rank') !== false && !empty($leaderboard_stat)) {
-            if(strpos($leaderboard_stat_name, '_speed') !== false) {
-                $number_of_speed_ranks += 1;
-                $speed_rank_sum += $leaderboard_stat;
-                
-                if(strpos($leaderboard_stat_name, 'cadence') !== false) {
-                    $number_of_weighted_speedrun_ranks += 1;
-                    $weighted_speed_rank_sum += $leaderboard_stat;
-                }
-                elseif(strpos($leaderboard_stat_name, 'bard') !== false) {
-                    $number_of_weighted_speedrun_ranks += 1;
-                    $weighted_speed_rank_sum += $leaderboard_stat;
-                }
-                else {
-                    $number_of_unweighted_speedrun_ranks += 1;
-                    $unweighted_speed_rank_sum += $leaderboard_stat;
-                }
-            }
-            
-            if(strpos($leaderboard_stat_name, '_score') !== false) {
-                $number_of_score_ranks += 1;
-                $score_rank_sum += $leaderboard_stat;
-                
-                if(strpos($leaderboard_stat_name, 'cadence') !== false) {
-                    $number_of_weighted_score_ranks += 1;
-                    $weighted_score_rank_sum += $leaderboard_stat;
-                }
-                elseif(strpos($leaderboard_stat_name, 'bard') !== false) {
-                    $number_of_weighted_score_ranks += 1;
-                    $weighted_score_rank_sum += $leaderboard_stat;
-                }
-                else {
-                    $number_of_unweighted_score_ranks += 1;
-                    $unweighted_score_rank_sum += $leaderboard_stat;
-                }
-            }
-            
-            $total_number_of_ranks += 1;
-            $total_rank_sum += $leaderboard_stat;
-            
-            switch($leaderboard_stat) {
-                case 1:
-                    $total_1st_ranks += 1;
-                    break;
-                case 2:
-                    $total_2nd_ranks += 1;
-                    break;
-                case 3:
-                    $total_3rd_ranks += 1;
-                    break; 
-                case 4:
-                    $total_4th_ranks += 1;
-                    break;
-                case 5:
-                    $total_5th_ranks += 1;
-                    break;
-                case 6:
-                    $total_6th_ranks += 1;
-                    break;
-                case 7:
-                    $total_7th_ranks += 1;
-                    break;
-                case 8:
-                    $total_8th_ranks += 1;
-                    break;
-                case 9:
-                    $total_9th_ranks += 1;
-                    break;
-                case 10:
-                    $total_10th_ranks += 1;
-                    break;
-            }
-        }
+    if(!empty($leaderboard_user['speed_rank_points_total'])) {
+        $user_speed_point_totals[$steam_user_id] = $leaderboard_user['speed_rank_points_total'];
     }
     
-    $speed_total = (101 * $number_of_speed_ranks) - $speed_rank_sum;
-    
-    
-    if($speed_total < 0) {
-        $speed_total = 0;
+    if(!empty($leaderboard_user['deathless_speed_rank_points_total'])) {
+        $user_deathless_speed_point_totals[$steam_user_id] = $leaderboard_user['deathless_speed_rank_points_total'];
     }
     
-    $score_total = (101 * $number_of_score_ranks) - $score_rank_sum;
-    
-    if($score_total < 0) {
-        $score_total = 0;
+    if(!empty($leaderboard_user['score_rank_points_total'])) {
+        $user_score_point_totals[$steam_user_id] = $leaderboard_user['score_rank_points_total'];
     }
     
-    $base = (101 * $total_number_of_ranks) - $total_rank_sum;
-    
-    if($base < 0) {
-        $base = 0;
+    if(!empty($leaderboard_user['deathless_score_rank_points_total'])) {
+        $user_deathless_score_point_totals[$steam_user_id] = $leaderboard_user['deathless_score_rank_points_total'];
     }
     
-    $weighted_rank_score = (303 * ($number_of_weighted_speedrun_ranks + $number_of_weighted_score_ranks)) - (3 * ($weighted_speed_rank_sum + $weighted_score_rank_sum));
-    
-    if($weighted_rank_score < 0) {
-        $weighted_rank_score = 0;
-    }
-    
-    $unweighted_rank_score = ((101 * ($number_of_unweighted_speedrun_ranks + $number_of_unweighted_score_ranks)) - ($number_of_unweighted_speedrun_ranks + $number_of_unweighted_score_ranks));
-    
-    if($unweighted_rank_score < 0) {
-        $unweighted_rank_score = 0;
-    }
-    
-    $weighted = $weighted_rank_score + $unweighted_rank_score;
-        
-    $top_10_bonus = 
-        $base + 
-        (100 * $total_1st_ranks) + 
-        (90 * $total_2nd_ranks) + 
-        (80 * $total_3rd_ranks) + 
-        (70 * $total_4th_ranks) + 
-        (60 * $total_5th_ranks) + 
-        (50 * $total_6th_ranks) + 
-        (40 * $total_7th_ranks) + 
-        (30 * $total_8th_ranks) + 
-        (20 * $total_9th_ranks) + 
-        (10 * $total_10th_ranks);
-        
-    $user_top_10_bonus_scores[$leaderboard_user['steam_user_id']] = $top_10_bonus;
-    
-    $leaderboard_user['speed_total'] = $speed_total;
-    $leaderboard_user['score_total'] = $score_total; 
-    $leaderboard_user['base'] = $base; 
-    $leaderboard_user['weighted'] = $weighted; 
-    $leaderboard_user['top_10_bonus'] = $top_10_bonus;  
+    $user_total_point_totals[$steam_user_id] = $leaderboard_user['total_points'];
 }
 
 /* ----- Third pass to add actual user ranks ----- */
 
 if($verbose_output) {
-    $framework->coutLine("Executing third pass to add overall ranks.");
+    $framework->coutLine("Executing third pass to assign ranks.");
 }
 
-arsort($user_top_10_bonus_scores);
+arsort($user_speed_point_totals);
+arsort($user_deathless_speed_point_totals);
+arsort($user_score_point_totals);
+arsort($user_deathless_score_point_totals);
+arsort($user_total_point_totals);
 
-$rank = 1;
+assign_ranks_to_points('speed_rank', $leaderboard_stats, $user_speed_point_totals);
+unset($user_speed_point_totals);
 
-foreach($user_top_10_bonus_scores as $steam_user_id => &$top_10_bonus_score) {
-    $leaderboard_stats[$steam_user_id]['rank'] = $rank;
-    
-    $rank += 1;
-}
+assign_ranks_to_points('deathless_speed_rank', $leaderboard_stats, $user_deathless_speed_point_totals);
+unset($user_deathless_speed_point_totals);
 
-unset($user_top_10_bonus_scores);
+assign_ranks_to_points('score_rank', $leaderboard_stats, $user_score_point_totals);
+unset($user_score_point_totals);
+
+assign_ranks_to_points('deathless_score_rank', $leaderboard_stats, $user_deathless_score_point_totals);
+unset($user_deathless_score_point_totals);
+
+assign_ranks_to_points('rank', $leaderboard_stats, $user_total_point_totals);
+unset($user_total_point_totals);
+
 
 /* ----- Fourth pass to (finally) insert into database ----- */
 
@@ -399,6 +308,176 @@ if($verbose_output) {
     $framework->coutLine("Executing fourth pass to add finalized data into database.");
 }
 
+//This empty record will allow the same prepared statement to be reused for a potential performance gain.
+$empty_entry_record = array(
+    'power_ranking_id' => NULL,
+    'steam_user_id' => NULL,
+    'cadence_score_rank' => NULL,
+    'cadence_score_rank_points' => NULL,
+    'cadence_score' => NULL,
+    'bard_score_rank' => NULL,
+    'bard_score_rank_points' => NULL,
+    'bard_score' => NULL,
+    'monk_score_rank' => NULL,
+    'monk_score_rank_points' => NULL,
+    'monk_score' => NULL,
+    'aria_score_rank' => NULL,
+    'aria_score_rank_points' => NULL,
+    'aria_score' => NULL,
+    'bolt_score_rank' => NULL,
+    'bolt_score_rank_points' => NULL,
+    'bolt_score' => NULL,
+    'dove_score_rank' => NULL,
+    'dove_score_rank_points' => NULL,
+    'dove_score' => NULL,
+    'eli_score_rank' => NULL,
+    'eli_score_rank_points' => NULL,
+    'eli_score' => NULL,
+    'melody_score_rank' => NULL,
+    'melody_score_rank_points' => NULL,
+    'melody_score' => NULL,
+    'dorian_score_rank' => NULL,
+    'dorian_score_rank_points' => NULL,
+    'dorian_score' => NULL,
+    'coda_score_rank' => NULL,
+    'coda_score_rank_points' => NULL,
+    'coda_score' => NULL,
+    'all_score_rank' => NULL,
+    'all_score_rank_points' => NULL,
+    'all_score' => NULL,
+    'story_score_rank' => NULL,
+    'story_score_rank_points' => NULL,
+    'story_score' => NULL,
+    'score_rank_points_total' => NULL,
+    'cadence_deathless_score_rank' => NULL,
+    'cadence_deathless_score_rank_points' => NULL,
+    'cadence_deathless_score' => NULL,
+    'bard_deathless_score_rank' => NULL,
+    'bard_deathless_score_rank_points' => NULL,
+    'bard_deathless_score' => NULL,
+    'monk_deathless_score_rank' => NULL,
+    'monk_deathless_score_rank_points' => NULL,
+    'monk_deathless_score' => NULL,
+    'aria_deathless_score_rank' => NULL,
+    'aria_deathless_score_rank_points' => NULL,
+    'aria_deathless_score' => NULL,
+    'bolt_deathless_score_rank' => NULL,
+    'bolt_deathless_score_rank_points' => NULL,
+    'bolt_deathless_score' => NULL,
+    'dove_deathless_score_rank' => NULL,
+    'dove_deathless_score_rank_points' => NULL,
+    'dove_deathless_score' => NULL,
+    'eli_deathless_score_rank' => NULL,
+    'eli_deathless_score_rank_points' => NULL,
+    'eli_deathless_score' => NULL,
+    'melody_deathless_score_rank' => NULL,
+    'melody_deathless_score_rank_points' => NULL,
+    'melody_deathless_score' => NULL,
+    'dorian_deathless_score_rank' => NULL,
+    'dorian_deathless_score_rank_points' => NULL,
+    'dorian_deathless_score' => NULL,
+    'coda_deathless_score_rank' => NULL,
+    'coda_deathless_score_rank_points' => NULL,
+    'coda_deathless_score' => NULL,
+    'all_deathless_score_rank' => NULL,
+    'all_deathless_score_rank_points' => NULL,
+    'all_deathless_score' => NULL,
+    'story_deathless_score_rank' => NULL,
+    'story_deathless_score_rank_points' => NULL,
+    'story_deathless_score' => NULL,
+    'deathless_score_rank_points_total' => NULL,
+    'cadence_speed_rank' => NULL,
+    'cadence_speed_rank_points' => NULL,
+    'cadence_speed_time' => NULL,
+    'bard_speed_rank' => NULL,
+    'bard_speed_rank_points' => NULL,
+    'bard_speed_time' => NULL,
+    'monk_speed_rank' => NULL,
+    'monk_speed_rank_points' => NULL,
+    'monk_speed_time' => NULL,
+    'aria_speed_rank' => NULL,
+    'aria_speed_rank_points' => NULL,
+    'aria_speed_time' => NULL,
+    'bolt_speed_rank' => NULL,
+    'bolt_speed_rank_points' => NULL,
+    'bolt_speed_time' => NULL,
+    'dove_speed_rank' => NULL,
+    'dove_speed_rank_points' => NULL,
+    'dove_speed_time' => NULL,
+    'eli_speed_rank' => NULL,
+    'eli_speed_rank_points' => NULL,
+    'eli_speed_time' => NULL,
+    'melody_speed_rank' => NULL,
+    'melody_speed_rank_points' => NULL,
+    'melody_speed_time' => NULL,
+    'dorian_speed_rank' => NULL,
+    'dorian_speed_rank_points' => NULL,
+    'dorian_speed_time' => NULL,
+    'coda_speed_rank' => NULL,
+    'coda_speed_rank_points' => NULL,
+    'coda_speed_time' => NULL,
+    'all_speed_rank' => NULL,
+    'all_speed_rank_points' => NULL,
+    'all_speed_time' => NULL,
+    'story_speed_rank' => NULL,
+    'story_speed_rank_points' => NULL,
+    'story_speed_time' => NULL,   
+    'speed_rank_points_total' => NULL,
+    'cadence_deathless_speed_rank' => NULL,
+    'cadence_deathless_speed_rank_points' => NULL,
+    'cadence_deathless_speed_time' => NULL,
+    'bard_deathless_speed_rank' => NULL,
+    'bard_deathless_speed_rank_points' => NULL,
+    'bard_deathless_speed_time' => NULL,
+    'monk_deathless_speed_rank' => NULL,
+    'monk_deathless_speed_rank_points' => NULL,
+    'monk_deathless_speed_time' => NULL,
+    'aria_deathless_speed_rank' => NULL,
+    'aria_deathless_speed_rank_points' => NULL,
+    'aria_deathless_speed_time' => NULL,
+    'bolt_deathless_speed_rank' => NULL,
+    'bolt_deathless_speed_rank_points' => NULL,
+    'bolt_deathless_speed_time' => NULL,
+    'dove_deathless_speed_rank' => NULL,
+    'dove_deathless_speed_rank_points' => NULL,
+    'dove_deathless_speed_time' => NULL,
+    'eli_deathless_speed_rank' => NULL,
+    'eli_deathless_speed_rank_points' => NULL,
+    'eli_deathless_speed_time' => NULL,
+    'melody_deathless_speed_rank' => NULL,
+    'melody_deathless_speed_rank_points' => NULL,
+    'melody_deathless_speed_time' => NULL,
+    'dorian_deathless_speed_rank' => NULL,
+    'dorian_deathless_speed_rank_points' => NULL,
+    'dorian_deathless_speed_time' => NULL,
+    'coda_deathless_speed_rank' => NULL,
+    'coda_deathless_speed_rank_points' => NULL,
+    'coda_deathless_speed_time' => NULL,
+    'all_deathless_speed_rank' => NULL,
+    'all_deathless_speed_rank_points' => NULL,
+    'all_deathless_speed_time' => NULL,
+    'story_deathless_speed_rank' => NULL,
+    'story_deathless_speed_rank_points' => NULL,
+    'story_deathless_speed_time' => NULL,
+    'deathless_speed_rank_points_total' => NULL,
+    'total_points' => NULL,
+    'speed_rank' => NULL,
+    'deathless_speed_rank' => NULL,
+    'score_rank' => NULL,
+    'deathless_score_rank' => NULL,
+    'rank' => NULL,
+);
+
 foreach($leaderboard_stats as &$leaderboard_user) {
-    db()->insert('power_ranking_entries', $leaderboard_user);
+    $leaderboard_user['power_ranking_id'] = $power_ranking_id;
+    
+    $entry_record = array_merge($empty_entry_record, $leaderboard_user);
+    
+    $power_ranking_entry_id = db()->insert('power_ranking_entries', $entry_record, 'power_ranking_entry');
+    
+    db()->update('steam_users', array(
+        'latest_power_ranking_entry_id' => $power_ranking_entry_id,
+    ), array(
+        'steam_user_id' => $leaderboard_user['steam_user_id']
+    ), array(), 'update_steam_user');
 }

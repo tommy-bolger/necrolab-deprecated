@@ -12,10 +12,6 @@
     border: solid 0px #000000;
 }
 
-.table_form td {
-    background-color: #FAFAFA;
-}
-
 .table_form td:first-child {
     width: 20%;
 }

@@ -64,67 +64,52 @@ extends Controller {
     
         $this->page->body->addChild("{$this->page->getImagesHttpPath()}/logotemp.png", 'site_logo');
         
-        $menu_bar_url = '';
-        
-        //The power rankings button
-        $menu_1_button = $this->page->getImagesHttpPath();
-
-        if($this->active_page == 'power_rankings') {
-            $menu_1_button .= '/menu1.png';
-            
-            $menu_bar_url  = "{$this->page->getImagesHttpPath()}/menubar1.png";
-        }
-        else {
-            $menu_1_button .= '/menu1greyed.png';
-        }
-
-        $this->page->body->addChild($menu_1_button, 'power_rankings_button');
-        
-        //The daily rankings button
-        $menu_2_button = $this->page->getImagesHttpPath();
-        
-        if($this->active_page == 'daily_rankings') {
-            $menu_2_button .= '/menu2.png';
-            
-            $menu_bar_url  = "{$this->page->getImagesHttpPath()}/menubar2.png";
-        }
-        else {
-            $menu_2_button .= '/menu2greyed.png';
-        }
-
-        $this->page->body->addChild($menu_2_button, 'daily_rankings_button');
-        
-        //The cool stats button
-        $menu_3_button = $this->page->getImagesHttpPath();
-        
-        if($this->active_page == 'cool_stats') {
-            $menu_3_button .= '/menu3.png';
-            
-            $menu_bar_url  = "{$this->page->getImagesHttpPath()}/menubar3.png";
-        }
-        else {
-            $menu_3_button .= '/menu3greyed.png';
-        }
-        
-        $this->page->body->addChild($menu_3_button, 'cool_stats_button');
-        
-        //The 7 character speedrun button
-        $menu_4_button = $this->page->getImagesHttpPath();
-        
-        if($this->active_page == 'seven_character_speedruns') {
-            $menu_4_button .= '/menu4.png';
-            
-            $menu_bar_url  = "{$this->page->getImagesHttpPath()}/menubar4.png";
-        }
-        else {
-            $menu_4_button .= '/menu4greyed.png';
-        }
-        
-        $this->page->body->addChild($menu_4_button, 'seven_character_speedrun_button');
-        
-        $this->page->body->addChild($menu_bar_url, 'menu_bar');
+        $this->page->body->addChild($this->active_page, 'active_page');
 
         $this->constructContent();
+    }
+    
+    public function addSocialMediaToTable($result_data) {
+        if(!empty($result_data)) {                                    
+            foreach($result_data as &$row) {                                                    
+                $personaname = $row['personaname'];
+            
+                $row['personaname'] = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
+                
+                $social_media = '';
+
+                if(!empty($row['twitch_username'])) {
+                    $social_media .= "<a href=\"http://www.twitch.tv/{$row['twitch_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitch_small.png\" alt=\"Twitch Channel for {$personaname}\" /></a>";
+                }
+                
+                if(!empty($row['twitter_username'])) {
+                    $social_media .= "<a href=\"http://www.twitter.com/{$row['twitter_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitter_logo_blue_small.png\" alt=\"Twitter Feed for {$personaname}\" /></a>";
+                }
+                
+                if(!empty($row['website'])) {
+                    $website_url = $row['website'];
+                    
+                    if(strpos($website_url, 'http://') === false && strpos($website_url, 'https://') === false) {
+                        $website_url = "http://{$website_url}";
+                    }
+                
+                    $social_media .= "<a href=\"{$website_url}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/external_link_small.png\" alt=\"Website of {$personaname}\" /></a>";
+                }
+                
+                if(empty($social_media)) {
+                    $social_media = '&nbsp';
+                }
+                
+                $row_first_part = array_slice($row, 0, 1, true);
+                $row_second_part = array_slice($row, 1, (count($row) - 1), true);
+                
+                $row_first_part['social_media'] = $social_media;
+                
+                $row = array_merge($row_first_part, $row_second_part);
+            }
+        }
+        
+        return $result_data;
     }
     
     public function updateTableState() {

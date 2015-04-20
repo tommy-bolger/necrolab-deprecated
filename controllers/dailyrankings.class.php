@@ -62,15 +62,15 @@ extends Necrolab {
         
         $data_table->addHeader(array(
             'name' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-name.png\" /></div>",
+                'contents' => "<div class=\"center large_table_header\">Name</div>",
                 'colspan' => 2
             ),
             'speed' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-topfinishes.png\" /></div>",
+                'contents' => "<div class=\"center large_table_header\">Top Finishes</div>",
                 'colspan' => 8,
             ),
             'score' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-stats.png\" /></div>",
+                'contents' => "<div class=\"center large_table_header\">Stats</div>",
                 'colspan' => 3,
             ),
         ));

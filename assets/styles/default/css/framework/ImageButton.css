@@ -1,0 +1,12 @@
+input.form_button {
+    width: 100px;
+}
+
+input.form_button, input.button {
+    z-index: 9998px;
+}
+
+input.button {
+	font-size: 11px; 
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+}

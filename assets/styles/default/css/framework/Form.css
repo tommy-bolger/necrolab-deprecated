@@ -25,7 +25,7 @@ input, textarea, select {
 }
 
 label {
-    font-size: 12px;
+    font-size: 18px;
 }
 
 li input {
@@ -41,29 +41,13 @@ form .textbox {
 }
 
 div.form_errors, div.form_warnings, div.form_confirmations {
-    padding: 10px 10px 10px 30px;
-    font-size: 12px;
+    padding: 10px 10px 0px 15px;
+    font-size: 20px;
     font-weight: bold;
+    border: 2px solid #FFFFFF;
+    color: #FFFFFF;
 }
 
 div.form_errors, div.form_confirmations, div.form_warnings {
     margin-bottom: 10px;
-}
-
-div.form_errors {
-    border: 1px solid #F16048;
-    background: url("/assets/images/modules/admin/theme/light/error_message_icon.gif") no-repeat scroll 10px 10px #FAEBE7;
-    color: #DF280A;
-}
-
-div.form_confirmations {
-    border: 1px solid #95A486;
-    background: url("/assets/images/modules/admin/theme/light/success_message_icon.gif") no-repeat scroll 10px 10px #EFF5EA;
-    color: #3D6611;
-}
-
-div.form_warnings {
-    border: 1px solid #666E73;
-    background: url("/assets/images/modules/admin/theme/light/warning_message_icon.gif") no-repeat scroll 10px 10px #E6E6E6;
-    color: #000000;
 }

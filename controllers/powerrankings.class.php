@@ -33,17 +33,16 @@
 namespace Modules\Necrolab\Controllers;
 
 use \Framework\Html\Table\DataTable;
+use \Framework\Utilities\Http;
 use \Modules\Necrolab\Models\PowerRankings as PowerRankingsModel;
 
 class PowerRankings
 extends NecroLab {   
     protected $title = 'Power Rankings';
-
-    protected $active_page;
  
     public function __construct() {
         parent::__construct();
-        
+
         $this->active_page = 'power_rankings';
     }
     
@@ -60,75 +59,44 @@ extends NecroLab {
         
         $data_table = new DataTable("power_rankings", false);
         
-        $data_table->setNumberofColumns(25);
+        $data_table->setNumberofColumns(10);
         
         $data_table->addHeader(array(
             'name' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-name.png\" /></div>",
+                'contents' => "&nbsp;",
                 'colspan' => 2
             ),
-            'speed' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-speed.png\" /></div>",
-                'colspan' => 9,
-            ),
             'score' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-score.png\" /></div>",
-                'colspan' => 9,
-            ),
-            'ranks' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-ranks.png\" /></div>",
-                'colspan' => 5,
-            )
-        ));
-        
-        $data_table->addHeader(array(
-            'name' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-namebar.png\" /></div>",
-                'colspan' => 2
+                'contents' => "<div class=\"center menu_small\">Score</div>",
+                'colspan' => 2,
             ),
             'speed' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-speedbar.png\" /></div>",
-                'colspan' => 9,
+                'contents' => "<div class=\"center menu_small\">Speed</div>",
+                'colspan' => 2,
             ),
-            'score' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-scorebar.png\" /></div>",
-                'colspan' => 9,
+            'deathless_score' => array(
+                'contents' => "<div class=\"center menu_small\">Deathless</div>",
+                'colspan' => 2,
             ),
-            'ranks' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-ranksbar.png\" /></div>",
-                'colspan' => 5,
+            'total' => array(
+                'contents' => "&nbsp;"
             )
         ));
         
         $data_table->setHeader(array(
-            'rank' => '&nbsp;',
-            'personaname' => '&nbsp;',
-            'cadence_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/cadence.png\" />",
-            'bard_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bard.png\" />",
-            'monk_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/monk.png\" />",
-            'aria_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/aria.png\" />",
-            'bolt_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bolt.png\" />",
-            'dove_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dove.png\" />",
-            'eli_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/eli.png\" />",
-            'melody_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/melody.png\" />",
-            'dorian_speed_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
-            'cadence_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/cadence.png\" />",
-            'bard_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bard.png\" />",
-            'monk_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/monk.png\" />",
-            'aria_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/aria.png\" />",
-            'bolt_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/bolt.png\" />",
-            'dove_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dove.png\" />",
-            'eli_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/eli.png\" />",
-            'melody_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/melody.png\" />",
-            'dorian_score_rank' => "<img src=\"{$this->page->getImagesHttpPath()}/dorian.png\" />",
-            'speed_total' => "<img src=\"{$this->page->getImagesHttpPath()}/speed.png\" />",
-            'score_total' => "<img src=\"{$this->page->getImagesHttpPath()}/score.png\" />",
-            'base' => "<img src=\"{$this->page->getImagesHttpPath()}/basic.png\" />",
-            'weighted' => "<img src=\"{$this->page->getImagesHttpPath()}/weight.png\" />",
-            'top_10_bonus' => "<img src=\"{$this->page->getImagesHttpPath()}/bonus.png\" />"
+            'rank' => 'Rank',
+            'social_media' => '&nbsp;',
+            'personaname' => 'Player',
+            'score_rank' => '<span class="no_wrap">Rank</span>',
+            'score_rank_points_total' => '<span class="no_wrap">Points</span>',
+            'speed_rank' => '<span class="no_wrap">Rank</span>',
+            'speed_rank_points_total' => '<span class="no_wrap">Points</span>',            
+            'deathless_score_rank' => '<span class="no_wrap">Rank</span>',
+            'deathless_score_rank_points_total' => '<span class="no_wrap">Points</span>',
+            'total_points' => '<span class="no_wrap">Total Points</span>'            
         ));
         
-        $data_table->process($resultset);
+        $data_table->process($resultset, array($this, 'addSocialMediaToTable'));
         
         return $data_table;
     }
@@ -140,7 +108,7 @@ extends NecroLab {
             $page_number = 1;
         }
         
-        $resultset = PowerRankingsModel::getLatestRankings($page_number, 5000);
+        $resultset = PowerRankingsModel::getLatestRankings($page_number, 100);
         
         $resultset->process();
 
