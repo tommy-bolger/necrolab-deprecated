@@ -81,7 +81,17 @@ extends NecroLab {
             'speed_rank_points_total' => 'Total Points'
         ));
         
-        $data_table->process($resultset, array($this, 'addSocialMediaToTable'));
+        $data_table->process($resultset, function($result_data) {
+            if(!empty($result_data)) {
+                foreach($result_data as $index => $row) {
+                    $row = $this->addSocialMediaToRow($row);
+                    
+                    $result_data[$index] = $row;
+                }
+            }
+            
+            return $result_data;
+        });
         
         return $data_table;
     }

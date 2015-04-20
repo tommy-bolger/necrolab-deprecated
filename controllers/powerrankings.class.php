@@ -96,7 +96,21 @@ extends NecroLab {
             'total_points' => '<span class="no_wrap">Total Points</span>'            
         ));
         
-        $data_table->process($resultset, array($this, 'addSocialMediaToTable'));
+        $data_table->process($resultset, function($result_data) {
+            if(!empty($result_data)) {
+                foreach($result_data as $index => $row) {
+                    $row = $this->addSocialMediaToRow($row);
+                    
+                    $row['score_rank_points_total'] = $this->roundNumber($row['score_rank_points_total']);
+                    $row['speed_rank_points_total'] = $this->roundNumber($row['speed_rank_points_total']);
+                    $row['deathless_score_rank_points_total'] = $this->roundNumber($row['deathless_score_rank_points_total']);
+                    
+                    $result_data[$index] = $row;
+                }
+            }
+            
+            return $result_data;
+        });
         
         return $data_table;
     }

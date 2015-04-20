@@ -9,6 +9,7 @@ body {
     background-color: rgb(51, 51, 51);
     font-family: NecroSans,Arial,Helvetica,sans-serif;
     color: #FFFFFF;
+    letter-spacing: 1px;
 }
 
 a:link, a:visited, a:hover, a:active {

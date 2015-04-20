@@ -69,47 +69,47 @@ extends Controller {
         $this->constructContent();
     }
     
-    public function addSocialMediaToTable($result_data) {
-        if(!empty($result_data)) {                                    
-            foreach($result_data as &$row) {                                                    
-                $personaname = $row['personaname'];
+    protected function roundNumber($unrounded_number) {
+        return round($unrounded_number, 3);
+    }
+    
+    public function addSocialMediaToRow($row) {
+        $personaname = $row['personaname'];
             
-                $row['personaname'] = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
-                
-                $social_media = '';
+        $row['personaname'] = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
+        
+        $social_media = '';
 
-                if(!empty($row['twitch_username'])) {
-                    $social_media .= "<a href=\"http://www.twitch.tv/{$row['twitch_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitch_small.png\" alt=\"Twitch Channel for {$personaname}\" /></a>";
-                }
-                
-                if(!empty($row['twitter_username'])) {
-                    $social_media .= "<a href=\"http://www.twitter.com/{$row['twitter_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitter_logo_blue_small.png\" alt=\"Twitter Feed for {$personaname}\" /></a>";
-                }
-                
-                if(!empty($row['website'])) {
-                    $website_url = $row['website'];
-                    
-                    if(strpos($website_url, 'http://') === false && strpos($website_url, 'https://') === false) {
-                        $website_url = "http://{$website_url}";
-                    }
-                
-                    $social_media .= "<a href=\"{$website_url}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/external_link_small.png\" alt=\"Website of {$personaname}\" /></a>";
-                }
-                
-                if(empty($social_media)) {
-                    $social_media = '&nbsp';
-                }
-                
-                $row_first_part = array_slice($row, 0, 1, true);
-                $row_second_part = array_slice($row, 1, (count($row) - 1), true);
-                
-                $row_first_part['social_media'] = "<span class=\"no_wrap\">{$social_media}</span>";
-                
-                $row = array_merge($row_first_part, $row_second_part);
-            }
+        if(!empty($row['twitch_username'])) {
+            $social_media .= "<a href=\"http://www.twitch.tv/{$row['twitch_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitch_small.png\" alt=\"Twitch Channel for {$personaname}\" /></a>";
         }
         
-        return $result_data;
+        if(!empty($row['twitter_username'])) {
+            $social_media .= "<a href=\"http://www.twitter.com/{$row['twitter_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitter_logo_blue_small.png\" alt=\"Twitter Feed for {$personaname}\" /></a>";
+        }
+        
+        if(!empty($row['website'])) {
+            $website_url = $row['website'];
+            
+            if(strpos($website_url, 'http://') === false && strpos($website_url, 'https://') === false) {
+                $website_url = "http://{$website_url}";
+            }
+        
+            $social_media .= "<a href=\"{$website_url}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/external_link_small.png\" alt=\"Website of {$personaname}\" /></a>";
+        }
+        
+        if(empty($social_media)) {
+            $social_media = '&nbsp';
+        }
+        
+        $row_first_part = array_slice($row, 0, 1, true);
+        $row_second_part = array_slice($row, 1, (count($row) - 1), true);
+        
+        $row_first_part['social_media'] = "<span class=\"no_wrap\">{$social_media}</span>";
+        
+        $row = array_merge($row_first_part, $row_second_part);
+        
+        return $row;
     }
     
     public function updateTableState() {

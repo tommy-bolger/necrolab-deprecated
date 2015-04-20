@@ -170,49 +170,30 @@ extends Necrolab {
         if(!empty($power_ranking)) {
             $power_rankings_table = new Table('power_rankings');
             
-            $power_rankings_table->setNumberofColumns(8);
+            $power_rankings_table->setNumberofColumns(5);
             
             $power_rankings_table->addHeader(array(
-                'rank' => array(
-                    'contents' => "&nbsp;"
-                ),
-                'score' => array(
-                    'contents' => "<div class=\"center menu_small\">Score</div>",
-                    'colspan' => 2,
-                ),
-                'speed' => array(
-                    'contents' => "<div class=\"center menu_small\">Speed</div>",
-                    'colspan' => 2,
-                ),
-                'deathless_score' => array(
-                    'contents' => "<div class=\"center menu_small\">Deathless</div>",
-                    'colspan' => 2,
-                ),
-                'total' => array(
-                    'contents' => "&nbsp;"
-                )
-            ));
-            
-            $power_rankings_table->addHeader(array(
-                'rank' => 'Rank',
-                'score_rank' => '<span>Rank</span>',
-                'score_rank_points_total' => '<span>Points</span>',
-                'speed_rank' => '<span>Rank</span>',
-                'speed_rank_points_total' => '<span>Points</span>',            
-                'deathless_score_rank' => '<span>Rank</span>',
-                'deathless_score_rank_points_total' => '<span>Points</span>',
-                'total_points' => '<span>Total Points</span>' 
+                'type' => '&nbsp;',
+                'score' => '<span>Score</span>',
+                'speed' => '<span>Speed</span>',
+                'deathless' => '<span>Deathless</span>',            
+                'overall' => '<span>Overall</span>' 
             ));
             
             $power_rankings_table->addRow(array(
-                'rank' => $power_ranking['rank'],
-                'score_rank' => $power_ranking['score_rank'],
-                'score_rank_points_total' => $power_ranking['score_rank_points_total'],
-                'speed_rank' => $power_ranking['speed_rank'],
-                'speed_rank_points_total' => $power_ranking['speed_rank_points_total'],            
-                'deathless_score_rank' => $power_ranking['deathless_score_rank'],
-                'deathless_score_rank_points_total' => $power_ranking['deathless_score_rank_points_total'],
-                'total_points' => $power_ranking['total_points']
+                'type' => 'Rank',
+                'score' => $power_ranking['score_rank'],
+                'speed' => $power_ranking['speed_rank'],         
+                'deathless' => $power_ranking['deathless_score_rank'],
+                'overall' => $power_ranking['rank']
+            ));
+            
+            $power_rankings_table->addRow(array(
+                'type' => 'Points',
+                'score' => $this->roundNumber($power_ranking['score_rank_points_total']),
+                'speed' => $this->roundNumber($power_ranking['speed_rank_points_total']),            
+                'deathless' => $this->roundNumber($power_ranking['deathless_score_rank_points_total']),
+                'overall' => $power_ranking['total_points']
             ));
             
             $user_template->addChild($power_rankings_table, 'power_rankings_table');
@@ -228,7 +209,7 @@ extends Necrolab {
             $score_rankings_table->setNumberofColumns(13);
             
             $score_rankings_table->addHeader(array(
-                'score_rank' => 'Rank',
+                'type' => '&nbsp;',
                 'cadence_score_rank' => "<img class=\"cadence_header\" src=\"{$character_placeholder_image}\" />",
                 'bard_score_rank' => "<img class=\"bard_header\" src=\"{$character_placeholder_image}\" />",
                 'monk_score_rank' => "<img class=\"monk_header\" src=\"{$character_placeholder_image}\" />",
@@ -240,11 +221,11 @@ extends Necrolab {
                 'dorian_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
                 'all_score_rank' => "All Characters",
                 'story_score_rank' => "Story Mode",
-                'score_rank_points_total' => 'Total Points'
+                'overall' => 'Overall'
             ));
             
             $score_rankings_table->addRow(array(
-                'score_rank' => $score_ranking['score_rank'],
+                'type' => 'Rank',
                 'cadence_score_rank' => $score_ranking['cadence_score_rank'],
                 'bard_score_rank' => $score_ranking['bard_score_rank'],
                 'monk_score_rank' => $score_ranking['monk_score_rank'],
@@ -256,7 +237,23 @@ extends Necrolab {
                 'dorian_score_rank' => $score_ranking['dorian_score_rank'],
                 'all_score_rank' => $score_ranking['all_score_rank'],
                 'story_score_rank' => $score_ranking['story_score_rank'],
-                'score_rank_points_total' => $score_ranking['score_rank_points_total']
+                'overall' => $score_ranking['score_rank']
+            ));
+            
+            $score_rankings_table->addRow(array(
+                'type' => 'Points',
+                'cadence_score_rank' => $this->roundNumber($score_ranking['cadence_score_rank_points']),
+                'bard_score_rank' => $this->roundNumber($score_ranking['bard_score_rank_points']),
+                'monk_score_rank' => $this->roundNumber($score_ranking['monk_score_rank_points']),
+                'aria_score_rank' => $this->roundNumber($score_ranking['aria_score_rank_points']),
+                'bolt_score_rank' => $this->roundNumber($score_ranking['bolt_score_rank_points']),
+                'dove_score_rank' => $this->roundNumber($score_ranking['dove_score_rank_points']),
+                'eli_score_rank' => $this->roundNumber($score_ranking['eli_score_rank_points']),
+                'melody_score_rank' => $this->roundNumber($score_ranking['melody_score_rank_points']),
+                'dorian_score_rank' => $this->roundNumber($score_ranking['dorian_score_rank_points']),
+                'all_score_rank' => $this->roundNumber($score_ranking['all_score_rank_points']),
+                'story_score_rank' => $this->roundNumber($score_ranking['story_score_rank_points']),
+                'overall' => $score_ranking['score_rank_points_total']
             ));
             
             $user_template->addChild($score_rankings_table, 'score_rankings_table');
@@ -270,7 +267,7 @@ extends Necrolab {
             $speed_rankings_table->setNumberofColumns(13);
             
             $speed_rankings_table->addHeader(array(
-                'speed_rank' => 'Rank',
+                'type' => '&nbsp;',
                 'cadence_speed_rank' => "<img class=\"cadence_header\" src=\"{$character_placeholder_image}\" />",
                 'bard_speed_rank' => "<img class=\"bard_header\" src=\"{$character_placeholder_image}\" />",
                 'monk_speed_rank' => "<img class=\"monk_header\" src=\"{$character_placeholder_image}\" />",
@@ -282,11 +279,11 @@ extends Necrolab {
                 'dorian_speed_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
                 'all_speed_rank' => "All Characters",
                 'story_speed_rank' => "Story Mode",
-                'speed_rank_points_total' => 'Total Points'
+                'overall' => 'Overall'
             ));
             
             $speed_rankings_table->addRow(array(
-                'speed_rank' => $speed_ranking['speed_rank'],
+                'type' => 'Rank',
                 'cadence_speed_rank' => $speed_ranking['cadence_speed_rank'],
                 'bard_speed_rank' => $speed_ranking['bard_speed_rank'],
                 'monk_speed_rank' => $speed_ranking['monk_speed_rank'],
@@ -298,7 +295,23 @@ extends Necrolab {
                 'dorian_speed_rank' => $speed_ranking['dorian_speed_rank'],
                 'all_speed_rank' => $speed_ranking['all_speed_rank'],
                 'story_speed_rank' => $speed_ranking['story_speed_rank'],
-                'speed_rank_points_total' => $speed_ranking['speed_rank_points_total']
+                'overall' => $speed_ranking['speed_rank']
+            ));
+            
+            $speed_rankings_table->addRow(array(
+                'type' => 'Points',
+                'cadence_speed_rank' => $this->roundNumber($speed_ranking['cadence_speed_rank_points']),
+                'bard_speed_rank' => $this->roundNumber($speed_ranking['bard_speed_rank_points']),
+                'monk_speed_rank' => $this->roundNumber($speed_ranking['monk_speed_rank_points']),
+                'aria_speed_rank' => $this->roundNumber($speed_ranking['aria_speed_rank_points']),
+                'bolt_speed_rank' => $this->roundNumber($speed_ranking['bolt_speed_rank_points']),
+                'dove_speed_rank' => $this->roundNumber($speed_ranking['dove_speed_rank_points']),
+                'eli_speed_rank' => $this->roundNumber($speed_ranking['eli_speed_rank_points']),
+                'melody_speed_rank' => $this->roundNumber($speed_ranking['melody_speed_rank_points']),
+                'dorian_speed_rank' => $this->roundNumber($speed_ranking['dorian_speed_rank_points']),
+                'all_speed_rank' => $this->roundNumber($speed_ranking['all_speed_rank_points']),
+                'story_speed_rank' => $this->roundNumber($speed_ranking['story_speed_rank_points']),
+                'overall' => $speed_ranking['speed_rank_points_total']
             ));
             
             $user_template->addChild($speed_rankings_table, 'speed_rankings_table');
@@ -312,7 +325,7 @@ extends Necrolab {
             $deathless_score_rankings_table->setNumberofColumns(11);
             
             $deathless_score_rankings_table->addHeader(array(
-                'deathless_score_rank' => 'Rank',
+                'type' => '&nbsp;',
                 'cadence_deathless_score_rank' => "<img class=\"cadence_header\" src=\"{$character_placeholder_image}\" />",
                 'bard_deathless_score_rank' => "<img class=\"bard_header\" src=\"{$character_placeholder_image}\" />",
                 'monk_deathless_score_rank' => "<img class=\"monk_header\" src=\"{$character_placeholder_image}\" />",
@@ -322,11 +335,11 @@ extends Necrolab {
                 'eli_deathless_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
                 'melody_deathless_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_deathless_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
-                'deathless_score_rank_points_total' => 'Total Points'
+                'overall' => 'Overall'
             ));
             
             $deathless_score_rankings_table->addRow(array(
-                'deathless_score_rank' => $deathless_score_ranking['deathless_score_rank'],
+                'type' => 'Rank',
                 'cadence_deathless_score_rank' => $deathless_score_ranking['cadence_deathless_score_rank'],
                 'bard_deathless_score_rank' => $deathless_score_ranking['bard_deathless_score_rank'],
                 'monk_deathless_score_rank' => $deathless_score_ranking['monk_deathless_score_rank'],
@@ -336,7 +349,21 @@ extends Necrolab {
                 'eli_deathless_score_rank' => $deathless_score_ranking['eli_deathless_score_rank'],
                 'melody_deathless_score_rank' => $deathless_score_ranking['melody_deathless_score_rank'],
                 'dorian_deathless_score_rank' => $deathless_score_ranking['dorian_deathless_score_rank'],
-                'deathless_score_rank_points_total' => $deathless_score_ranking['deathless_score_rank_points_total']
+                'overall' => $deathless_score_ranking['deathless_score_rank']
+            ));
+            
+            $deathless_score_rankings_table->addRow(array(
+                'type' => 'Points',
+                'cadence_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['cadence_deathless_score_rank_points']),
+                'bard_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['bard_deathless_score_rank_points']),
+                'monk_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['monk_deathless_score_rank_points']),
+                'aria_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['aria_deathless_score_rank_points']),
+                'bolt_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['bolt_deathless_score_rank_points']),
+                'dove_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['dove_deathless_score_rank_points']),
+                'eli_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['eli_deathless_score_rank_points']),
+                'melody_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['melody_deathless_score_rank_points']),
+                'dorian_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['dorian_deathless_score_rank_points']),
+                'overall' => $deathless_score_ranking['deathless_score_rank_points_total']
             ));
             
             $user_template->addChild($deathless_score_rankings_table, 'deathless_score_rankings_table');
