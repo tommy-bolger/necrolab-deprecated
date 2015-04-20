@@ -70,7 +70,13 @@ extends Controller {
     }
     
     protected function roundNumber($unrounded_number) {
-        return round($unrounded_number, 3);
+        $rounded_number = NULL;
+    
+        if(!empty($unrounded_number)) {
+            $rounded_number = round($unrounded_number, 3);
+        }
+    
+        return $rounded_number;
     }
     
     public function addSocialMediaToRow($row) {
