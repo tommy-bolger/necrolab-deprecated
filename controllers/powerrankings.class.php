@@ -64,7 +64,7 @@ extends NecroLab {
         $data_table->addHeader(array(
             'name' => array(
                 'contents' => "&nbsp;",
-                'colspan' => 2
+                'colspan' => 3
             ),
             'score' => array(
                 'contents' => "<div class=\"center menu_small\">Score</div>",

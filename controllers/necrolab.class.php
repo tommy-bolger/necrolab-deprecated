@@ -103,7 +103,7 @@ extends Controller {
                 $row_first_part = array_slice($row, 0, 1, true);
                 $row_second_part = array_slice($row, 1, (count($row) - 1), true);
                 
-                $row_first_part['social_media'] = $social_media;
+                $row_first_part['social_media'] = "<span class=\"no_wrap\">{$social_media}</span>";
                 
                 $row = array_merge($row_first_part, $row_second_part);
             }

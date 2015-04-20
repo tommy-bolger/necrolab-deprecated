@@ -59,12 +59,13 @@ extends NecroLab {
         
         $data_table = new DataTable("deathless_score_rankings", false);
         
-        $data_table->setNumberofColumns(12);
+        $data_table->setNumberofColumns(13);
         
         $character_placeholder_image = "{$this->page->getImagesHttpPath()}/character_placeholder.png";
         
         $data_table->setHeader(array(
             'deathless_score_rank' => 'Rank',
+            'social_media' => '&nbsp;',
             'personaname' => 'Player',
             'cadence_deathless_score_rank' => "<img class=\"cadence_header\" src=\"{$character_placeholder_image}\" />",
             'bard_deathless_score_rank' => "<img class=\"bard_header\" src=\"{$character_placeholder_image}\" />",
@@ -78,31 +79,7 @@ extends NecroLab {
             'deathless_score_rank_points_total' => 'Total Points'
         ));
         
-        $data_table->process($resultset, function($result_data) {
-            if(!empty($result_data)) {            
-                foreach($result_data as &$row) {     
-                    if(!empty($row)) {                                                   
-                        $personaname = $row['personaname'];
-                               
-                        $personaname = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
-                    
-                        if(!empty($row['twitch_username'])) {
-                            
-                        }
-                        
-                        if(!empty($row['twitter_username'])) {
-                        }
-                        
-                        if(!empty($row['website'])) {
-                        }
-                        
-                        $row['personaname'] = $personaname;
-                    }
-                }
-            }
-            
-            return $result_data;
-        });
+        $data_table->process($resultset, array($this, 'addSocialMediaToTable'));
         
         return $data_table;
     }

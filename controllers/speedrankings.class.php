@@ -59,12 +59,13 @@ extends NecroLab {
         
         $data_table = new DataTable("speed_rankings", false);
         
-        $data_table->setNumberofColumns(14);
+        $data_table->setNumberofColumns(15);
         
         $character_placeholder_image = "{$this->page->getImagesHttpPath()}/character_placeholder.png";
         
         $data_table->setHeader(array(
             'speed_rank' => 'Rank',
+            'social_media' => '&nbsp;',
             'personaname' => 'Player',
             'cadence_speed_rank' => "<img class=\"cadence_header\" src=\"{$character_placeholder_image}\" />",
             'bard_speed_rank' => "<img class=\"bard_header\" src=\"{$character_placeholder_image}\" />",
@@ -80,31 +81,7 @@ extends NecroLab {
             'speed_rank_points_total' => 'Total Points'
         ));
         
-        $data_table->process($resultset, function($result_data) {
-            if(!empty($result_data)) {            
-                foreach($result_data as &$row) {     
-                    if(!empty($row)) {                                                    
-                        $personaname = $row['personaname'];
-                               
-                        $personaname = "<a href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
-                    
-                        if(!empty($row['twitch_username'])) {
-                            
-                        }
-                        
-                        if(!empty($row['twitter_username'])) {
-                        }
-                        
-                        if(!empty($row['website'])) {
-                        }
-                        
-                        $row['personaname'] = $personaname;
-                    }
-                }
-            }
-            
-            return $result_data;
-        });
+        $data_table->process($resultset, array($this, 'addSocialMediaToTable'));
         
         return $data_table;
     }
