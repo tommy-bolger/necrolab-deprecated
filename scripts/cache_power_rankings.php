@@ -145,7 +145,18 @@ $latest_score_rankings = db()->prepareExecuteQuery("
         pre.power_ranking_entry_id,
         su.twitch_username,
         su.twitter_username,
-        su.website
+        su.website,
+        pre.cadence_score_rank_points,
+        pre.bard_score_rank_points,
+        pre.monk_score_rank_points,
+        pre.aria_score_rank_points,
+        pre.bolt_score_rank_points,
+        pre.dove_score_rank_points,
+        pre.eli_score_rank_points,
+        pre.melody_score_rank_points,
+        pre.dorian_score_rank_points,
+        pre.all_score_rank_points,
+        pre.story_score_rank_points
     FROM power_rankings pr
     JOIN power_ranking_entries pre ON pre.power_ranking_id = pr.power_ranking_id
     JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
@@ -216,7 +227,18 @@ $latest_speed_rankings = db()->prepareExecuteQuery("
         pre.power_ranking_entry_id,
         su.twitch_username,
         su.twitter_username,
-        su.website
+        su.website,
+        pre.cadence_speed_rank_points,
+        pre.bard_speed_rank_points,
+        pre.monk_speed_rank_points,
+        pre.aria_speed_rank_points,
+        pre.bolt_speed_rank_points,
+        pre.dove_speed_rank_points,
+        pre.eli_speed_rank_points,
+        pre.melody_speed_rank_points,
+        pre.dorian_speed_rank_points,
+        pre.all_speed_rank_points,
+        pre.story_speed_rank_points
     FROM power_rankings pr
     JOIN power_ranking_entries pre ON pre.power_ranking_id = pr.power_ranking_id
     JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
@@ -285,7 +307,18 @@ $latest_deathless_score_rankings = db()->prepareExecuteQuery("
         pre.power_ranking_entry_id,
         su.twitch_username,
         su.twitter_username,
-        su.website
+        su.website,
+        pre.cadence_deathless_score_rank_points,
+        pre.bard_deathless_score_rank_points,
+        pre.monk_deathless_score_rank_points,
+        pre.aria_deathless_score_rank_points,
+        pre.bolt_deathless_score_rank_points,
+        pre.dove_deathless_score_rank_points,
+        pre.eli_deathless_score_rank_points,
+        pre.melody_deathless_score_rank_points,
+        pre.dorian_deathless_score_rank_points,
+        pre.all_deathless_score_rank_points,
+        pre.story_deathless_score_rank_points
     FROM power_rankings pr
     JOIN power_ranking_entries pre ON pre.power_ranking_id = pr.power_ranking_id
     JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
