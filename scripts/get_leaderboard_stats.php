@@ -165,7 +165,7 @@ function get_leaderboard_users($leaderboard_id, $leaderboard_snapshot_id, $url, 
                                                         
                     $steam_user_id = db()->insert('steam_users', array(
                         'steamid' => $leaderboard_user->steamid,
-                    ));
+                    ), 'add_steam_user');
                     
                     Cache::$steam_users[$leaderboard_user->steamid] = $steam_user_id;
                 }
@@ -199,7 +199,7 @@ function get_leaderboard_users($leaderboard_id, $leaderboard_snapshot_id, $url, 
                     'details' => $leaderboard_user->details,
                     'time' => $time,
                     'is_win' => $is_win
-                ));
+                ), 'add_leaderboard_entry');
             }
         }
         
@@ -466,7 +466,7 @@ if(!empty($leaderboards->leaderboard)) {
                 'is_prod' => $is_prod
             );
         
-            $leaderboard_id = db()->insert('leaderboards', $leaderboard_record);
+            $leaderboard_id = db()->insert('leaderboards', $leaderboard_record, 'add_leaderboard');
             
             $leaderboard_record['leaderboard_id'] = $leaderboard_id;
             
@@ -498,7 +498,7 @@ if(!empty($leaderboards->leaderboard)) {
                     'leaderboard_id' => $leaderboard_id,
                     'date' => $current_date,
                     'created' => date('Y-m-d H:i:s')
-                ));
+                ), 'add_leaderboard_snapshot');
             }
             else {
                 if($verbose_output) {
@@ -509,11 +509,11 @@ if(!empty($leaderboards->leaderboard)) {
                     'updated' => date('Y-m-d H:i:s')
                 ), array(
                     'leaderboard_snapshot_id' => $leaderboard_snapshot_id
-                ));
+                ), array(), 'update_leaderboard_snapshot');
             
                 db()->delete('leaderboard_entries', array(
                     'leaderboard_snapshot_id' => $leaderboard_snapshot_id
-                ));
+                ), array(), 'delete_leaderboard_entries');
             }
             
             if($verbose_output) {
@@ -524,7 +524,7 @@ if(!empty($leaderboards->leaderboard)) {
                 'last_snapshot_id' => $leaderboard_snapshot_id
             ), array(
                 'leaderboard_id' => $leaderboard_id
-            ));
+            ), array(), 'update_leaderboard_latest_snapshot');
 
             get_leaderboard_users($leaderboard_id, $leaderboard_snapshot_id, $leaderboard->url, $verbose_output);
         }
@@ -535,8 +535,6 @@ if(!empty($leaderboards->leaderboard)) {
         }
     }
 }
-
-db()->exec('VACUUM');
 
 if($verbose_output) {
     $framework->cout("Done!.\n");
