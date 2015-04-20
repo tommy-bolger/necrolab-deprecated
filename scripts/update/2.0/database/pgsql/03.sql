@@ -6,8 +6,6 @@ CREATE SEQUENCE power_ranking_entries_seq
   MAXVALUE 9223372036854775807
   START 1
   CACHE 1;
-ALTER TABLE power_ranking_entries_seq
-  OWNER TO postadmin;
 
 CREATE TABLE power_ranking_entries
 (
@@ -238,8 +236,6 @@ CREATE TABLE power_ranking_entries
 WITH (
   OIDS=FALSE
 );
-ALTER TABLE power_ranking_entries
-  OWNER TO postadmin;
   
 ALTER SEQUENCE power_ranking_entries_seq OWNED BY power_ranking_entries.power_ranking_entry_id;
 
