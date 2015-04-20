@@ -369,9 +369,9 @@ while($latest_deathless_score_ranking = $latest_deathless_score_rankings->fetch(
     $transaction->hSet("steam_users:{$latest_deathless_score_ranking['steam_user_id']}", 'latest_deathless_score_id', $power_ranking_entry_id);
 }
 
-$transaction->rename('latest_speed_rankings', 'latest_speed_rankings_old');
+$transaction->rename('latest_deathless_score_rankings', 'latest_deathless_score_rankings_old');
 
-$transaction->rename('latest_speed_rankings_new', 'latest_speed_rankings');
+$transaction->rename('latest_deathless_score_rankings_new', 'latest_deathless_score_rankings');
 
 $transaction->exec();
 
