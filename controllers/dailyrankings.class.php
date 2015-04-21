@@ -108,9 +108,9 @@ extends Necrolab {
             'average_place' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-avgplace.png\" />"
         ));
         
-        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL, 'personaname');
+        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);
         
-        $filter_textbox->setAttribute('placeholder', 'Search');
+        $filter_textbox->setAttribute('placeholder', 'Search Players');
         
         $data_table->process($resultset, function($result_data) {
             if(!empty($result_data)) {

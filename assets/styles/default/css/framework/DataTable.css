@@ -12,7 +12,15 @@
 }
 
 .data_table input.rows_submit {
-    width: 10px;
+    width: 50px;
+    height: 31px;
+    margin-right: 50px;
+}
+
+.data_table input[type=text] {
+    width: 300px;
+    height: 31px;
+    font-size: 16px;
 }
 
 .data_table ul.page_numbers {
