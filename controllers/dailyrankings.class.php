@@ -58,7 +58,7 @@ extends Necrolab {
         
         $data_table = new DataTable("daily_rankings", false);
         
-        $data_table->setNumberofColumns(13);
+        $data_table->setNumberofColumns(14);
         
         $data_table->addHeader(array(
             'name' => array(

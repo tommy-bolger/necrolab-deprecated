@@ -380,6 +380,48 @@ extends Necrolab {
             
             $user_template->addChild($deathless_score_rankings_table, 'deathless_score_rankings_table');
         }
+        
+        $daily_ranking = SteamUsers::getLatestDailyRanking($this->steam_user_id);
+        
+        if(!empty($daily_ranking)) {
+            $images_http_path = $this->page->getImagesHttpPath();
+        
+            $daily_ranking_table = new Table("daily_rankings", false);
+        
+            $daily_ranking_table->setNumberofColumns(12);
+            
+            $daily_ranking_table->addHeader(array(
+                'rank' => 'Rank',  
+                'first_place_ranks' => "<img src=\"{$images_http_path}/sort-1st.png\" />",
+                'top_5_ranks' => "<img src=\"{$images_http_path}/sort-top5.png\" />",
+                'top_10_ranks' => "<img src=\"{$images_http_path}/sort-top10.png\" />",
+                'top_20_ranks' => "<img src=\"{$images_http_path}/sort-top20.png\" />",
+                'top_50_ranks' => "<img src=\"{$images_http_path}/sort-top50.png\" />",
+                'top_100_ranks' => "<img src=\"{$images_http_path}/sort-top100.png\" />",
+                'total_points' => "<img src=\"{$images_http_path}/sort-total.png\" />",
+                'points_per_day' => "<img src=\"{$images_http_path}/sort-avg.png\" />",
+                'total_dailies' => "<img src=\"{$images_http_path}/sort-totaldailies.png\" />",
+                'total_wins' => "<img src=\"{$images_http_path}/sort-totalwins.png\" />",
+                'average_place' => "<img src=\"{$images_http_path}/sort-avgplace.png\" />"
+            ));
+            
+            $daily_ranking_table->addRow(array(
+                'rank' => $daily_ranking['rank'],  
+                'first_place_ranks' => $daily_ranking['first_place_ranks'],
+                'top_5_ranks' => $daily_ranking['top_5_ranks'],
+                'top_10_ranks' => $daily_ranking['top_10_ranks'],
+                'top_20_ranks' => $daily_ranking['top_20_ranks'],
+                'top_50_ranks' => $daily_ranking['top_50_ranks'],
+                'top_100_ranks' => $daily_ranking['top_100_ranks'],
+                'total_points' => $daily_ranking['total_points'],
+                'points_per_day' => $daily_ranking['points_per_day'],
+                'total_dailies' => $daily_ranking['total_dailies'],
+                'total_wins' => $daily_ranking['total_wins'],
+                'average_place' => $daily_ranking['average_place']
+            ));
+            
+            $user_template->addChild($daily_ranking_table, 'daily_ranking_table');
+        }
 
         $this->page->body->addChild($user_template, 'content');
     }

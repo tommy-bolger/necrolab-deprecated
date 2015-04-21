@@ -23,6 +23,13 @@
 <?php echo $this->power_rankings_table; ?>
 <?php endif; ?>
 
+<?php if(!empty($this->daily_ranking_table)): ?>
+<br />
+<br />
+<div class="menu_small">Daily Ranking</div>
+<?php echo $this->daily_ranking_table; ?>
+<?php endif; ?>
+
 <?php if(!empty($this->score_rankings_table)): ?>
 <br />
 <br />

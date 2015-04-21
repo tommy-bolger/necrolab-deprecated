@@ -256,8 +256,58 @@ class SteamUsers {
         return $latest_deathless_score_ranking;
     }
     
-    public static function getUserPowerRankingsFromBeginning() {
+    public static function getLatestDailyRanking($steam_user_id) {
+        $latest_daily_ranking = array();
         
+        if(empty(self::$rankings['daily'][$steam_user_id])) {
+            if(!Framework::getInstance()->enable_cache) {
+                $latest_daily_ranking = db()->getRow("
+                    SELECT
+                        dre.rank,
+                        su.personaname,
+                        dre.first_place_ranks,
+                        dre.top_5_ranks,
+                        dre.top_10_ranks,
+                        dre.top_20_ranks,
+                        dre.top_50_ranks,
+                        dre.top_100_ranks,
+                        dre.total_points,
+                        dre.points_per_day,
+                        dre.total_dailies,
+                        dre.total_wins,
+                        dre.average_place,
+                        dre.daily_ranking_entry_id,
+                        dre.steam_user_id,
+                        su.steamid,
+                        su.twitch_username,
+                        su.twitter_username,
+                        su.website  
+                    FROM steam_users su
+                    JOIN daily_ranking_entries dre ON dre.daily_ranking_entry_id = su.latest_daily_ranking_entry_id 
+                    WHERE su.steam_user_id = ?   
+                ", array(
+                    $steam_user_id
+                ));
+            }
+            else {
+                self::loadUser($steam_user_id);
+                
+                if(!empty(self::$steam_users[$steam_user_id])) {
+                    $steam_user = self::$steam_users[$steam_user_id];
+                    
+                    if(!empty($steam_user['latest_daily_ranking_id'])) {
+                        $latest_daily_ranking = cache()->hGetAll("latest_daily_rankings:{$steam_user['latest_daily_ranking_id']}");
+                    }
+                }
+            }
+            
+            self::$rankings['daily'][$steam_user_id] = $latest_daily_ranking;
+        }
+        else {
+            $latest_daily_ranking = self::$rankings['daily'][$steam_user_id];
+        }
+        
+        return $latest_daily_ranking;
     }
     
     public static function saveSocialMediaData($steam_user_id, $twitch_username, $twitter_username, $website) {
@@ -303,6 +353,10 @@ class SteamUsers {
             
             if(!empty($steam_user['latest_deathless_score_id'])) {  
                 cache()->hMSet("latest_deathless_score_rankings:{$steam_user['latest_deathless_score_id']}", $social_media_data);
+            }
+            
+            if(!empty($steam_user['latest_daily_ranking_id'])) {  
+                cache()->hMSet("latest_daily_rankings:{$steam_user['latest_daily_ranking_id']}", $social_media_data);
             }
         }
     }
