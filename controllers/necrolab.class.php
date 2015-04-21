@@ -60,6 +60,12 @@ extends Controller {
     public function setup() {    
         $this->loadModule();
         
+        header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate( 'D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
+        header('Cache-Control: post-check=0, pre-check=0', false);
+        header('Pragma: no-cache'); 
+        
         $this->page->setTemplate('home.php');
     
         $this->page->body->addChild("{$this->page->getImagesHttpPath()}/logotemp.png", 'site_logo');
@@ -81,7 +87,7 @@ extends Controller {
     
     public function addSocialMediaToRow($row) {
         $personaname = $row['personaname'];
-            
+        
         $row['personaname'] = "<a class=\"player_link\" href=\"/player?steam_user_id={$row['steam_user_id']}\">{$personaname}</a>";
         
         $social_media = '';

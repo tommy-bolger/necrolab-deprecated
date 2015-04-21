@@ -31,14 +31,14 @@ class SteamUsers {
     }
 
     public static function getUser($steam_user_id) {
-        self::loadUser();
+        self::loadUser($steam_user_id);
         
         $steam_user = array();
         
         if(!empty(self::$steam_users[$steam_user_id])) {
             $steam_user = self::$steam_users[$steam_user_id];
         }
-        
+
         return $steam_user;
     }
     

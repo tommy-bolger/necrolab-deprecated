@@ -56,8 +56,10 @@
     vertical-align: middle;
 }
 
-.data_table .filters th {    
-    background: none repeat scroll 0 0 #E3EFF1;
+.data_table .filters th input {    
+    font-weight: none;
+    letter-spacing: 1px;
+    width: 200px;
 }
 
 .data_table th .center {

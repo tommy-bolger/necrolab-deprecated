@@ -57,7 +57,7 @@ extends NecroLab {
     
         $resultset = PowerRankingsModel::getLatestRankings();      
         
-        $data_table = new DataTable("power_rankings", false);
+        $data_table = new DataTable("power_rankings", true);
         
         $data_table->setNumberofColumns(10);
         
@@ -95,6 +95,10 @@ extends NecroLab {
             'deathless_score_rank_points_total' => '<span class="no_wrap">Points</span>',
             'total_points' => '<span class="no_wrap">Total Points</span>'            
         ));
+        
+        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL, 'personaname');
+        
+        $filter_textbox->setAttribute('placeholder', 'Search');
         
         $data_table->process($resultset, function($result_data) {
             if(!empty($result_data)) {

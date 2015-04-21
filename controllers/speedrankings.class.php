@@ -57,7 +57,7 @@ extends NecroLab {
     
         $resultset = SpeedRankingsModel::getLatestRankings();      
         
-        $data_table = new DataTable("speed_rankings", false);
+        $data_table = new DataTable("speed_rankings", true);
         
         $data_table->setNumberofColumns(15);
         
@@ -80,6 +80,10 @@ extends NecroLab {
             'story_speed_rank' => "Story Mode",
             'speed_rank_points_total' => 'Total Points'
         ));
+        
+        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL, 'personaname');
+        
+        $filter_textbox->setAttribute('placeholder', 'Search');
         
         $data_table->process($resultset, function($result_data) {
             if(!empty($result_data)) {

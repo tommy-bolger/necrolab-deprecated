@@ -51,6 +51,18 @@ extends Necrolab {
         $this->active_page = 'players';
         
         $this->steam_user_id = request()->steam_user_id;
+        
+        if(empty($this->steam_user_id)) {
+            Http::redirect('/');
+        }
+        
+        $steam_user_data = SteamUsers::getUser($this->steam_user_id);
+        
+        if(empty($steam_user_data)) {
+            Http::redirect('/');
+        }
+        
+        $this->title = "Profile for {$steam_user_data['personaname']}";
     }
     
     protected function loadModule() {
@@ -121,7 +133,7 @@ extends Necrolab {
             $user_template->addChild($authenticated_user_form, 'steam_user_form');
         }
         else {
-            session()->end();
+            unset(session()->steam_user_id);
             
             $steam_login_form = new Form('steam_login', '', 'post', false);
             $steam_login_form->disableJavascript();

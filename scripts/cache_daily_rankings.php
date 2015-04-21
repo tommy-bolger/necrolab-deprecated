@@ -77,7 +77,12 @@ $latest_daily_rankings = db()->prepareExecuteQuery("
         dre.total_dailies,
         dre.total_wins,
         dre.average_place,
-        dre.daily_ranking_entry_id      
+        dre.daily_ranking_entry_id,
+        dre.steam_user_id,
+        su.steamid,
+        su.twitch_username,
+        su.twitter_username,
+        su.website    
     FROM daily_rankings dr
     JOIN daily_ranking_entries dre ON dre.daily_ranking_id = dr.daily_ranking_id
     JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
@@ -95,17 +100,26 @@ while($latest_daily_ranking = $latest_daily_rankings->fetch(PDO::FETCH_ASSOC)) {
     }
     
     $hash_name = "latest_daily_rankings:{$daily_ranking_entry_id}";
-
-    foreach($latest_daily_ranking as $column => $value) {
-        $transaction->hSet($hash_name, $column, $value);
-    }
+    
+    $transaction->hMset($hash_name, $latest_daily_ranking);
     
     $transaction->rPush('latest_daily_rankings_new', $hash_name);
+    
+    $transaction->zAdd('latest_daily_rankings_filter_new', $daily_ranking_entry_id, $latest_daily_ranking['personaname']);
+    
+    $transaction->zAdd('latest_daily_rankings_default_sort', $latest_daily_ranking['rank'], $hash_name);
+    
+    //Add the latest power ranking entry id to the steam user in cache
+    $transaction->hSet("steam_users:{$latest_daily_ranking['steam_user_id']}", 'latest_daily_ranking_id', $daily_ranking_entry_id);
 }
 
 $transaction->rename('latest_daily_rankings', 'latest_daily_rankings_old');
 
 $transaction->rename('latest_daily_rankings_new', 'latest_daily_rankings');
+
+$transaction->rename('latest_daily_rankings_filter', 'latest_daily_rankings_filter_old');
+
+$transaction->rename('latest_daily_rankings_filter_new', 'latest_daily_rankings_filter');
 
 $transaction->exec();
 
@@ -128,5 +142,7 @@ if(!empty($old_daily_ranking_keys)) {
     
     $transaction->delete('latest_daily_rankings_old');
 }
+
+$transaction->delete('latest_daily_rankings_filter_old');
 
 $transaction->exec();

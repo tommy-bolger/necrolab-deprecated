@@ -112,6 +112,8 @@ if(!empty($steam_users_groups)) {
         $framework->cout("Processing steam user groups.\n");
     }
     
+    $cache = cache();
+    
     $request_context_options = array('http' =>
         array(
             'timeout' => 180
@@ -238,8 +240,8 @@ if(!empty($steam_users_groups)) {
                 if(!empty($steam_user_data->loccityid)) {
                     $loc_city_id = $steam_user_data->loccityid;
                 }
-                                                    
-                $steam_user_id = db()->update('steam_users', array(
+                
+                $steam_user_record = array(
                     'communityvisibilitystate' => $community_visibility_state,
                     'profilestate' => $profile_state,
                     'personaname' => $persona_name,
@@ -257,9 +259,15 @@ if(!empty($steam_users_groups)) {
                     'locstatecode' => $loc_state_code,
                     'loccityid' => $loc_city_id,
                     'updated' => date('Y-m-d H:i:s')
-                ), array (
+                );
+                                                    
+                db()->update('steam_users', $steam_user_record, array (
                     'steam_user_id' => $steam_user_id
                 ));
+                
+                $steam_user_record['steam_user_id'] = $steam_user_id;
+                
+                $cache->hMset("steam_users:{$steam_user_id}", $steam_user);
             }
         }
         else {

@@ -72,6 +72,7 @@ $latest_power_rankings = db()->prepareExecuteQuery("
         pre.deathless_score_rank_points_total,
         pre.total_points,
         pre.steam_user_id,
+        su.steamid,
         pre.power_ranking_entry_id,
         su.twitch_username,
         su.twitter_username,
@@ -97,6 +98,10 @@ while($latest_power_ranking = $latest_power_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $transaction->rPush('latest_power_rankings_new', $hash_name);
     
+    $transaction->zAdd('latest_power_rankings_filter_new', $power_ranking_entry_id, $latest_power_ranking['personaname']);
+    
+    $transaction->zAdd('latest_power_rankings_default_sort', $latest_power_ranking['rank'], $hash_name);
+    
     //Add the latest power ranking entry id to the steam user in cache
     $transaction->hSet("steam_users:{$latest_power_ranking['steam_user_id']}", 'latest_power_ranking_id', $power_ranking_entry_id);
 }
@@ -104,6 +109,10 @@ while($latest_power_ranking = $latest_power_rankings->fetch(PDO::FETCH_ASSOC)) {
 $transaction->rename('latest_power_rankings', 'latest_power_rankings_old');
 
 $transaction->rename('latest_power_rankings_new', 'latest_power_rankings');
+
+$transaction->rename('latest_power_rankings_filter', 'latest_power_rankings_filter_old');
+
+$transaction->rename('latest_power_rankings_filter_new', 'latest_power_rankings_filter');
 
 $transaction->exec();
 
@@ -125,6 +134,8 @@ if(!empty($old_power_ranking_keys)) {
     
     $transaction->delete('latest_power_rankings_old');
 }
+
+$transaction->delete('latest_power_rankings_filter_old');
 
 $transaction->exec();
 
@@ -154,6 +165,7 @@ $latest_score_rankings = db()->prepareExecuteQuery("
         su.twitch_username,
         su.twitter_username,
         su.website,
+        su.steamid,
         pre.cadence_score_rank_points,
         pre.bard_score_rank_points,
         pre.monk_score_rank_points,
@@ -187,6 +199,10 @@ while($latest_score_ranking = $latest_score_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $transaction->rPush('latest_score_rankings_new', $hash_name);
     
+    $transaction->zAdd('latest_score_rankings_filter_new', $power_ranking_entry_id, $latest_score_ranking['personaname']);
+    
+    $transaction->zAdd('latest_score_rankings_default_sort', $latest_score_ranking['score_rank'], $hash_name);
+    
     //Add the latest power ranking entry id to the steam user in cache
     $transaction->hSet("steam_users:{$latest_score_ranking['steam_user_id']}", 'latest_score_ranking_id', $power_ranking_entry_id);
 }
@@ -194,6 +210,10 @@ while($latest_score_ranking = $latest_score_rankings->fetch(PDO::FETCH_ASSOC)) {
 $transaction->rename('latest_score_rankings', 'latest_score_rankings_old');
 
 $transaction->rename('latest_score_rankings_new', 'latest_score_rankings');
+
+$transaction->rename('latest_score_rankings_filter', 'latest_score_rankings_filter_old');
+
+$transaction->rename('latest_score_rankings_filter_new', 'latest_score_rankings_filter');
 
 $transaction->exec();
 
@@ -215,6 +235,8 @@ if(!empty($old_score_ranking_keys)) {
     
     $transaction->delete('latest_score_rankings_old');
 }
+
+$transaction->delete('latest_score_rankings_filter_old');
 
 $transaction->exec();
 
@@ -244,6 +266,7 @@ $latest_speed_rankings = db()->prepareExecuteQuery("
         su.twitch_username,
         su.twitter_username,
         su.website,
+        su.steamid,
         pre.cadence_speed_rank_points,
         pre.bard_speed_rank_points,
         pre.monk_speed_rank_points,
@@ -277,6 +300,10 @@ while($latest_speed_ranking = $latest_speed_rankings->fetch(PDO::FETCH_ASSOC)) {
     
     $transaction->rPush('latest_speed_rankings_new', $hash_name);
     
+    $transaction->zAdd('latest_speed_rankings_filter_new', $power_ranking_entry_id, $latest_speed_ranking['personaname']);
+    
+    $transaction->zAdd('latest_speed_rankings_default_sort', $latest_speed_ranking['speed_rank'], $hash_name);
+    
     //Add the latest power ranking entry id to the steam user in cache
     $transaction->hSet("steam_users:{$latest_speed_ranking['steam_user_id']}", 'latest_speed_ranking_id', $power_ranking_entry_id);
 }
@@ -284,6 +311,10 @@ while($latest_speed_ranking = $latest_speed_rankings->fetch(PDO::FETCH_ASSOC)) {
 $transaction->rename('latest_speed_rankings', 'latest_speed_rankings_old');
 
 $transaction->rename('latest_speed_rankings_new', 'latest_speed_rankings');
+
+$transaction->rename('latest_speed_rankings_filter', 'latest_speed_rankings_filter_old');
+
+$transaction->rename('latest_speed_rankings_filter_new', 'latest_speed_rankings_filter');
 
 $transaction->exec();
 
@@ -305,6 +336,8 @@ if(!empty($old_speed_ranking_keys)) {
     
     $transaction->delete('latest_speed_rankings_old');
 }
+
+$transaction->delete('latest_speed_rankings_filter_old');
 
 $transaction->exec();
 
@@ -332,6 +365,7 @@ $latest_deathless_score_rankings = db()->prepareExecuteQuery("
         su.twitch_username,
         su.twitter_username,
         su.website,
+        su.steamid,
         pre.cadence_deathless_score_rank_points,
         pre.bard_deathless_score_rank_points,
         pre.monk_deathless_score_rank_points,
@@ -365,6 +399,10 @@ while($latest_deathless_score_ranking = $latest_deathless_score_rankings->fetch(
     
     $transaction->rPush('latest_deathless_score_rankings_new', $hash_name);
     
+    $transaction->zAdd('latest_deathless_score_rankings_filter_new', $power_ranking_entry_id, $latest_deathless_score_ranking['personaname']);
+    
+    $transaction->zAdd('latest_deathless_score_rankings_default_sort', $latest_deathless_score_ranking['deathless_score_rank'], $hash_name);
+    
     //Add the latest power ranking entry id to the steam user in cache
     $transaction->hSet("steam_users:{$latest_deathless_score_ranking['steam_user_id']}", 'latest_deathless_score_id', $power_ranking_entry_id);
 }
@@ -372,6 +410,10 @@ while($latest_deathless_score_ranking = $latest_deathless_score_rankings->fetch(
 $transaction->rename('latest_deathless_score_rankings', 'latest_deathless_score_rankings_old');
 
 $transaction->rename('latest_deathless_score_rankings_new', 'latest_deathless_score_rankings');
+
+$transaction->rename('latest_deathless_score_rankings_filter', 'latest_deathless_score_rankings_filter_old');
+
+$transaction->rename('latest_deathless_score_rankings_filter_new', 'latest_deathless_score_rankings_filter');
 
 $transaction->exec();
 
@@ -393,5 +435,7 @@ if(!empty($old_deathless_score_ranking_keys)) {
     
     $transaction->delete('latest_deathless_score_rankings_old');
 }
+
+$transaction->delete('latest_deathless_score_rankings_filter_old');
 
 $transaction->exec();

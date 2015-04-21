@@ -57,7 +57,7 @@ extends NecroLab {
     
         $resultset = DeathlessScoreRankingsModel::getLatestRankings();      
         
-        $data_table = new DataTable("deathless_score_rankings", false);
+        $data_table = new DataTable("deathless_score_rankings", true);
         
         $data_table->setNumberofColumns(13);
         
@@ -78,6 +78,10 @@ extends NecroLab {
             'dorian_deathless_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
             'deathless_score_rank_points_total' => 'Total Points'
         ));
+        
+        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL, 'personaname');
+        
+        $filter_textbox->setAttribute('placeholder', 'Search');
         
         $data_table->process($resultset, function($result_data) {
             if(!empty($result_data)) {

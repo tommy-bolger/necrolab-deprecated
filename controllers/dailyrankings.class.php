@@ -63,7 +63,7 @@ extends Necrolab {
         $data_table->addHeader(array(
             'name' => array(
                 'contents' => "<div class=\"center large_table_header\">Name</div>",
-                'colspan' => 2
+                'colspan' => 3
             ),
             'speed' => array(
                 'contents' => "<div class=\"center large_table_header\">Top Finishes</div>",
@@ -75,10 +75,11 @@ extends Necrolab {
             ),
         ));
         
+                
         $data_table->addHeader(array(
             'name' => array(
-                'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-namebar.png\" /></div>",
-                'colspan' => 2
+                'contents' => "&nbsp;",
+                'colspan' => 3
             ),
             'speed' => array(
                 'contents' => "<div class=\"center\"><img src=\"{$this->page->getImagesHttpPath()}/menu-topfinishesbar.png\" /></div>",
@@ -92,6 +93,7 @@ extends Necrolab {
         
         $data_table->setHeader(array(
             'rank' => '&nbsp;',
+            'social_media' => '&nbsp;',            
             'personaname' => 'Player',
             'first_place_ranks' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-1st.png\" />",
             'top_5_ranks' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-top5.png\" />",
@@ -106,7 +108,21 @@ extends Necrolab {
             'average_place' => "<img src=\"{$this->page->getImagesHttpPath()}/sort-avgplace.png\" />"
         ));
         
-        $data_table->process($resultset);
+        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL, 'personaname');
+        
+        $filter_textbox->setAttribute('placeholder', 'Search');
+        
+        $data_table->process($resultset, function($result_data) {
+            if(!empty($result_data)) {
+                foreach($result_data as $index => $row) {
+                    $row = $this->addSocialMediaToRow($row);
+                    
+                    $result_data[$index] = $row;
+                }
+            }
+            
+            return $result_data;
+        });
         
         return $data_table;
     }

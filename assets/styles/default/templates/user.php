@@ -40,7 +40,7 @@
 <?php if(!empty($this->deathless_score_rankings_table)): ?>
 <br />
 <br />
-<div class="menu_small">Deathless Score Ranking</div>
+<div class="menu_small">Deathless Ranking</div>
 <?php echo $this->deathless_score_rankings_table; ?>
 <?php endif; ?>
 <div id="power_ranking"></div>
