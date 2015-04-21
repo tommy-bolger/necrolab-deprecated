@@ -109,6 +109,48 @@ extends NecroLab {
         
         $resultset = ScoreRankingsModel::getLatestRankings($page_number, 100);
         
+        $resultset->addProcessorFunction(function($data) {
+            $api_response_data = array();
+        
+            if(!empty($data)) {
+                foreach($data as &$row) {
+                    $api_response_data[] = array(
+                        'rank' => $row['score_rank'],
+                        'points' => $row['score_rank_points_total'],
+                        'steam_id' => $row['steamid'],  
+                        'steam_username' => $row['personaname'],
+                        'twitch_username' => $row['twitch_username'],
+                        'twitter_username' => $row['twitter_username'],
+                        'website' => $row['website'],
+                        'cadence_rank' => $row['cadence_score_rank'],
+                        'cadence_points' => $row['cadence_score_rank_points'],
+                        'bard_rank' => $row['bard_score_rank'],
+                        'bard_points' => $row['bard_score_rank_points'],
+                        'monk_rank' => $row['monk_score_rank'],
+                        'monk_points' => $row['monk_score_rank_points'],
+                        'aria_rank' => $row['aria_score_rank'],
+                        'aria_points' => $row['aria_score_rank_points'],
+                        'bolt_rank' => $row['bolt_score_rank'],
+                        'bolt_points' => $row['bolt_score_rank_points'],
+                        'dove_rank' => $row['dove_score_rank'],
+                        'dove_points' => $row['dove_score_rank_points'],
+                        'eli_rank' => $row['eli_score_rank'],
+                        'eli_points' => $row['eli_score_rank_points'],        
+                        'melody_rank' => $row['melody_score_rank'],
+                        'melody_points' => $row['melody_score_rank_points'],
+                        'dorian_rank' => $row['dorian_score_rank'],
+                        'dorian_points' => $row['dorian_score_rank_points'],
+                        'all_character_rank' => $row['all_score_rank'],
+                        'all_character_points' => $row['all_score_rank_points'],
+                        'story_mode_rank' => $row['story_score_rank'],
+                        'story_mode_points' => $row['story_score_rank_points']
+                    );
+                }
+            }
+            
+            return $api_response_data;
+        });
+        
         $resultset->process();
 
         return array(

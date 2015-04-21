@@ -136,6 +136,36 @@ extends Necrolab {
         
         $resultset = DailyRankingsModel::getLatestRankings($page_number, 5000);
         
+        $resultset->addProcessorFunction(function($data) {
+            $api_response_data = array();
+        
+            if(!empty($data)) {
+                foreach($data as &$row) {
+                    $api_response_data[] = array(
+                        'rank' => $row['rank'],
+                        'points' => $row['total_points'],
+                        'steam_id' => $row['steamid'],  
+                        'steam_username' => $row['personaname'],
+                        'twitch_username' => $row['twitch_username'],
+                        'twitter_username' => $row['twitter_username'],
+                        'website' => $row['website'],
+                        'first_place_ranks' => $row['first_place_ranks'],
+                        'top_5_ranks' => $row['top_5_ranks'],
+                        'top_10_ranks' => $row['top_10_ranks'],
+                        'top_20_ranks' => $row['top_20_ranks'],
+                        'top_50_ranks' => $row['top_50_ranks'],
+                        'top_100_ranks' => $row['top_100_ranks'],
+                        'points_per_day' => $row['points_per_day'],
+                        'total_dailies' => $row['total_dailies'],
+                        'total_wins' => $row['total_wins'],
+                        'average_place' => $row['average_place']
+                    );
+                }
+            }
+            
+            return $api_response_data;
+        });
+        
         $resultset->process();
 
         return array(

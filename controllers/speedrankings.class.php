@@ -109,6 +109,48 @@ extends NecroLab {
         
         $resultset = SpeedRankingsModel::getLatestRankings($page_number, 100);
         
+        $resultset->addProcessorFunction(function($data) {
+            $api_response_data = array();
+        
+            if(!empty($data)) {
+                foreach($data as &$row) {
+                    $api_response_data[] = array(
+                        'rank' => $row['speed_rank'],
+                        'points' => $row['speed_rank_points_total'],
+                        'steam_id' => $row['steamid'],  
+                        'steam_username' => $row['personaname'],
+                        'twitch_username' => $row['twitch_username'],
+                        'twitter_username' => $row['twitter_username'],
+                        'website' => $row['website'],
+                        'cadence_rank' => $row['cadence_speed_rank'],
+                        'cadence_points' => $row['cadence_speed_rank_points'],
+                        'bard_rank' => $row['bard_speed_rank'],
+                        'bard_points' => $row['bard_speed_rank_points'],
+                        'monk_rank' => $row['monk_speed_rank'],
+                        'monk_points' => $row['monk_speed_rank_points'],
+                        'aria_rank' => $row['aria_speed_rank'],
+                        'aria_points' => $row['aria_speed_rank_points'],
+                        'bolt_rank' => $row['bolt_speed_rank'],
+                        'bolt_points' => $row['bolt_speed_rank_points'],
+                        'dove_rank' => $row['dove_speed_rank'],
+                        'dove_points' => $row['dove_speed_rank_points'],
+                        'eli_rank' => $row['eli_speed_rank'],
+                        'eli_points' => $row['eli_speed_rank_points'],        
+                        'melody_rank' => $row['melody_speed_rank'],
+                        'melody_points' => $row['melody_speed_rank_points'],
+                        'dorian_rank' => $row['dorian_speed_rank'],
+                        'dorian_points' => $row['dorian_speed_rank_points'],
+                        'all_character_rank' => $row['all_speed_rank'],
+                        'all_character_points' => $row['all_speed_rank_points'],
+                        'story_mode_rank' => $row['story_speed_rank'],
+                        'story_mode_points' => $row['story_speed_rank_points']
+                    );
+                }
+            }
+            
+            return $api_response_data;
+        });
+        
         $resultset->process();
 
         return array(

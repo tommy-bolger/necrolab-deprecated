@@ -128,6 +128,32 @@ extends NecroLab {
         
         $resultset = PowerRankingsModel::getLatestRankings($page_number, 100);
         
+        $resultset->addProcessorFunction(function($data) {
+            $api_response_data = array();
+        
+            if(!empty($data)) {
+                foreach($data as &$row) {
+                    $api_response_data[] = array(
+                        'rank' => $row['score_rank'],
+                        'points' => $row['total_points'],
+                        'steam_id' => $row['steamid'],  
+                        'steam_username' => $row['personaname'],
+                        'twitch_username' => $row['twitch_username'],
+                        'twitter_username' => $row['twitter_username'],
+                        'website' => $row['website'],
+                        'score_rank' => $row['score_rank'],
+                        'score_rank_points' => $row['score_rank_points_total'],
+                        'speed_rank' => $row['speed_rank'],
+                        'speed_rank_points' => $row['speed_rank_points_total'],
+                        'deathless_rank' => $row['deathless_score_rank'],
+                        'deathless_rank_points' => $row['deathless_score_rank_points_total']
+                    );
+                }
+            }
+            
+            return $api_response_data;
+        });
+        
         $resultset->process();
 
         return array(
