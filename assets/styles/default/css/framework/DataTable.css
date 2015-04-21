@@ -8,20 +8,25 @@
 
 .data_table div.table_menu {
     clear: both;
-    text-align: right;
+}
+.data_table .table_menu .table_menu_filters {
+    float: left;
+    vertical-align: middle;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 .data_table input.rows_submit {
     width: 50px;
-    height: 31px;
-    margin-right: 50px;
+    height: 35px;
 }
 
 .data_table input[type=text] {
     width: 300px;
-    height: 31px;
+    height: 35px;
     font-size: 14px;
     letter-spacing: inherit;
+    padding-left: 5px;
 }
 
 .data_table ul.page_numbers {
@@ -31,7 +36,7 @@
 .data_table div.pagination {
     font-size: 22px;
     font-weight: bold;
-    display: inline-block;
+    float: right;
 }
 
 .data_table li.page_number, .data_table li.current_page_number {
