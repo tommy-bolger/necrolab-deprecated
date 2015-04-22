@@ -267,7 +267,7 @@ if(!empty($steam_users_groups)) {
                 
                 $steam_user_record['steam_user_id'] = $steam_user_id;
                 
-                $cache->hMset("steam_users:{$steam_user_id}", $steam_user);
+                $cache->hMset("steam_users:{$steam_user_id}", $steam_user_record);
             }
         }
         else {
