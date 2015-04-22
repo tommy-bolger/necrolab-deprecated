@@ -76,9 +76,9 @@ extends NecroLab {
             'eli_speed_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
             'melody_speed_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
             'dorian_speed_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
-            'all_speed_rank' => "All Characters",
-            'story_speed_rank' => "Story Mode",
-            'speed_rank_points_total' => 'Total Points'
+            'all_speed_rank' => "All<br />Chars",
+            'story_speed_rank' => "Story<br />Mode",
+            'speed_rank_points_total' => 'Total<br />Points'
         ));
         
         $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);

@@ -76,7 +76,7 @@ extends NecroLab {
             'eli_deathless_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
             'melody_deathless_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
             'dorian_deathless_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
-            'deathless_score_rank_points_total' => 'Total Points'
+            'deathless_score_rank_points_total' => 'Total<br />Points'
         ));
         
         $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);

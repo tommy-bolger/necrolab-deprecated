@@ -432,11 +432,11 @@ extends Necrolab {
         return $form->toJsonArray();
     }
     
-    public function getPowerRankingData() {
+    public function apiGetProfile() {
         
     }
     
-    public function getDailyRankingData() {
+    public function apiGetRankings() {
         
     }
 }
