@@ -16,8 +16,8 @@
                         <span class="site_logo_medium">Necro Lab</span>
                     </a>
                 </div>
-                <div>
-                    <ul id="w2" class="navbar-nav nav">
+                <div class="no_wrap">
+                    <ul class="navbar-nav nav">
                         <li class="active">
                             <a class="first<?php if($this->active_page == 'power_rankings'): echo " selected_nav_button"; endif; ?>" href="/power_rankings">
                                 <span class="menu_large">Power</span>

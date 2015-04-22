@@ -7,6 +7,7 @@
 }
 
 .data_table div.table_menu {
+    white-space: nowrap;
     clear: both;
 }
 .data_table .table_menu .table_menu_filters {

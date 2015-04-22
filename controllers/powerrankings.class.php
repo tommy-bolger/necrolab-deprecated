@@ -93,7 +93,7 @@ extends NecroLab {
             'speed_rank_points_total' => '<span class="no_wrap">Points</span>',            
             'deathless_score_rank' => '<span class="no_wrap">Rank</span>',
             'deathless_score_rank_points_total' => '<span class="no_wrap">Points</span>',
-            'total_points' => '<span class="no_wrap">Total Points</span>'            
+            'total_points' => '<span class="no_wrap">Total<br />Points</span>'            
         ));
         
         $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);
