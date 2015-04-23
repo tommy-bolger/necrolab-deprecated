@@ -81,7 +81,8 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_deathless = 0
         AND l.is_story_mode = 0
         AND l.is_dev = 0
-        AND l.is_prod = 1
+        AND l.is_prod = 0
+        AND l.daily_date >= '2015-04-23'
 ");
 
 /* ----- First pass to gather rank information ----- */
@@ -155,8 +156,8 @@ while($latest_leaderboard_entry = $latest_leaderboard_entries->fetch(PDO::FETCH_
         
         $score_multiplier = 0;
         
-        if($age_in_days >= 1 && $age_in_days <= 100) {
-            $score_multiplier = $score_multiplier / 100;
+        if($age_in_days >= 0 && $age_in_days <= 99) {
+            $score_multiplier = (100 - $age_in_days) / 100;
         
             $score_multiplier = round($score_multiplier, 2);
         }
