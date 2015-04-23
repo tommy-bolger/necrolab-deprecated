@@ -45,6 +45,10 @@ extends Necrolab {
         $this->active_page = 'daily_rankings';
     }
     
+    protected function getLastRefreshed() {
+        return cache()->get('last_updated', 'daily_rankings');
+    }
+    
     protected function constructContent() {
         $this->page->body->addChild($this->getDataTable(), 'content');
     }

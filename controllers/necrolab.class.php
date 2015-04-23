@@ -32,6 +32,7 @@
 */
 namespace Modules\Necrolab\Controllers;
 
+use \DateTime;
 use \Framework\Core\Controller;
 use \Framework\Modules\ModulePage;
 
@@ -71,8 +72,19 @@ extends Controller {
         $this->page->body->addChild("{$this->page->getImagesHttpPath()}/logotemp.png", 'site_logo');
         
         $this->page->body->addChild($this->active_page, 'active_page');
+        
+        $last_refreshed_date = new DateTime($this->getLastRefreshed());
+        
+        $current_time = new DateTime();
+        $time_difference = $current_time->diff($last_refreshed_date);
+        
+        $this->page->body->addChild("Last updated {$time_difference->format('%i')} minutes and {$time_difference->format('%s')} seconds ago.", 'last_refreshed');
 
         $this->constructContent();
+    }
+    
+    protected function getLastRefreshed() {
+        return cache()->get('last_updated', 'power_rankings');
     }
     
     protected function roundNumber($unrounded_number) {

@@ -147,4 +147,6 @@ if(!empty($old_daily_ranking_keys)) {
 
 $transaction->delete('latest_daily_rankings_filter_old');
 
+$transaction->set('daily_rankings_last_updated', date('Y-m-d H:i:s'));
+
 $transaction->exec();

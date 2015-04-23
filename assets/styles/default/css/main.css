@@ -50,6 +50,11 @@ a:link, a:visited, a:hover, a:active {
     padding-right: 0px;
 }
 
+.last_refreshed {
+    text-align: right;
+    font-size: 10px;
+}
+
 .container {
     width: 100%;
     margin-left: 0px;

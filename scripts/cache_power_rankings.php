@@ -489,4 +489,6 @@ if(!empty($old_deathless_score_ranking_keys)) {
 
 $transaction->delete('latest_deathless_score_rankings_filter_old');
 
+$transaction->set('power_rankings_last_updated', date('Y-m-d H:i:s'));
+
 $transaction->exec();

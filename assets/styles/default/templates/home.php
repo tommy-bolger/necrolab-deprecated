@@ -71,6 +71,12 @@
                 Website name by <a href="http://www.twitch.tv/ratracing" target="_blank">RatRacing</a>.
             </p>
             <p class="pull-right"><a href="http://steampowered.com">Powered by Steam</a><br />Powered by <a href="https://github.com/tommy-bolger/Flow" rel="external">Flow Framework</a></p>
+            <div class="clear"></div>
+            <div class="last_refreshed">
+                <p>
+                    <?php echo $this->last_refreshed; ?> Updates every 20 minutes.
+                </p>
+            </div>
         </div>
     </footer>
     <?php echo $this->javascript; ?>
