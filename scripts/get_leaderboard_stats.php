@@ -295,6 +295,7 @@ if(!empty($leaderboards->leaderboard)) {
         $daily_date_timestamp = NULL;
         $current_date_timestamp = strtotime(date('Y-m-d'));
         $is_speedrun = 0;
+        $is_prod = 0;
         
         if(!empty(Cache::$stored_leaderboards[$leaderboard->lbid])) {
             if($verbose_output) {
@@ -474,7 +475,7 @@ if(!empty($leaderboards->leaderboard)) {
         }
 
         //If this leaderboard is not a daily or it is a daily and either today's or tomorrow's (an active daily) then proceed to create a snapshot
-        if(empty($daily_date_timestamp) || $daily_date_timestamp >= $current_date_timestamp) {
+        if(!empty($is_prod) && (empty($daily_date_timestamp) || $daily_date_timestamp >= $current_date_timestamp)) {
             if($verbose_output) {
                 $framework->cout("Checking to see if a leaderboard snapshot exists for today.\n");
             }

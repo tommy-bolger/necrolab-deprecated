@@ -81,7 +81,7 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_deathless = 0
         AND l.is_story_mode = 0
         AND l.is_dev = 0
-        AND l.is_prod = 0
+        AND l.is_prod = 1
 ");
 
 /* ----- First pass to gather rank information ----- */
@@ -95,76 +95,88 @@ $daily_dates = array();
 $user_total_points = array();
 $leaderboard_stats = array();
 
+$current_date = new DateTime();
+$current_date_value = $current_date->format('Y-m-d');
+
 while($latest_leaderboard_entry = $latest_leaderboard_entries->fetch(PDO::FETCH_ASSOC)) {
     $leaderboard_snapshot_id = $latest_leaderboard_entry['leaderboard_snapshot_id'];
     $daily_date = $latest_leaderboard_entry['daily_date'];
     
-    $leaderboard_snapshot_ids[$leaderboard_snapshot_id] = $leaderboard_snapshot_id;
-    $daily_dates[$daily_date] = $daily_date;
+    $age = $current_date->diff(new DateTime($daily_date));
+    $age_in_days = $age->format('%d');
     
-    $steam_user_id = $latest_leaderboard_entry['steam_user_id'];
-    
-    if(empty($leaderboard_stats[$steam_user_id])) {
-        $leaderboard_stats[$steam_user_id] = array(
-            'steam_user_id' => $steam_user_id,
-            'first_place_ranks' => 0,
-            'top_5_ranks' => 0,
-            'top_10_ranks' => 0,
-            'top_20_ranks' => 0,
-            'top_50_ranks' => 0,
-            'top_100_ranks' => 0,
-            'total_points' => 0,
-            'total_dailies' => 0,
-            'total_wins' => 0,
-            'sum_of_ranks' => 0,
-            'number_of_ranks' => 0
-        );
+    if($age_in_days <= 100) {
+        $leaderboard_snapshot_ids[$leaderboard_snapshot_id] = $leaderboard_snapshot_id;
+        $daily_dates[$daily_date] = $daily_date;
         
-        $user_total_points[$steam_user_id] = 0;
+        $steam_user_id = $latest_leaderboard_entry['steam_user_id'];
+        
+        if(empty($leaderboard_stats[$steam_user_id])) {
+            $leaderboard_stats[$steam_user_id] = array(
+                'steam_user_id' => $steam_user_id,
+                'first_place_ranks' => 0,
+                'top_5_ranks' => 0,
+                'top_10_ranks' => 0,
+                'top_20_ranks' => 0,
+                'top_50_ranks' => 0,
+                'top_100_ranks' => 0,
+                'total_points' => 0,
+                'total_dailies' => 0,
+                'total_wins' => 0,
+                'sum_of_ranks' => 0,
+                'number_of_ranks' => 0
+            );
+            
+            $user_total_points[$steam_user_id] = 0;
+        }
+        
+        $leaderboard_stat_record = $leaderboard_stats[$steam_user_id];
+        
+        $rank = $latest_leaderboard_entry['rank'];
+    
+        if($rank == 1) {
+            $leaderboard_stat_record['first_place_ranks'] += 1;
+        }
+        elseif($rank >= 1 && $rank <= 5) {
+            $leaderboard_stat_record['top_5_ranks'] += 1;
+        }
+        elseif($rank >= 1 && $rank <= 10) {
+            $leaderboard_stat_record['top_10_ranks'] += 1;
+        }
+        elseif($rank >= 1 && $rank <= 20) {
+            $leaderboard_stat_record['top_20_ranks'] += 1;
+        }
+        elseif($rank >= 1 && $rank <= 50) {
+            $leaderboard_stat_record['top_50_ranks'] += 1;
+        }
+        elseif($rank >= 1 && $rank <= 100) {
+            $leaderboard_stat_record['top_100_ranks'] += 1;
+        }
+        
+        $score_multiplier = 0;
+        
+        if($age_in_days >= 1 && $age_in_days <= 100) {
+            $score_multiplier = $score_multiplier / 100;
+        
+            $score_multiplier = round($score_multiplier, 2);
+        }
+        
+        $total_points = 1.7 / (log($rank / 100 + 1.03) / log(10)) * $score_multiplier;
+        
+        $leaderboard_stat_record['total_points'] += $total_points;
+        $user_total_points[$steam_user_id] += $total_points;
+        
+        $leaderboard_stat_record['total_dailies'] += 1;
+        
+        if($latest_leaderboard_entry['details'] == '0300000005000000') {
+            $leaderboard_stat_record['total_wins'] += 1;
+        }
+        
+        $leaderboard_stat_record['sum_of_ranks'] += $rank;
+        $leaderboard_stat_record['number_of_ranks'] += 1;
+        
+        $leaderboard_stats[$steam_user_id] = $leaderboard_stat_record;
     }
-    
-    $leaderboard_stat_record = $leaderboard_stats[$steam_user_id];
-    
-    $rank = $latest_leaderboard_entry['rank'];
-    
-    if($rank == 1) {
-        $leaderboard_stat_record['first_place_ranks'] += 1;
-    }
-    elseif($rank >= 1 && $rank <= 5) {
-        $leaderboard_stat_record['top_5_ranks'] += 1;
-    }
-    elseif($rank >= 1 && $rank <= 10) {
-        $leaderboard_stat_record['top_10_ranks'] += 1;
-    }
-    elseif($rank >= 1 && $rank <= 20) {
-        $leaderboard_stat_record['top_20_ranks'] += 1;
-    }
-    elseif($rank >= 1 && $rank <= 50) {
-        $leaderboard_stat_record['top_50_ranks'] += 1;
-    }
-    elseif($rank >= 1 && $rank <= 100) {
-        $leaderboard_stat_record['top_100_ranks'] += 1;
-    }
-    
-    $total_points = (int)(1.05 * (101 - $rank)); 
-    
-    if($total_points < 0) {
-        $total_points = 0;
-    }
-    
-    $leaderboard_stat_record['total_points'] += $total_points;
-    $user_total_points[$steam_user_id] += $total_points;
-    
-    $leaderboard_stat_record['total_dailies'] += 1;
-    
-    if($latest_leaderboard_entry['details'] == '0300000005000000') {
-        $leaderboard_stat_record['total_wins'] += 1;
-    }
-    
-    $leaderboard_stat_record['sum_of_ranks'] += $rank;
-    $leaderboard_stat_record['number_of_ranks'] += 1;
-    
-    $leaderboard_stats[$steam_user_id] = $leaderboard_stat_record;
 }
 
 if($verbose_output) {
@@ -176,7 +188,7 @@ $daily_ranking_id = db()->getOne("
     FROM daily_rankings
     WHERE date = ?
 ", array(
-    $current_date
+    $current_date_value
 ));
 
 if(empty($daily_ranking_id)) {
@@ -185,7 +197,7 @@ if(empty($daily_ranking_id)) {
     }
 
     $daily_ranking_id = db()->insert('daily_rankings', array(
-        'date' => $current_date,
+        'date' => $current_date_value,
         'created' => date('Y-m-d H:i:s')
     ), 'add_daily_ranking_record');
 }

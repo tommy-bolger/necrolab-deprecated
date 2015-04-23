@@ -66,7 +66,7 @@ extends Necrolab {
                 'colspan' => 3
             ),
             'speed' => array(
-                'contents' => "<div class=\"center large_table_header\">Top Finishes</div>",
+                'contents' => "<div class=\"center large_table_header\">Top 100 Day Finishes</div>",
                 'colspan' => 8,
             ),
             'score' => array(
@@ -147,6 +147,8 @@ extends Necrolab {
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
                         'twitch_username' => $row['twitch_username'],
+                        'nico_nico_url' => $row['nico_nico_url'],
+                        'hitbox_username' => $row['hitbox_username'],
                         'twitter_username' => $row['twitter_username'],
                         'website' => $row['website'],
                         'first_place_ranks' => $row['first_place_ranks'],

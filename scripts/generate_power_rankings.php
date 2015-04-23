@@ -96,7 +96,7 @@ $latest_leaderboard_entries = db()->prepareExecuteQuery("
         AND l.is_seeded = 0
         AND l.is_daily = 0
         AND l.is_dev = 0
-        AND l.is_prod = 0               
+        AND l.is_prod = 1           
 ");
 
 /* ----- First pass to gather rank information ----- */

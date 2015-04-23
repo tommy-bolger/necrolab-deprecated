@@ -96,6 +96,14 @@ extends Controller {
             $social_media .= "<a href=\"http://www.twitch.tv/{$row['twitch_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitch_small.png\" alt=\"Twitch Channel for {$personaname}\" /></a>";
         }
         
+        if(!empty($row['nico_nico_url'])) {
+            $social_media .= "<a href=\"{$row['nico_nico_url']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/nico_nico_small.png\" alt=\"Nico Nico Channel for {$personaname}\" /></a>";
+        }
+        
+        if(!empty($row['hitbox_username'])) {
+            $social_media .= "<a href=\"http://www.hitbox.tv/{$row['hitbox_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/hitboxicongreen_small.png\" alt=\"Hitbox Channel for {$personaname}\" /></a>";
+        }
+        
         if(!empty($row['twitter_username'])) {
             $social_media .= "<a href=\"http://www.twitter.com/{$row['twitter_username']}\" target=\"_blank\"><img src=\"/assets/images/modules/necrolab/twitter_logo_blue_small.png\" alt=\"Twitter Feed for {$personaname}\" /></a>";
         }

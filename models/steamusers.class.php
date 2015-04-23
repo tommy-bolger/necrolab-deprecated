@@ -109,6 +109,7 @@ class SteamUsers {
                         pre.eli_score_rank,
                         pre.melody_score_rank,
                         pre.dorian_score_rank,
+                        pre.coda_score_rank,
                         pre.all_score_rank,
                         pre.story_score_rank,
                         pre.score_rank_points_total,
@@ -164,6 +165,7 @@ class SteamUsers {
                         pre.eli_speed_rank,
                         pre.melody_speed_rank,
                         pre.dorian_speed_rank,
+                        pre.coda_speed_rank,
                         pre.all_speed_rank,
                         pre.story_speed_rank,
                         pre.speed_rank_points_total,
@@ -219,6 +221,7 @@ class SteamUsers {
                         pre.eli_deathless_score_rank,
                         pre.melody_deathless_score_rank,
                         pre.dorian_deathless_score_rank,
+                        pre.coda_deathless_score_rank,
                         pre.all_deathless_score_rank,
                         pre.story_deathless_score_rank,
                         pre.deathless_score_rank_points_total,
@@ -310,18 +313,22 @@ class SteamUsers {
         return $latest_daily_ranking;
     }
     
-    public static function saveSocialMediaData($steam_user_id, $twitch_username, $twitter_username, $website) {
+    public static function saveSocialMediaData($steam_user_id, $twitch_username, $nico_nico_url, $hitbox_username, $twitter_username, $website) {
         Loader::load('HTMLPurifier/HTMLPurifier.auto.php');
         
         $purifier_configuration = HTMLPurifier_Config::createDefault();
         $purifier = new HTMLPurifier($purifier_configuration);
         
         $twitch_username = $purifier->purify($twitch_username);
+        $nico_nico_url = $purifier->purify($nico_nico_url);
+        $hitbox_username = $purifier->purify($hitbox_username);
         $twitter_username = $purifier->purify($twitter_username);
         $website = $purifier->purify($website);
     
         $social_media_data = array(
             'twitch_username' => $twitch_username,
+            'nico_nico_url' => $nico_nico_url,
+            'hitbox_username' => $hitbox_username,
             'twitter_username' => $twitter_username,
             'website' => $website
         );

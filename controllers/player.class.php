@@ -51,18 +51,6 @@ extends Necrolab {
         $this->active_page = 'players';
         
         $this->steam_user_id = request()->steam_user_id;
-        
-        if(empty($this->steam_user_id)) {
-            Http::redirect('/');
-        }
-        
-        $steam_user_data = SteamUsers::getUser($this->steam_user_id);
-        
-        if(empty($steam_user_data)) {
-            Http::redirect('/');
-        }
-        
-        $this->title = "Profile for {$steam_user_data['personaname']}";
     }
     
     protected function loadModule() {
@@ -77,6 +65,14 @@ extends Necrolab {
         if(empty($this->steam_user_id)) {
             Http::redirect('/');
         }
+        
+        $steam_user_data = SteamUsers::getUser($this->steam_user_id);
+        
+        if(empty($steam_user_data)) {
+            Http::redirect('/');
+        }
+        
+        $this->title = "Profile for {$steam_user_data['personaname']}";
     
         $user_template = new TemplateElement("user.php");
         
@@ -104,28 +100,22 @@ extends Necrolab {
             }
         }
         
-        $steam_user = db()->getRow("
-            SELECT *
-            FROM steam_users
-            WHERE steam_user_id = ?
-        ", array(
-            $this->steam_user_id
-        ));
-        
         if(isset(session()->steam_user_id) && $this->steam_user_id == session()->steam_user_id) {
             $authenticated_user_form = new TableForm('authenticated_user_form');
             $authenticated_user_form->disableJavascript();
             
-            //$authenticated_user_form->addReadOnly('steam_username', 'Steam', "<a href=\"{$steam_user['profileurl']}\">{$steam_user['personaname']}</a>");
-            $authenticated_user_form->addTextBox('twitch_username', 'Twitch', $steam_user['twitch_username']);
-            $authenticated_user_form->addTextBox('twitter_username', 'Twitter', $steam_user['twitter_username']);
-            $authenticated_user_form->addTextBox('website_url', 'Website', $steam_user['website']);
+            //$authenticated_user_form->addReadOnly('steam_username', 'Steam', "<a href=\"{$steam_user_data['profileurl']}\">{$steam_user_data['personaname']}</a>");
+            $authenticated_user_form->addTextBox('twitch_username', 'Twitch Channel', $steam_user_data['twitch_username']);
+            $authenticated_user_form->addTextBox('nico_nico_url', 'Nico Nico Url', $steam_user_data['nico_nico_url']);
+            $authenticated_user_form->addTextBox('hitbox_username', 'Hitbox Channel', $steam_user_data['hitbox_username']);
+            $authenticated_user_form->addTextBox('twitter_username', 'Twitter User', $steam_user_data['twitter_username']);
+            $authenticated_user_form->addTextBox('website_url', 'Website', $steam_user_data['website']);
             $authenticated_user_form->addSubmit('submit', 'Save');
             
             if($authenticated_user_form->wasSubmitted() && $authenticated_user_form->isValid()) {
                 $form_data = $authenticated_user_form->getData();
                 
-                SteamUsers::saveSocialMediaData($this->steam_user_id, $form_data['twitch_username'], $form_data['twitter_username'], $form_data['website_url']);
+                SteamUsers::saveSocialMediaData($this->steam_user_id, $form_data['twitch_username'], $steam_user_data['nico_nico_url'], $steam_user_data['hitbox_username'], $form_data['twitter_username'], $form_data['website_url']);
                 
                 $authenticated_user_form->addConfirmation('Your information has been updated.');
             }
@@ -145,10 +135,34 @@ extends Necrolab {
                 Http::redirect($open_id->authUrl());
             }
             
+            $twitch_link = '';
+            
+            if(!empty($steam_user_data['twitch_username'])) {
+                $twitch_link = "<a href=\"http://www.twitch.tv/{$steam_user_data['twitch_username']}\" target=\"_blank\">{$steam_user_data['twitch_username']}</a>";
+            }
+            
+            $nico_nico_link = '';
+            
+            if(!empty($steam_user_data['nico_nico_url'])) {
+                $nico_nico_link = "<a href=\"{$steam_user_data['nico_nico_url']}\" target=\"_blank\">Link</a>";
+            }
+            
+            $hitbox_link = '';
+            
+            if(!empty($steam_user_data['hitbox_username'])) {
+                $hitbox_link = "<a href=\"http://www.hitbox.tv/{$steam_user_data['hitbox_username']}\" target=\"_blank\">{$steam_user_data['hitbox_username']}</a>";
+            }
+            
+            $twitter_link = '';
+            
+            if(!empty($steam_user_data['twitter_username'])) {
+                $twitter_link = "<a href=\"http://www.twitter.com/{$steam_user_data['twitter_username']}\" target=\"_blank\">{$steam_user_data['twitter_username']}</a>";
+            }
+            
             $website = '';
             
-            if(!empty($steam_user['website'])) {
-                $website = "<a href=\"{$steam_user['website']}\" target=\"_blank\">Link</a>";
+            if(!empty($steam_user_data['website'])) {
+                $website = "<a href=\"{$steam_user_data['website']}\" target=\"_blank\">Link</a>";
             }
             
             $user_template->addChild($steam_login_form, 'steam_login_form');
@@ -158,15 +172,23 @@ extends Necrolab {
             $steam_user_table->addRows(array(
                 array(
                     'Steam',
-                    "<a href={$steam_user['profileurl']}>{$steam_user['personaname']}</a>"
+                    "<a href={$steam_user_data['profileurl']}>{$steam_user_data['personaname']}</a>"
                 ),
                 array(
                     'Twitch',
-                    "<a href=\"http://www.twitch.tv/{$steam_user['twitch_username']}\" target=\"_blank\">{$steam_user['twitch_username']}</a>"
+                    $twitch_link
+                ),
+                array(
+                    'Nico Nico Link',
+                    $nico_nico_link
+                ),
+                array(
+                    'Hitbox',
+                    $hitbox_link
                 ),
                 array(
                     'Twitter',
-                    "<a href=\"http://www.twitch.tv/{$steam_user['twitter_username']}\" target=\"_blank\">{$steam_user['twitter_username']}</a>"
+                    $twitter_link
                 ),
                 array(
                     'Website',
@@ -433,7 +455,20 @@ extends Necrolab {
     }
     
     public function apiGetProfile() {
+        if(empty($this->steam_user_id)) {
+            throw new \Exception("steam_user_id cannot be empty.");
+        }
         
+        $steam_user_data = SteamUsers::getUser($this->steam_user_id);
+        
+        return array(
+            'steam_id' => $steam_user_data['steamid'],
+            'steam_username' => $steam_user_data['personaname'],
+            'necrolab_player_profile_id' => $steam_user_data['steam_user_id'],
+            'twitch_username' => $steam_user_data['twitch_username'],
+            'twitter_username' => $steam_user_data['twitter_username'],
+            'website' => $steam_user_data['website']
+        );
     }
     
     public function apiGetRankings() {

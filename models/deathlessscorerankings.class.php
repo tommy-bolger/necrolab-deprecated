@@ -25,10 +25,13 @@ class DeathlessScoreRankings {
                     pre.eli_deathless_score_rank,
                     pre.melody_deathless_score_rank,
                     pre.dorian_deathless_score_rank,
+                    pre.coda_deathless_score_rank,                    
                     pre.deathless_score_rank_points_total,
                     pre.steam_user_id,
                     pre.power_ranking_entry_id,
                     su.twitch_username,
+                    su.nico_nico_url,
+                    su.hitbox_username,
                     su.twitter_username,
                     su.website
                 FROM power_rankings pr

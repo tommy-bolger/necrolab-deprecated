@@ -81,6 +81,8 @@ $latest_daily_rankings = db()->prepareExecuteQuery("
         dre.steam_user_id,
         su.steamid,
         su.twitch_username,
+        su.nico_nico_url,
+        su.hitbox_username,
         su.twitter_username,
         su.website    
     FROM daily_rankings dr

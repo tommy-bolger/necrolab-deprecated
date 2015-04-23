@@ -59,7 +59,7 @@ extends NecroLab {
         
         $data_table = new DataTable("score_rankings", true);
         
-        $data_table->setNumberofColumns(15);
+        $data_table->setNumberofColumns(16);
         
         $character_placeholder_image = "{$this->page->getImagesHttpPath()}/character_placeholder.png";
         
@@ -76,6 +76,7 @@ extends NecroLab {
             'eli_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
             'melody_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
             'dorian_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
+            'coda_score_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
             'all_score_rank' => "All<br />Chars",
             'story_score_rank' => "Story<br />Mode",
             'score_rank_points_total' => 'Total<br />Points'
@@ -120,6 +121,8 @@ extends NecroLab {
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
                         'twitch_username' => $row['twitch_username'],
+                        'nico_nico_url' => $row['nico_nico_url'],
+                        'hitbox_username' => $row['hitbox_username'],
                         'twitter_username' => $row['twitter_username'],
                         'website' => $row['website'],
                         'cadence_rank' => $row['cadence_score_rank'],
@@ -140,6 +143,8 @@ extends NecroLab {
                         'melody_points' => $row['melody_score_rank_points'],
                         'dorian_rank' => $row['dorian_score_rank'],
                         'dorian_points' => $row['dorian_score_rank_points'],
+                        'coda_rank' => $row['coda_score_rank'],
+                        'coda_points' => $row['coda_score_rank_points'],
                         'all_character_rank' => $row['all_score_rank'],
                         'all_character_points' => $row['all_score_rank_points'],
                         'story_mode_rank' => $row['story_score_rank'],

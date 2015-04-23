@@ -71,7 +71,7 @@ $steam_users = db()->getMappedColumn("
     FROM steam_users 
     WHERE (
         updated IS NULL
-        OR (updated + INTERVAL '30 day') < CURRENT_TIMESTAMP
+        OR updated NOT BETWEEN (CURRENT_TIMESTAMP - INTERVAL '30 day') AND CURRENT_TIMESTAMP
     )
 ");
 

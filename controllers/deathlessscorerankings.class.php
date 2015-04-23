@@ -76,6 +76,7 @@ extends NecroLab {
             'eli_deathless_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
             'melody_deathless_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
             'dorian_deathless_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
+            'coda_deathless_score_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",            
             'deathless_score_rank_points_total' => 'Total<br />Points'
         ));
         
@@ -118,6 +119,8 @@ extends NecroLab {
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
                         'twitch_username' => $row['twitch_username'],
+                        'nico_nico_url' => $row['nico_nico_url'],
+                        'hitbox_username' => $row['hitbox_username'],
                         'twitter_username' => $row['twitter_username'],
                         'website' => $row['website'],
                         'cadence_rank' => $row['cadence_deathless_score_rank'],
@@ -137,7 +140,9 @@ extends NecroLab {
                         'melody_rank' => $row['melody_deathless_score_rank'],
                         'melody_points' => $row['melody_deathless_score_rank_points'],
                         'dorian_rank' => $row['dorian_deathless_score_rank'],
-                        'dorian_points' => $row['dorian_deathless_score_rank_points']
+                        'dorian_points' => $row['dorian_deathless_score_rank_points'],
+                        'coda_rank' => $row['coda_deathless_score_rank'],
+                        'coda_points' => $row['coda_deathless_score_rank_points']                        
                     );
                 }
             }

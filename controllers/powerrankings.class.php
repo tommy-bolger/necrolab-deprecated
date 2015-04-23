@@ -139,6 +139,8 @@ extends NecroLab {
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
                         'twitch_username' => $row['twitch_username'],
+                        'nico_nico_url' => $row['nico_nico_url'],
+                        'hitbox_username' => $row['hitbox_username'],
                         'twitter_username' => $row['twitter_username'],
                         'website' => $row['website'],
                         'score_rank' => $row['score_rank'],
