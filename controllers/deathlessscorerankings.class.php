@@ -59,7 +59,7 @@ extends NecroLab {
         
         $data_table = new DataTable("deathless_score_rankings", true);
         
-        $data_table->setNumberofColumns(13);
+        $data_table->setNumberofColumns(14);
         
         $character_placeholder_image = "{$this->page->getImagesHttpPath()}/character_placeholder.png";
         
