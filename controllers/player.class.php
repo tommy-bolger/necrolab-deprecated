@@ -253,6 +253,7 @@ extends Necrolab {
                 'eli_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
                 'melody_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
+                'coda_score_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
                 'all_score_rank' => "All Characters",
                 'story_score_rank' => "Story Mode",
                 'overall' => 'Overall'
@@ -269,6 +270,7 @@ extends Necrolab {
                 'eli_score_rank' => $score_ranking['eli_score_rank'],
                 'melody_score_rank' => $score_ranking['melody_score_rank'],
                 'dorian_score_rank' => $score_ranking['dorian_score_rank'],
+                'coda_score_rank' => $score_ranking['coda_score_rank'],
                 'all_score_rank' => $score_ranking['all_score_rank'],
                 'story_score_rank' => $score_ranking['story_score_rank'],
                 'overall' => $score_ranking['score_rank']
@@ -285,6 +287,7 @@ extends Necrolab {
                 'eli_score_rank' => $this->roundNumber($score_ranking['eli_score_rank_points']),
                 'melody_score_rank' => $this->roundNumber($score_ranking['melody_score_rank_points']),
                 'dorian_score_rank' => $this->roundNumber($score_ranking['dorian_score_rank_points']),
+                'coda_score_rank' => $this->roundNumber($score_ranking['coda_score_rank_points']),
                 'all_score_rank' => $this->roundNumber($score_ranking['all_score_rank_points']),
                 'story_score_rank' => $this->roundNumber($score_ranking['story_score_rank_points']),
                 'overall' => $score_ranking['score_rank_points_total']
@@ -311,6 +314,7 @@ extends Necrolab {
                 'eli_speed_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
                 'melody_speed_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_speed_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
+                'coda_speed_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
                 'all_speed_rank' => "All Characters",
                 'story_speed_rank' => "Story Mode",
                 'overall' => 'Overall'
@@ -327,6 +331,7 @@ extends Necrolab {
                 'eli_speed_rank' => $speed_ranking['eli_speed_rank'],
                 'melody_speed_rank' => $speed_ranking['melody_speed_rank'],
                 'dorian_speed_rank' => $speed_ranking['dorian_speed_rank'],
+                'coda_speed_rank' => $speed_ranking['coda_speed_rank'],
                 'all_speed_rank' => $speed_ranking['all_speed_rank'],
                 'story_speed_rank' => $speed_ranking['story_speed_rank'],
                 'overall' => $speed_ranking['speed_rank']
@@ -343,6 +348,7 @@ extends Necrolab {
                 'eli_speed_rank' => $this->roundNumber($speed_ranking['eli_speed_rank_points']),
                 'melody_speed_rank' => $this->roundNumber($speed_ranking['melody_speed_rank_points']),
                 'dorian_speed_rank' => $this->roundNumber($speed_ranking['dorian_speed_rank_points']),
+                'coda_speed_rank' => $this->roundNumber($speed_ranking['coda_speed_rank_points']),
                 'all_speed_rank' => $this->roundNumber($speed_ranking['all_speed_rank_points']),
                 'story_speed_rank' => $this->roundNumber($speed_ranking['story_speed_rank_points']),
                 'overall' => $speed_ranking['speed_rank_points_total']
@@ -369,6 +375,7 @@ extends Necrolab {
                 'eli_deathless_score_rank' => "<img class=\"eli_header\" src=\"{$character_placeholder_image}\" />",
                 'melody_deathless_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_deathless_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
+                'coda_deathless_score_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
                 'overall' => 'Overall'
             ));
             
@@ -383,6 +390,7 @@ extends Necrolab {
                 'eli_deathless_score_rank' => $deathless_score_ranking['eli_deathless_score_rank'],
                 'melody_deathless_score_rank' => $deathless_score_ranking['melody_deathless_score_rank'],
                 'dorian_deathless_score_rank' => $deathless_score_ranking['dorian_deathless_score_rank'],
+                'coda_deathless_score_rank' => $deathless_score_ranking['coda_deathless_score_rank'],
                 'overall' => $deathless_score_ranking['deathless_score_rank']
             ));
             
@@ -397,6 +405,7 @@ extends Necrolab {
                 'eli_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['eli_deathless_score_rank_points']),
                 'melody_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['melody_deathless_score_rank_points']),
                 'dorian_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['dorian_deathless_score_rank_points']),
+                'coda_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['coda_deathless_score_rank_points']),
                 'overall' => $deathless_score_ranking['deathless_score_rank_points_total']
             ));
             
