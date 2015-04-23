@@ -254,8 +254,8 @@ extends Necrolab {
                 'melody_score_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_score_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
                 'coda_score_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
-                'all_score_rank' => "All Characters",
-                'story_score_rank' => "Story Mode",
+                'all_score_rank' => "All<br />Chars",
+                'story_score_rank' => "Story<br />Mode",
                 'overall' => 'Overall'
             ));
             
@@ -315,8 +315,8 @@ extends Necrolab {
                 'melody_speed_rank' => "<img class=\"melody_header\" src=\"{$character_placeholder_image}\" />",
                 'dorian_speed_rank' => "<img class=\"dorian_header\" src=\"{$character_placeholder_image}\" />",
                 'coda_speed_rank' => "<img class=\"coda_header\" src=\"{$character_placeholder_image}\" />",
-                'all_speed_rank' => "All Characters",
-                'story_speed_rank' => "Story Mode",
+                'all_speed_rank' => "All<br />Chars",
+                'story_speed_rank' => "Story<br />Mode",
                 'overall' => 'Overall'
             ));
             
