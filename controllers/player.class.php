@@ -115,7 +115,7 @@ extends Necrolab {
             if($authenticated_user_form->wasSubmitted() && $authenticated_user_form->isValid()) {
                 $form_data = $authenticated_user_form->getData();
                 
-                SteamUsers::saveSocialMediaData($this->steam_user_id, $form_data['twitch_username'], $steam_user_data['nico_nico_url'], $steam_user_data['hitbox_username'], $form_data['twitter_username'], $form_data['website_url']);
+                SteamUsers::saveSocialMediaData($this->steam_user_id, $form_data['twitch_username'], $form_data['nico_nico_url'], $form_data['hitbox_username'], $form_data['twitter_username'], $form_data['website_url']);
                 
                 $authenticated_user_form->addConfirmation('Your information has been updated.');
             }
