@@ -308,6 +308,8 @@ if(!empty($leaderboards->leaderboard)) {
             
             $daily_date = $stored_leaderboard['daily_date'];
             
+            $is_prod = $stored_leaderboard['is_prod'];
+            
             if(!empty($daily_date)) {
                 $daily_date_timestamp = strtotime($daily_date);
             }
