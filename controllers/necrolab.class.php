@@ -56,6 +56,17 @@ extends Controller {
             'bootstrap.css',
             'main.css'
         ));
+        
+        //Google Analytics tracking
+        $this->page->addInlineJavascript("
+            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            
+            ga('create', 'UA-41045236-2', 'auto');
+            ga('send', 'pageview');
+        ");
     }
     
     public function setup() {    
@@ -87,11 +98,32 @@ extends Controller {
         return cache()->get('last_updated', 'power_rankings');
     }
     
-    protected function roundNumber($unrounded_number) {
+    protected function roundNumber($unrounded_number) {    
         $rounded_number = NULL;
     
         if(!empty($unrounded_number)) {
-            $rounded_number = round($unrounded_number, 3);
+            $rounding_place = 1;
+            $unrounded_number_split = explode('.', (string)$unrounded_number);
+            
+            $left_decimal = $unrounded_number_split[0];
+            $right_decimal = $unrounded_number_split[1];
+        
+            if(strlen($left_decimal) == 2) {
+                $rounding_place = 2;
+            }
+            
+            if(strlen($left_decimal) == 1) {
+                $left_decimal = (int)$left_decimal;
+            
+                if($left_decimal < 1) {
+                    $rounding_place = 5;
+                }
+                else {
+                    $rounding_place = 3;
+                }
+            }
+        
+            $rounded_number = round($unrounded_number, $rounding_place);
         }
     
         return $rounded_number;

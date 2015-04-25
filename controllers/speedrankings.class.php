@@ -91,6 +91,8 @@ extends NecroLab {
                 foreach($result_data as $index => $row) {
                     $row = $this->addSocialMediaToRow($row);
                     
+                    $row['speed_rank_points_total'] = $this->roundNumber($row['speed_rank_points_total']);
+                    
                     $result_data[$index] = $row;
                 }
             }
