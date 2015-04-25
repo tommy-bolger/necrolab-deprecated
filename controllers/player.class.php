@@ -227,7 +227,7 @@ extends Necrolab {
                 'score' => $this->roundNumber($power_ranking['score_rank_points_total']),
                 'speed' => $this->roundNumber($power_ranking['speed_rank_points_total']),            
                 'deathless' => $this->roundNumber($power_ranking['deathless_score_rank_points_total']),
-                'overall' => $power_ranking['total_points']
+                'overall' => $this->roundNumber($power_ranking['total_points'])
             ));
             
             $user_template->addChild($power_rankings_table, 'power_rankings_table');
@@ -290,7 +290,7 @@ extends Necrolab {
                 'coda_score_rank' => $this->roundNumber($score_ranking['coda_score_rank_points']),
                 'all_score_rank' => $this->roundNumber($score_ranking['all_score_rank_points']),
                 'story_score_rank' => $this->roundNumber($score_ranking['story_score_rank_points']),
-                'overall' => $score_ranking['score_rank_points_total']
+                'overall' => $this->roundNumber($score_ranking['score_rank_points_total'])
             ));
             
             $user_template->addChild($score_rankings_table, 'score_rankings_table');
@@ -351,7 +351,7 @@ extends Necrolab {
                 'coda_speed_rank' => $this->roundNumber($speed_ranking['coda_speed_rank_points']),
                 'all_speed_rank' => $this->roundNumber($speed_ranking['all_speed_rank_points']),
                 'story_speed_rank' => $this->roundNumber($speed_ranking['story_speed_rank_points']),
-                'overall' => $speed_ranking['speed_rank_points_total']
+                'overall' => $this->roundNumber($speed_ranking['speed_rank_points_total'])
             ));
             
             $user_template->addChild($speed_rankings_table, 'speed_rankings_table');
@@ -406,7 +406,7 @@ extends Necrolab {
                 'melody_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['melody_deathless_score_rank_points']),
                 'dorian_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['dorian_deathless_score_rank_points']),
                 'coda_deathless_score_rank' => $this->roundNumber($deathless_score_ranking['coda_deathless_score_rank_points']),
-                'overall' => $deathless_score_ranking['deathless_score_rank_points_total']
+                'overall' => $this->roundNumber($deathless_score_ranking['deathless_score_rank_points_total'])
             ));
             
             $user_template->addChild($deathless_score_rankings_table, 'deathless_score_rankings_table');
@@ -444,7 +444,7 @@ extends Necrolab {
                 'top_20_ranks' => $daily_ranking['top_20_ranks'],
                 'top_50_ranks' => $daily_ranking['top_50_ranks'],
                 'top_100_ranks' => $daily_ranking['top_100_ranks'],
-                'total_points' => $daily_ranking['total_points'],
+                'total_points' => $this->roundNumber($daily_ranking['total_points']),
                 'points_per_day' => $daily_ranking['points_per_day'],
                 'total_dailies' => $daily_ranking['total_dailies'],
                 'total_wins' => $daily_ranking['total_wins'],
