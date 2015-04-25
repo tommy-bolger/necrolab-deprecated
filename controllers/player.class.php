@@ -240,7 +240,7 @@ extends Necrolab {
         if(!empty($score_ranking)) {
             $score_rankings_table = new Table('score_rankings');
             
-            $score_rankings_table->setNumberofColumns(13);
+            $score_rankings_table->setNumberofColumns(14);
             
             $score_rankings_table->addHeader(array(
                 'type' => '&nbsp;',
@@ -301,7 +301,7 @@ extends Necrolab {
         if(!empty($speed_ranking)) {
             $speed_rankings_table = new Table('speed_rankings');
             
-            $speed_rankings_table->setNumberofColumns(13);
+            $speed_rankings_table->setNumberofColumns(14);
             
             $speed_rankings_table->addHeader(array(
                 'type' => '&nbsp;',
@@ -362,7 +362,7 @@ extends Necrolab {
         if(!empty($deathless_score_ranking)) {
             $deathless_score_rankings_table = new Table('deathless_score_rankings');
             
-            $deathless_score_rankings_table->setNumberofColumns(11);
+            $deathless_score_rankings_table->setNumberofColumns(12);
             
             $deathless_score_rankings_table->addHeader(array(
                 'type' => '&nbsp;',
