@@ -492,43 +492,50 @@ class LeaderboardImport {
     public function importLeaderboardEntries() {
         if(!empty($this->imported_leaderboards)) {
             foreach($this->imported_leaderboards as &$imported_leaderboard) {
-                if($this->verbose_output) {
-                    $this->framework->coutLine("Importing {$imported_leaderboard['entries']} entries for leaderboard '{$imported_leaderboard['name']}'.");
-                }
-                
-                $lbid = $imported_leaderboard['lbid'];
-                
-                $next_page_url = $imported_leaderboard['url'];
-                
-                $max_rank = 1;
-                
-                do {
-                    $leaderboard_users_xml = file_get_contents($next_page_url);
-                    
-                    if(!empty($leaderboard_users_xml)) {
-                        $leaderboard_users = XMLWrite::convertXmlToObject(new SimpleXMLElement($leaderboard_users_xml));
-        
-                        unset($leaderboard_users_xml);
-                                                
-                        $this->importPageEntriesForLeaderboard($lbid, $imported_leaderboard, $leaderboard_users, $max_rank);
+                if(!empty($imported_leaderboard['entries'])) {
+                    if($this->verbose_output) {
+                        $this->framework->coutLine("Importing {$imported_leaderboard['entries']} entries for leaderboard '{$imported_leaderboard['name']}'.");
                     }
                     
-                    if(!empty($leaderboard_users->nextRequestURL)) {                    
-                        $next_page_url = trim($leaderboard_users->nextRequestURL);
-
-                        if(!empty($next_page_url)) {
-                            if($this->verbose_output) {
-                                $this->framework->coutLine("Loading next page of users.");
+                    $lbid = $imported_leaderboard['lbid'];
+                    
+                    $next_page_url = $imported_leaderboard['url'];
+                    
+                    $max_rank = 1;
+                    
+                    do {
+                        $leaderboard_users_xml = file_get_contents($next_page_url);
+                        
+                        if(!empty($leaderboard_users_xml)) {
+                            $leaderboard_users = XMLWrite::convertXmlToObject(new SimpleXMLElement($leaderboard_users_xml));
+            
+                            unset($leaderboard_users_xml);
+                                                    
+                            $this->importPageEntriesForLeaderboard($lbid, $imported_leaderboard, $leaderboard_users, $max_rank);
+                        }
+                        
+                        if(!empty($leaderboard_users->nextRequestURL)) {                    
+                            $next_page_url = trim($leaderboard_users->nextRequestURL);
+    
+                            if(!empty($next_page_url)) {
+                                if($this->verbose_output) {
+                                    $this->framework->coutLine("Loading next page of users.");
+                                }
                             }
                         }
+                        else {
+                            $next_page_url = NULL;
+                        }
                     }
-                    else {
-                        $next_page_url = NULL;
+                    while(!empty($next_page_url));
+                    
+                    $this->imported_leaderboard_max_ranks[$lbid] = $max_rank;
+                }
+                else {
+                    if($this->verbose_output) {
+                        $this->framework->coutLine("There are no entries for leaderboard '{$imported_leaderboard['name']}'. Skipping.");
                     }
                 }
-                while(!empty($next_page_url));
-                
-                $this->imported_leaderboard_max_ranks[$lbid] = $max_rank;
             }
         }
     }
