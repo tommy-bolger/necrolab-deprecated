@@ -100,6 +100,8 @@ class LeaderboardImport {
             
             $this->saveLeaderboardEntriesToCache();
         }
+        
+        apcu_clear_cache('user');
     }
     
     protected function loadUserCache() {
@@ -667,7 +669,7 @@ class LeaderboardImport {
         if(!empty($this->imported_leaderboard_max_ranks)) {
             $current_date = date('Y-m-d');
         
-            foreach($this->imported_leaderboard_max_ranks as $lbid => &$max_rank) {                
+            foreach($this->imported_leaderboard_max_ranks as $lbid => $max_rank) {                
                 $leaderboard_record = $this->imported_leaderboards[$lbid];
     
                 $leaderboard_id = $leaderboard_record['leaderboard_id'];
@@ -744,8 +746,6 @@ class LeaderboardImport {
                 }
             }
         }
-        
-        apcu_clear_cache('user');
     }
     
     public function saveLeaderboardEntriesToCache($lbid) {
