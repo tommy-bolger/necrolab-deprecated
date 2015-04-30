@@ -135,7 +135,7 @@ extends NecroLab {
             if(!empty($data)) {
                 foreach($data as &$row) {
                     $api_response_data[] = array(
-                        'rank' => $row['score_rank'],
+                        'rank' => $row['rank'],
                         'points' => $row['total_points'],
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
