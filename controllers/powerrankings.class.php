@@ -108,6 +108,7 @@ extends NecroLab {
                     $row['score_rank_points_total'] = $this->roundNumber($row['score_rank_points_total']);
                     $row['speed_rank_points_total'] = $this->roundNumber($row['speed_rank_points_total']);
                     $row['deathless_score_rank_points_total'] = $this->roundNumber($row['deathless_score_rank_points_total']);
+                    $row['total_points'] = $this->roundNumber($row['total_points']);
                     
                     $result_data[$index] = $row;
                 }
@@ -134,7 +135,7 @@ extends NecroLab {
             if(!empty($data)) {
                 foreach($data as &$row) {
                     $api_response_data[] = array(
-                        'rank' => $row['score_rank'],
+                        'rank' => $row['rank'],
                         'points' => $row['total_points'],
                         'steam_id' => $row['steamid'],  
                         'steam_username' => $row['personaname'],
