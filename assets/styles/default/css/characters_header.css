@@ -1,0 +1,64 @@
+.cadence_header, .bard_header, .monk_header, .aria_header, .bolt_header, .dove_header, .eli_header, .melody_header, .dorian_header, .coda_header  {
+    background-image: url('/assets/images/modules/necrolab/characters.png');
+    background-repeat: no-repeat;
+}
+
+.cadence_header {
+    width: 43px;
+    height: 53px;
+    background-position: 0 0px;
+}
+
+.bard_header {
+    width: 43px;
+    height: 53px;
+    background-position: -53px 0px;
+}
+
+.monk_header {
+    width: 43px;
+    height: 53px;
+    background-position: -108px 0px;
+}
+
+.aria_header {
+    width: 43px;
+    height: 53px;
+    background-position: -163px 0px;
+}
+
+.bolt_header {
+    width: 43px;
+    height: 53px;
+    background-position: -216px 0px;
+}
+
+.dove_header {
+    width: 43px;
+    height: 53px;
+    background-position: -265px 0px;
+}
+
+.eli_header {
+    width: 43px;
+    height: 53px;
+    background-position: -317px 0px;
+}
+
+.melody_header {
+    width: 43px;
+    height: 53px;
+    background-position: -372px 0px;
+}
+
+.dorian_header {
+    width: 43px;
+    height: 53px;
+    background-position: -427px 0px;
+}
+
+.coda_header {
+    width: 43px;
+    height: 53px;
+    background-position: -481px 0px;
+}
