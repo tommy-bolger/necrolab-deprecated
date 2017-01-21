@@ -19,40 +19,98 @@
                 <div class="no_wrap">
                     <ul class="navbar-nav nav">
                         <li class="active">
-                            <a class="first<?php if($this->active_page == 'power_rankings'): echo " selected_nav_button"; endif; ?>" href="/power_rankings">
-                                <span class="menu_large">Power</span>
-                                <br />
-                                <span class="menu_small">Rankings</span>
+                            <a class="first<?php if($this->active_page_category == 'rankings'): echo " selected_nav_button"; endif; ?>" href="/rankings/">
+                                <span class="menu_large">Rankings<span class="menu_small"><?php if($this->active_page_category == 'rankings'): echo "&#x25BC;"; else: echo "&#x25B2;"; endif; ?></span></span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a class="first<?php if($this->active_page_category == 'leaderboards'): echo " selected_nav_button"; endif; ?>" href="/leaderboards/">
+                                <span class="menu_large">Leaderboards<span class="menu_small"><?php if($this->active_page_category == 'leaderboards'): echo "&#x25BC;"; else: echo "&#x25B2;"; endif; ?></span></span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a class="first<?php if($this->active_page_category == 'dailies'): echo " selected_nav_button"; endif; ?>" href="/dailies/">
+                                <span class="menu_large">Dailies<span class="menu_small"><?php if($this->active_page_category == 'dailies'): echo "&#x25BC;"; else: echo "&#x25B2;"; endif; ?></span></span>
+                            </a>
+                        </li>
+                        <li class="active">
+                            <a class="first<?php if($this->active_page_category == 'players'): echo " selected_nav_button"; endif; ?>" href="/players/">
+                                <span class="menu_large">Players</span>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="clear"></div>
+                </div>
+                <div class="clear"></div>
+                <div class="no_wrap">
+                    <ul class="navbar-nav nav">
+                        <?php if($this->active_page_category == 'rankings'): ?>
+                        <li class="active">
+                            <a class="first<?php if($this->active_page == 'power_rankings'): echo " selected_nav_button"; endif; ?>" href="/rankings/power">
+                                <span class="menu_small">Power</span>
                             </a>
                         </li>
                         <li>
-                            <a<?php if($this->active_page == 'daily_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/daily_rankings">
-                                <span class="menu_large">Daily</span>
-                                <br />
-                                <span class="menu_small">Rankings</span>
+                            <a<?php if($this->active_page == 'score_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/rankings/categories/score">
+                                <span class="menu_small">Score</span>
                             </a>
                         </li>
                         <li>
-                            <a<?php if($this->active_page == 'score_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/score_rankings">
-                                <span class="menu_large">Score</span>
-                                <br />
-                                <span class="menu_small">Rankings</span>
+                            <a<?php if($this->active_page == 'speed_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/rankings/categories/speed">
+                                <span class="menu_small">Speed</span>                       
                             </a>
                         </li>
                         <li>
-                            <a<?php if($this->active_page == 'speed_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/speed_rankings">
-                                <span class="menu_large">Speed</span>
-                                <br />
-                                <span class="menu_small">Rankings</span>                        
+                            <a<?php if($this->active_page == 'deathless_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/rankings/categories/deathless">
+                                <span class="menu_small">Deathless</span>                       
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if($this->active_page_category == 'leaderboards'): ?>
+                        <li class="active">
+                            <a class="first<?php if($this->active_page == 'score_leaderboards'): echo " selected_nav_button"; endif; ?>" href="/leaderboards/score/">
+                                <span class="menu_small">Score</span>
                             </a>
                         </li>
                         <li>
-                            <a<?php if($this->active_page == 'deathless_score_rankings'): echo ' class="selected_nav_button"'; endif; ?> href="/deathless_score_rankings">
-                                <span class="menu_large">Deathless</span>
-                                <br />
-                                <span class="menu_small">Rankings</span>                        
+                            <a<?php if($this->active_page == 'speed_leaderboards'): echo ' class="selected_nav_button"'; endif; ?> href="/leaderboards/speed/">
+                                <span class="menu_small">Speed</span>
                             </a>
                         </li>
+                        <li>
+                            <a<?php if($this->active_page == 'deathless_leaderboards'): echo ' class="selected_nav_button"'; endif; ?> href="/leaderboards/deathless/">
+                                <span class="menu_small">Deathless</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a<?php if($this->active_page == 'daily_leaderboards'): echo ' class="selected_nav_button"'; endif; ?> href="/leaderboards/daily/">
+                                <span class="menu_small">Daily</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
+                        <?php if($this->active_page_category == 'dailies'): ?>
+                        <!-- <li class="active">
+                            <a class="first<?php if($this->active_page == 'season'): echo " selected_nav_button"; endif; ?>" href="/dailies/season">
+                                <span class="menu_small">Season</span>
+                            </a>
+                        </li> -->
+                        <?php if(!empty($this->daily_ranking_day_types)): ?>
+                            <?php foreach($this->daily_ranking_day_types as $number_of_days => $daily_ranking_day_type_id): ?>
+                                <?php if($number_of_days != 0): ?>
+                                <li>
+                                    <a<?php if($this->active_page == "{$number_of_days}d"): echo ' class="selected_nav_button"'; endif; ?> href="/dailies/rankings?dt=<?php echo $number_of_days; ?>">
+                                        <span class="menu_small"><?php echo $number_of_days; ?> Day</span>
+                                    </a>
+                                </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <li>
+                            <a<?php if($this->active_page == 'all_time'): echo ' class="selected_nav_button"'; endif; ?> href="/dailies/rankings">
+                                <span class="menu_small">All Time</span>
+                            </a>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
             </div>

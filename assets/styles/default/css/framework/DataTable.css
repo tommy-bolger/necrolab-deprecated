@@ -71,6 +71,14 @@
     vertical-align: middle;
 }
 
+.data_table .group_header_column {
+    border-right: 5px solid #FFFFFF;
+}
+
+.data_table .group_header_column_first {
+    border-left: 5px solid #FFFFFF;
+}
+
 .data_table .filters th input {    
     font-weight: none;
     letter-spacing: 1px;
