@@ -1,0 +1,2 @@
+INSERT INTO cms_configuration_parameters (module_id, parameter_name, value, sort_order, parameter_data_type_id, display_name, has_value_list)
+VALUES (2, 'steam_original_appid', 247080, 5, 2, 'Steam Original AppID', 0);
