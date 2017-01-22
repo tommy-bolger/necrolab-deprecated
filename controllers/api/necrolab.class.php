@@ -97,6 +97,22 @@ extends WebController {
     
     protected function getResultset() {}
     
+    protected function getPlayerData($row) {
+        return array(
+            'steamid' => $row['steamid'],
+            'personaname' => $row['personaname'],
+            'twitch_username' => $row['twitch_username'],
+            'twitter_username' => $row['twitter_username'],
+            'nico_nico_url' => $row['nico_nico_url'],
+            'hitbox_username' => $row['hitbox_username'],
+            'website' => $row['website']
+        );
+    }
+    
+    public function formatResponse($data) {
+        return $data;
+    }
+    
     public function actionGet() {        
         $resultset = $this->getResultset();
         
@@ -111,6 +127,11 @@ extends WebController {
         if(!empty($this->sort_by) && !empty($this->sort_direction)) {
             $resultset->setSortCriteriaFromAlias($this->sort_by, $this->sort_direction);
         }
+        
+        $resultset->addProcessorFunction(array(
+            $this,
+            'formatResponse'
+        ));
         
         $resultset->process();
         

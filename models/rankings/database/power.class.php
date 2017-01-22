@@ -12,7 +12,6 @@ extends Rankings {
         $resultset->setBaseQuery("
             SELECT
                 pre.*,
-                su.steamid,
                 su.personaname,
                 su.steamid,
                 su.twitch_username,

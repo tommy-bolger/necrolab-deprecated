@@ -3,6 +3,7 @@ namespace Modules\Necrolab\Controllers\Cli;
 
 use \Exception;
 use \DateTime;
+use \DateInterval;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
@@ -112,7 +113,7 @@ extends Cli {
         
         $leaderboards_xml = Leaderboards::getXml($xml_file_groups['leaderboards_xml']);
         $parsed_xml = Leaderboards::getParsedXml($leaderboards_xml);
-        
+
         unset($xml_file_groups['leaderboards_xml']);
         unset($leaderboards_xml);
         
@@ -246,5 +247,43 @@ extends Cli {
         }
         
         db()->commit();
+    }
+    
+    protected function recompressXml(DateTime $date) {
+        $xml_file_groups = Leaderboards::getXmlFiles($date);
+        
+        if(!empty($xml_file_groups)) {
+            $leaderboards_xml = Leaderboards::getOldXml($xml_file_groups['leaderboards_xml']);
+            unset($xml_file_groups['leaderboards_xml']);
+            
+            Leaderboards::saveXml($date, $leaderboards_xml);
+            
+            foreach($xml_file_groups as $lbid => $xml_file_group) {
+                foreach($xml_file_group as $page => $xml_file) {
+                    $entries_xml = Leaderboards::getOldXml($xml_file);
+                    
+                    Entries::saveXml($lbid, $date, $page, $entries_xml);
+                }
+            }
+        }
+    }
+    
+    public function actionRecompressXml($date = NULL) {
+        $date = new DateTime($date);
+        
+        $this->recompressXml($date);
+    }
+    
+    public function actionRecompressRangeXml($start_date, $end_date) {    
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->recompressXml($current_date);
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
     }
 }

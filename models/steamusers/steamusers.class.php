@@ -119,11 +119,11 @@ class SteamUsers {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/{$group_number}.json.gz", gzcompress(json_encode($data), 9));
+        file_put_contents("{$snapshot_path}/{$group_number}.json.gz", gzencode(json_encode($data), 9));
     }
     
     public static function getJson($file_path) {    
-        return json_decode(gzuncompress(file_get_contents($file_path)));
+        return json_decode(gzdecode(file_get_contents($file_path)));
     }
     
     public static function getJsonFiles(DateTime $date) {  

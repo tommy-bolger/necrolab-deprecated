@@ -30,126 +30,79 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Page\Rankings;
+namespace Modules\Necrolab\Controllers\Api\Rankings;
 
-use \Framework\Html\Table\DataTable;
-use \Framework\Utilities\Http;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
+use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\Rankings\Database\Power as PowerRankingsModel;
 
 class Power
-extends Rankings {   
-    protected $title = 'Power Rankings';
-    
-    public function init() {
-        parent::init();
-    
-        $this->active_page_category = 'rankings';
-        $this->active_page = 'power_rankings';
+extends Necrolab {
+    protected function getResultSet() {
+        return PowerRankingsModel::getEntriesResultset($this->date);
     }
     
-    public function action() {    
-        $this->page->body->addChild($this->getDataTable(), 'content');
-    }
-    
-    protected function getDataTable() {    
-        $resultset = PowerRankingsModel::getEntriesResultset($this->date);
-        $resultset->setRowsPerPage(100);
+    public function formatResponse($data) {        
+        $processed_data = array();
         
-        $data_table = new DataTable("power_rankings", false);
+        if(!empty($data)) {
+            $active_characters = CharactersModel::getActive();
         
-        $data_table->disableJavascript();
-        
-        $data_table->setNumberofColumns(10);
-        
-        $data_table->addRequestVariable('date', $this->date->format('Y-m-d'));
-        
-        $data_table->addHeader(array(
-            'name' => array(
-                'contents' => "&nbsp;",
-                'colspan' => 3
-            ),
-            'score' => array(
-                'contents' => "<div class=\"center menu_small\">Score</div>",
-                'classes' => array(
-                    'group_header_column',
-                    'group_header_column_first'
-                ),
-                'colspan' => 2,
-            ),
-            'speed' => array(
-                'contents' => "<div class=\"center menu_small\">Speed</div>",
-                'classes' => 'group_header_column',
-                'colspan' => 2,
-            ),
-            'deathless' => array(
-                'contents' => "<div class=\"center menu_small\">Deathless</div>",
-                'classes' => 'group_header_column',
-                'colspan' => 2
-            ),
-            'total' => array(
-                'contents' => "&nbsp;"
-            )
-        ));
-        
-        $data_table->setHeader(array(
-            'rank' => 'Rank',
-            'social_media' => '&nbsp;',
-            'personaname' => 'Player',
-            'score_rank' => '<span class="no_wrap">Rank</span>',
-            'score_rank_points_total' => '<span class="no_wrap">Points</span>',
-            'speed_rank' => '<span class="no_wrap">Rank</span>',
-            'speed_rank_points_total' => '<span class="no_wrap">Points</span>',            
-            'deathless_rank' => '<span class="no_wrap">Rank</span>',
-            'deathless_rank_points_total' => '<span class="no_wrap">Points</span>',
-            'total_points' => '<span class="no_wrap">Total<br />Points</span>'            
-        ));
-        
-        $filter_textbox = $data_table->addFilterTextbox('personaname', "su.personaname ILIKE '%?%'", NULL);
-        
-        $filter_textbox->setAttribute('placeholder', 'Search Players');
-        
-        $data_table->process($resultset, function($result_data) {
-            $processed_data = array();
-
-            if(!empty($result_data)) {
-                foreach($result_data as $row) {
-                    $processed_data[] = array(
-                        'rank' => $row['rank'],
-                        'social_media' => $this->getSocialMedia($row),
-                        'personaname' => $this->getUsernameLink($row['personaname'], $row['steamid']),
-                        'score_rank' => $row['score_rank'],
-                        'score_rank_points_total' => PowerRankingsModel::roundNumber($row['score_rank_points_total']),
-                        'speed_rank' => $row['speed_rank'],
-                        'speed_rank_points_total' => PowerRankingsModel::roundNumber($row['speed_rank_points_total']),
-                        'deathless_rank' => $row['deathless_rank'],
-                        'deathless_rank_points_total' => PowerRankingsModel::roundNumber($row['deathless_rank_points_total']),
-                        'total_points' => PowerRankingsModel::roundNumber($row['total_points'])
-                    );
-                }
-            }
+            foreach($data as $row) {
+                $processed_row['player'] = $this->getPlayerData($row);
             
-            return $processed_data;
-        });
-        
-        return $data_table;
-    }
-    
-    /*public function apiLatestRankings() {
-        $page_number = request()->get->getVariable('page', 'integer');
-        
-        if(empty($page_number)) {
-            $page_number = 1;
+                foreach($active_characters as $active_character) {
+                    $name = $active_character['name'];
+                    
+                    $character_rankings = array(
+                        'score_rank' => $row["{$name}_score_rank"],
+                        'score_rank_points' => $row["{$name}_score_rank_points"],
+                        'score' => $row["{$name}_score"],
+                        'speed_rank' => $row["{$name}_speed_rank"],
+                        'speed_rank_points' => $row["{$name}_speed_rank_points"],
+                        'speed_time' => $row["{$name}_speed_time"]
+                    );
+                    
+                    if(isset($row["{$name}_deathless_rank"])) {
+                        $character_rankings['deathless_rank'] = $row["{$name}_deathless_rank"];
+                        $character_rankings['deathless_rank_points'] = $row["{$name}_deathless_rank_points"];
+                        $character_rankings['deathless_win_count'] = $row["{$name}_deathless_win_count"];
+                    }
+                    
+                    $character_rankings['rank'] = $row["{$name}_rank"];
+                    $character_rankings['rank_points'] = $row["{$name}_rank_points"];
+                    
+                    $processed_row[$name] = $character_rankings;
+                }
+
+                $score_rankings = array(
+                    'rank' => $row['score_rank'],
+                    'rank_points' => $row['score_rank_points_total']
+                );
+                
+                $processed_row['score'] = $score_rankings;
+                
+                $speed_rankings = array(
+                    'rank' => $row['speed_rank'],
+                    'rank_points' => $row['speed_rank_points_total']
+                );
+                
+                $processed_row['speed'] = $speed_rankings;
+                
+                $deathless_rankings = array(
+                    'rank' => $row['deathless_rank'],
+                    'rank_points' => $row['deathless_rank_points_total']
+                );
+                
+                $processed_row['deathless'] = $deathless_rankings;
+                
+                $processed_row['rank'] = $row['rank'];
+                $processed_row['total_points'] = $row['total_points'];
+                
+                $processed_data[] = $processed_row;
+            }
         }
         
-        $resultset = PowerRankingsModel::getRankingsResultset($page_number, 100);
-        
-        $resultset->process();
-
-        return array(
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'pages' => $resultset->getTotalPages(),
-            'current_page' => $page_number,
-            'data' => $resultset->getData()
-        );
-    }*/
+        return $processed_data;
+    }
 }

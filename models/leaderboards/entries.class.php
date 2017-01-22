@@ -19,7 +19,7 @@ extends Necrolab {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/page_{$page}.xml.gz", gzcompress($xml, 9));
+        file_put_contents("{$snapshot_path}/page_{$page}.xml.gz", gzencode($xml, 9));
     }
 
     protected static function getRankingsResultset($lbid, $leaderboard_type) {}

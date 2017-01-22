@@ -259,11 +259,15 @@ extends Necrolab {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/leaderboards.xml.gz", gzcompress($xml, 9));
+        file_put_contents("{$snapshot_path}/leaderboards.xml.gz", gzencode($xml, 9));
     }
     
-    public static function getXml($file_path) {    
+    /*public static function getOldXml($file_path) {    
         return gzuncompress(file_get_contents($file_path));
+    }*/
+    
+    public static function getXml($file_path) {    
+        return gzdecode(file_get_contents($file_path));
     }
     
     public static function getXmlFiles(DateTime $date) {  
