@@ -56,4 +56,8 @@ extends RecordModel {
     protected $is_power_ranking;
     
     protected $is_daily_ranking; 
+    
+    protected $is_dlc;
+    
+    protected $release_id;
 }

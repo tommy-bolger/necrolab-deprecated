@@ -7,27 +7,29 @@ use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers;
 
 class Rankings
 extends BaseRankings {
-    protected static function load(DateTime $date) {
+    protected static function load($release_id, DateTime $date) {
         $date_formatted = $date->format('Y-m-d');
         
-        if(empty(static::$rankings[$date_formatted])) {
+        if(empty(static::$rankings[$release_id][$date_formatted])) {
             $ranking = db()->getRow("
                 SELECT *
                 FROM power_rankings
-                WHERE date = :date
+                WHERE release_id = :release_id
+                    AND date = :date
             ", array(
+                ':release_id' => $release_id,
                 ':date' => $date_formatted
             ));
             
             if(!empty($ranking)) {
-                static::$rankings[$date_formatted] = $ranking;
+                static::$rankings[$release_id][$date_formatted] = $ranking;
             }
         }
     }
 
-    public static function save(DateTime $date) {
+    public static function save($release_id, DateTime $date) {
         $date_formatted = $date->format('Y-m-d');
-        $power_ranking = static::get($date);
+        $power_ranking = static::get($release_id, $date);
         
         $current_time = date('Y-m-d H:i:s');
         
@@ -35,6 +37,7 @@ extends BaseRankings {
     
         if(empty($power_ranking)) {
             $record = array(
+                'release_id' => $release_id,
                 'created' => $current_time,
                 'date' => $date_formatted
             );
@@ -43,7 +46,7 @@ extends BaseRankings {
             
             $record['power_ranking_id'] = $power_ranking_id;
             
-            static::$rankings[$date_formatted] = $record;
+            static::$rankings[$release_id][$date_formatted] = $record;
         }
         else {      
             $power_ranking_id = $power_ranking['power_ranking_id'];
@@ -54,7 +57,7 @@ extends BaseRankings {
                 'power_ranking_id' => $power_ranking_id
             ));
             
-            static::$rankings[$date_formatted]['updated'] = $current_time;
+            static::$rankings[$release_id][$date_formatted]['updated'] = $current_time;
         }
         
         return $power_ranking_id;

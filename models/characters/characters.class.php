@@ -89,4 +89,16 @@ class Characters {
         
         return static::$characters_by_id[$character_id];
     }
+    
+    public static function getActiveByName($character_name) {
+        static::loadActive();
+
+        $character_record = array();
+        
+        if(isset(static::$active_characters[$character_name])) {
+            $character_record = static::$active_characters[$character_name];
+        }
+        
+        return $character_record;
+    }
 }

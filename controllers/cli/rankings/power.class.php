@@ -4,8 +4,10 @@ namespace Modules\Necrolab\Controllers\Cli\Rankings;
 use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
+use \Modules\Necrolab\Models\Releases\Database\Releases;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as DatabaseLeaderboardEntries;
+use \Modules\Necrolab\Models\Rankings\Database\Rankingtypes as DatabaseRankingTypes;
 use \Modules\Necrolab\Models\Rankings\Database\Rankings as DatabaseRankings;
 use \Modules\Necrolab\Models\Rankings\Database\Entries as DatabaseEntries;
 use \Modules\Necrolab\Models\Rankings\Cache\Entries as CacheEntries;
@@ -23,16 +25,18 @@ extends Cli {
     
     protected $as_of_date;
     
+    protected $release;
+    
     public function init() {
         $this->cache = cache();
     }
     
-    public function actionGenerate($date = NULL) {
-        $date = new DateTime($date);
-        
-        $this->as_of_date = $date;
-        
-        $leaderboard_entries_resulset = DatabaseLeaderboardEntries::getPowerRankingsResultset($date);
+    protected function generate() {
+        $this->cache->clear();
+    
+        $release_id = $this->release['release_id'];
+    
+        $leaderboard_entries_resulset = DatabaseLeaderboardEntries::getPowerRankingsResultset($release_id, $this->as_of_date);
         
         $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
 
@@ -62,12 +66,28 @@ extends Cli {
         
         db()->beginTransaction();
         
-        $power_ranking_id = DatabaseRankings::save($this->as_of_date);
+        $power_ranking_id = DatabaseRankings::save($release_id, $this->as_of_date);
         
         DatabaseEntries::clear($power_ranking_id, $this->as_of_date);
     
         CacheEntries::saveToDatabase($power_ranking_id, $this->as_of_date, $this->cache);
         
         db()->commit();
+        
+        $this->cache->clear();
+    }
+    
+    public function actionGenerate($date = NULL) {
+        $this->as_of_date = new DateTime($date);
+    
+        $releases = Releases::getByDate($this->as_of_date);
+        
+        if(!empty($releases)) {
+            foreach($releases as $release) {
+                $this->release = $release;
+                
+                $this->generate();
+            }
+        }
     }
 }

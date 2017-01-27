@@ -124,16 +124,24 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getPowerRankingsResultset(DateTime $date) {
+    public static function getPowerRankingsResultset($release_id, DateTime $date) {
         $resultset = static::getEntriesResultset($date);
+        
+        $resultset->addFilterCriteria('l.release_id = :release_id', array(
+            ':release_id' => $release_id
+        ));
         
         $resultset->addFilterCriteria('l.is_power_ranking = 1');
         
         return $resultset;
     }
     
-    public static function getDailyRankingsResultset(DateTime $date) {
+    public static function getDailyRankingsResultset($release_id, DateTime $date) {
         $resultset = static::getEntriesResultset($date);
+        
+        $resultset->addFilterCriteria('l.release_id = :release_id', array(
+            ':release_id' => $release_id
+        ));
         
         $resultset->addFilterCriteria('l.daily_date = :daily_date', array(
             ':daily_date' => $date->format('Y-m-d')
@@ -205,6 +213,7 @@ extends BaseEntries {
                 le.win_count,
                 sr.ugcid,
                 sr.seed,
+                led.details,
                 l.leaderboard_id,
                 su.steamid,
                 su.personaname,
@@ -218,6 +227,7 @@ extends BaseEntries {
             JOIN leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
             JOIN leaderboard_entry_details let ON let.leaderboard_entry_details_id = le.leaderboard_entry_details_id
             JOIN steam_users su ON su.steam_user_id = le.steam_user_id
+            JOIN leaderboard_entry_details led on led.leaderboard_entry_details_id = le.leaderboard_entry_details_id
             LEFT JOIN steam_replays sr ON sr.steam_replay_id = le.steam_replay_id
                 AND sr.downloaded = 1
             {{WHERE_CRITERIA}}

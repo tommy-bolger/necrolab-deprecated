@@ -31,6 +31,10 @@ class Necrolab {
         return self::$lua_script_path;
     }
     
+    public static function generateRankPoints($rank) {
+        return 1.7 / (log($rank / 100 + 1.03) / log(10));
+    }
+    
     public static function roundNumber($unrounded_number) {    
         $rounded_number = NULL;
     

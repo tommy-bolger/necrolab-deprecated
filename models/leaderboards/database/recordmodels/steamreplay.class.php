@@ -13,6 +13,10 @@ extends RecordModel {
     
     protected $seed;
     
+    protected $run_result_id;
+    
+    protected $steam_replay_version_id;
+    
     protected $downloaded;
     
     protected $invalid;

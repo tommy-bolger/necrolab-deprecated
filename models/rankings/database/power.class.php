@@ -6,8 +6,22 @@ use \Framework\Data\ResultSet\SQL;
 
 class Power
 extends Rankings {
-    public static function getEntriesResultset(DateTime $date) {    
+    public static function getRankingsResultset() {
         $resultset = new SQL('power_rankings');
+    
+        $resultset->setBaseQuery("
+            SELECT *
+            FROM power_rankings
+            {{WHERE_CRITERIA}}
+        ");
+        
+        $resultset->setSortCriteria('date', 'ASC'); 
+        
+        return $resultset;
+    }
+
+    public static function getEntriesResultset(DateTime $date) {    
+        $resultset = new SQL('power_ranking_entries');
     
         $resultset->setBaseQuery("
             SELECT

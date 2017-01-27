@@ -69,59 +69,11 @@ extends BaseEntries {
         ));
     }
 
-    protected static function getEntriesBaseResultset(DateTime $date, $number_of_days) {        
-        $resultset = new SQL('daily_ranking_entries');
-        
-        $resultset->setBaseQuery("
-            SELECT
-                dre.rank,
-                dre.first_place_ranks,
-                dre.top_5_ranks,
-                dre.top_10_ranks,
-                dre.top_20_ranks,
-                dre.top_50_ranks,
-                dre.top_100_ranks,
-                dre.total_points,
-                dre.points_per_day,
-                dre.total_dailies,
-                dre.total_wins,
-                dre.average_rank,
-                dr.daily_ranking_id,
-                dre.steam_user_id,
-                drdt.daily_ranking_day_type_id,
-                drdt.number_of_days,
-                su.steamid
-            FROM daily_rankings dr
-            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
-            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
-            JOIN daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id
-            {{WHERE_CRITERIA}}
-        ");
-        
-        $resultset->addFilterCriteria("dr.date = :date", array(
-            ':date' => $date->format('Y-m-d')
-        ));
-        
-        $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
-            ':number_of_days' => $number_of_days
-        ));
-    
-        return $resultset;
-    }
-
     public static function getEntriesResultset(DateTime $date, $number_of_days = NULL) {
         if(empty($number_of_days)) {
             $number_of_days = 0;
         }
     
-        $resultset = static::getEntriesBaseResultset($date, $number_of_days);        
-        
-        $resultset->addSortCriteria('dre.rank', 'ASC');
-    
-        return $resultset;
-    }
-    
-    protected static function getEntriesBaseDisplayResultset(DateTime $date, $number_of_days) {        
         $resultset = new SQL('daily_ranking_entries');
         
         $resultset->setBaseQuery("
@@ -138,6 +90,7 @@ extends BaseEntries {
                 dre.total_dailies,
                 dre.total_wins,
                 dre.average_rank,
+                dre.sum_of_ranks,
                 dr.daily_ranking_id,
                 dre.steam_user_id,
                 drdt.daily_ranking_day_type_id,
@@ -163,20 +116,10 @@ extends BaseEntries {
         $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
             ':number_of_days' => $number_of_days
         ));
-    
-        return $resultset;
-    }
-    
-    public static function getEntriesDisplayResultset(DateTime $date, $number_of_days = NULL) {
-        if(empty($number_of_days)) {
-            $number_of_days = 0;
-        }
-    
-        $resultset = static::getEntriesBaseDisplayResultset($date, $number_of_days);  
-        
-        $resultset->setRowsPerPage(100);
         
         $resultset->addSortCriteria('dre.rank', 'ASC');
+        
+        $resultset->setRowsPerPage(100);
     
         return $resultset;
     }

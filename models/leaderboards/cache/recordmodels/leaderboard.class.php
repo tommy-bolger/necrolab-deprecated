@@ -41,6 +41,10 @@ extends RecordModel {
     
     protected $is_daily_ranking; 
     
+    protected $is_dlc;
+    
+    protected $release_id;
+    
     protected function getPropertyValue($property_name, $property_value) { 
         $new_property_value = NULL;
     
@@ -59,6 +63,8 @@ extends RecordModel {
             case 'is_prod':
             case 'is_power_ranking':
             case 'is_daily_ranking':
+            case 'is_dlc':
+            case 'release_id':
                 $new_property_value = (int)$property_value;
                 break;
             default:

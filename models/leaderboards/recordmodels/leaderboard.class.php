@@ -7,11 +7,11 @@ use \DateTime;
 use \Framework\Core\RecordModel;
 use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
+use \Modules\Necrolab\Models\Releases\Database\Releases;
+use \Modules\Necrolab\Models\Characters\Database\Characters;
 
 class Leaderboard
 extends RecordModel {  
-    protected static $live_date;
-
     protected $name;
     
     protected $url;
@@ -27,6 +27,8 @@ extends RecordModel {
     protected $displaytype;
     
     protected $character_name;
+    
+    protected $character_id;
     
     protected $is_speedrun;
     
@@ -54,15 +56,13 @@ extends RecordModel {
     
     protected $is_prod;
     
+    protected $is_dlc;
+    
     protected $is_power_ranking;
     
     protected $is_daily_ranking; 
     
-    public function __construct() {        
-        if(!isset(static::$live_date)) {
-            static::$live_date = new DateTime(Module::getInstance('necrolab')->configuration->steam_live_launch_date);
-        }
-    }
+    protected $release_id;
     
     protected function getPropertyValue($property_name, $property_value) {         
         return $property_value;
@@ -133,6 +133,7 @@ extends RecordModel {
         $is_story_mode = 0;
         $is_dev = 0;
         $is_prod = 0;
+        $is_dlc = 0;
         
         if(strpos($leaderboard_name, 'speedrun') !== false) {
             $is_speedrun = 1;
@@ -178,6 +179,16 @@ extends RecordModel {
             $is_prod = 1;
         }
         
+        if(strpos($leaderboard_name, 'dlc') !== false) {
+            $is_dlc = 1;
+        }
+        
+        $character_record = Characters::getActiveByName($character_name);
+        
+        if(!empty($character_record)) {
+            $this->character_id = $character_record['character_id'];
+        }
+        
         /*
             If this run is a daily then grab the date it is for.
             Date matching solution found at: http://stackoverflow.com/a/7645146
@@ -221,8 +232,6 @@ extends RecordModel {
             empty($is_co_op) && 
             empty($is_seeded) && 
             empty($is_daily) &&
-            empty($is_dev) && 
-            !empty($is_prod) && 
             (empty($is_deathless) || (!empty($is_deathless) && empty($is_story_mode) && empty($is_all_character) && empty($is_speedrun)))
         ) {
             $is_power_ranking = 1;
@@ -236,14 +245,31 @@ extends RecordModel {
             empty($is_co_op) && 
             empty($is_seeded) && 
             !empty($is_daily) &&
-            empty($is_dev) && 
-            !empty($is_prod) && 
             $character_name == 'cadence' &&
-            !empty($daily_date) && 
-            $daily_date >= static::$live_date
+            !empty($daily_date)
         ) {
             $is_daily_ranking = 1;
-        }            
+        }        
+        
+        $release_id = NULL;
+        
+        if(!empty($is_dev)) {
+            $release = Releases::getByName('early_access');
+            
+            $release_id = $release['release_id'];
+        }
+        elseif(!empty($is_prod)) {
+            if(!empty($is_dlc)) {
+                $release = Releases::getByName('amplified_dlc_early_access');
+                
+                $release_id = $release['release_id'];
+            }
+            else {
+                $release = Releases::getByName('original_release');
+            
+                $release_id = $release['release_id'];
+            }
+        }
         
         $this->name = $leaderboard->name;
         $this->url = $leaderboard->url;
@@ -268,6 +294,8 @@ extends RecordModel {
         $this->is_prod = $is_prod;
         $this->is_power_ranking = $is_power_ranking;
         $this->is_daily_ranking = $is_daily_ranking;    
+        $this->is_dlc = $is_prod;
+        $this->release_id = $release_id;
     }
     
     public function isValid(DateTime $date) {
@@ -278,10 +306,24 @@ extends RecordModel {
         }
         
         $blacklist_record = Blacklist::getRecordById($this->lbid);
+        
+        $date_within_release = false;
+        
+        if(!empty($this->release_id)) {
+            $release = Releases::getById($this->release_id);
+            
+            $start_date = new DateTime($release['start_date']);
+            $end_date = new DateTime($release['end_date']);
+            
+            if($date >= $start_date && $date <= $end_date) {
+                $date_within_release = true;
+            }
+        }
     
         return (
             empty($blacklist_record) && 
-            $this->is_prod == 1 && 
+            !empty($this->character_id) && 
+            $date_within_release && 
             ($this->is_daily == 0) || ($this->is_daily == 1 && $this->is_daily_ranking == 1 && $this->daily_date_object >= $date && $daily_date_difference->format('%a') == 1)
         );
     }

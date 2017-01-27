@@ -151,9 +151,15 @@ extends Cli {
                             unset($entries_xml);
                             
                             if(!empty($parsed_xml->entries->entry)) {
+                                $entries = $parsed_xml->entries->entry;
+                                
+                                if(!is_array($entries)) {
+                                    $entries = array($entries);
+                                }
+                            
                                 $rank = 1;
                             
-                                foreach($parsed_xml->entries->entry as $entry) {
+                                foreach($entries as $entry) {
                                     $entry_record = new LeaderboardEntry();
                                     
                                     $entry_record->setPropertiesFromSteamObject($entry, $leaderboard_record);

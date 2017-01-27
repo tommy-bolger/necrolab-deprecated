@@ -1,7 +1,10 @@
 <?php
 namespace Modules\Necrolab\Models\Dailies\Rankings\Cache;
 
-class Entry {
+use \Modules\Necrolab\Models\Necrolab;
+
+class Entry
+extends Necrolab {
     public static function saveFromLeaderboardEntry(array $leaderboard_entry, $day_type_id, $cache = NULL) {    
         if(empty($cache)) {
             $cache = cache();
@@ -34,7 +37,7 @@ class Entry {
             $cache->hIncrBy($daily_ranking_entry_hash_name, 'top_100_ranks', 1);
         }
         
-        $rank_points = 1.7 / (log($rank / 100 + 1.03) / log(10));
+        $rank_points = static::generateRankPoints($rank);
         
         $cache->hIncrByFloat($daily_ranking_entry_hash_name, 'total_points', $rank_points);
         $cache->zIncrBy(CacheNames::getTotalPointsName($day_type_id), $rank_points, $steam_user_id);
@@ -47,6 +50,6 @@ class Entry {
         $cache->hIncrBy(CacheNames::getRankSumName($day_type_id), $steam_user_id, $rank);
         
         $cache->hIncrBy($daily_ranking_entry_hash_name, 'total_dailies', 1);
-        $cache->hIncrBy(CacheNames::getRankSumName($day_type_id), $steam_user_id, 1);
+        $cache->hIncrBy(CacheNames::getTotalDailiesName($day_type_id), $steam_user_id, 1);
     }
 }

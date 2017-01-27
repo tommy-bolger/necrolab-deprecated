@@ -6,7 +6,11 @@ use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Api\Steam\ISteamRemoteStorage;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
+use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
+use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\SteamReplay;
+use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\RunResult as DatabaseRunResult;
+use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\ReplayVersion as DatabaseReplayVersion;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\SteamReplay as DatabaseSteamReplay;
 
 class SteamReplays
@@ -112,9 +116,27 @@ extends Cli {
                 $successful = rename($temp_replay_file['file_path'], $temp_replay_file['destination_file_path']);
                 
                 if($successful) {
+                    //Run result
+                    $run_result = new DatabaseRunResult();
+                    
+                    $run_result->name = $steam_replay->run_result;
+                    $run_result->is_win = $steam_replay->is_win;
+                    
+                    $run_result_id = DatabaseRunResults::save($run_result);
+                    
+                    //Steam replay version
+                    $replay_version = new DatabaseReplayVersion();
+                    
+                    $replay_version->name = $steam_replay->replay_version;
+                    
+                    $replay_version_id = DatabaseReplayVersions::save($replay_version);
+                    
+                    //Steam replay save
                     $steam_replay_record = new DatabaseSteamReplay();
                     
                     $steam_replay_record->seed = $steam_replay->seed;
+                    $steam_replay_record->run_result_id = $run_result_id;
+                    $steam_replay_record->steam_replay_version_id = $replay_version_id;
                     $steam_replay_record->downloaded = 1;
                     $steam_replay_record->invalid = 0;
                     
