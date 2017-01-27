@@ -68,6 +68,8 @@ extends BaseReplays {
         $resultset->addFilterCriteria('downloaded = 0');
         $resultset->addFilterCriteria('invalid = 0');
         
+        $resultset->addSortCriteria('ugcid', 'ASC');
+        
         return $resultset;
     }
 }
