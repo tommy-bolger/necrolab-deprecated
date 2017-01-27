@@ -1,7 +1,7 @@
 CREATE TABLE steam_replay_versions
 (
    steam_replay_version_id smallserial NOT NULL, 
-   name character varying(10) NOT NULL
+   name smallint NOT NULL,
    CONSTRAINT pk_srv_steam_replay_versions_steam_replay_version_id PRIMARY KEY (steam_replay_version_id)
 ) 
 WITH (
