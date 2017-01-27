@@ -30,6 +30,7 @@ extends RecordModel {
             
             if(empty($this->run_result)) {
                 $this->is_win = 1;
+                $this->run_result = 'WIN';
             }
             else {
                 $this->is_win = 0;
