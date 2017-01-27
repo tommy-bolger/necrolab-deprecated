@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Necrolab\Controllers\Cli;
 
+use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
@@ -50,11 +51,7 @@ extends Cli {
             }
         }
         
-        if($retrieval_successful == false) {
-            throw new Exception("Retrieval for steam replay id {$ugcid} has failed.");
-        }
-        
-        if(!empty($replay_meta_data->data->url)) {
+        if($retrieval_successful && !empty($replay_meta_data->data->url)) {
             $replay_file_data = DatabaseReplays::getFileData($replay_meta_data->data->url);
 
             DatabaseReplays::saveTempFile($ugcid, $replay_file_data);

@@ -16,10 +16,8 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Details;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\Leaderboard;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\LeaderboardEntry;
-use \Modules\Necrolab\Models\Leaderboards\RecordModels\SteamReplay;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\LeaderboardEntry as DatabaseLeaderboardEntry;
-use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Steamreplay as DatabaseSteamReplay;
 use \Modules\Necrolab\Models\SteamUsers\RecordModels\SteamUser;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
