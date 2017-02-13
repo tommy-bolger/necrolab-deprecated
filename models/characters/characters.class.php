@@ -101,4 +101,11 @@ class Characters {
         
         return $character_record;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return array(
+            'name' => $data_row['name'],
+            'display_name' => $data_row['display_name']
+        );
+    }
 }

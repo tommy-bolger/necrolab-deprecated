@@ -1,6 +1,6 @@
 <?php
 /**
-* The home page of the Necrolab.
+* The api endpoint for the root of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -30,9 +30,7 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Page;
-
-use \Modules\Necrolab\Controllers\Page\Rankings\Power;
+namespace Modules\Necrolab\Controllers\Api;
 
 class Home
-extends Power {}
+extends Necrolab {}

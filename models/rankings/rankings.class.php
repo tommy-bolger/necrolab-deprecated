@@ -28,4 +28,8 @@ extends Necrolab {
     public static function getLastRefreshed() {
         return false;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return $data_row['date'];
+    }
 }

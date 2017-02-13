@@ -65,9 +65,15 @@ extends AdminHome {
     }
     
     protected function initializeModuleLinks() {
-        $power_rankings_path = array(
+        $leaderboards_path = array(
             'admin',
-            'power_rankings'
+            'leaderboards'
+        );
+            
+        $blacklist_path = array(
+            'admin',
+            'leaderboards',
+            'blacklist'
         );
         
         $daily_rankings_path = array(
@@ -75,14 +81,10 @@ extends AdminHome {
             'daily_rankings'
         );
         
-        $cool_stats_path = array(
+        $daily_ranking_seasons_path = array(
             'admin',
-            'cool_stats'
-        );
-        
-        $multi_character_path = array(
-            'admin',
-            'multi_character_speedruns'
+            'daily_rankings',
+            'seasons'
         );
         
         if(isset(session()->necrolab_links)) {
@@ -94,14 +96,34 @@ extends AdminHome {
                     'top_nav' => array(
                         'Necrolab' => Http::getInternalUrl('necrolab', array('admin'))
                     )
-                )
+                ),
+                'leaderboards' => array(
+                    'top_nav' => array(
+                        'Leaderboards' => Http::getInternalUrl('necrolab', $leaderboards_path, 'home')
+                    ),
+                    'sub_nav' => array(
+                        'Blacklist' => array(
+                            'Manage' => Http::getInternalUrl('necrolab', $blacklist_path, 'manage'),
+                            'Add/Edit' => Http::getInternalUrl('necrolab', $blacklist_path, 'add')
+                        )
+                    )
+                ),
+                'daily_rankings' => array(
+                    'top_nav' => array(
+                        'Daily Rankings' => Http::getInternalUrl('necrolab', $daily_rankings_path, 'home')
+                    ),
+                    'sub_nav' => array(
+                        'Seasons' => array(
+                            'Manage' => Http::getInternalUrl('necrolab', $daily_ranking_seasons_path, 'manage'),
+                            'Add/Edit' => Http::getInternalUrl('necrolab', $daily_ranking_seasons_path, 'add')
+                        )
+                    )
+                ),
             );
             
             $this->module_links += $this->getErrorsLinks();
             
             $this->module_links += $this->getSettingsLinks();
-            
-            //$this->module_links += array();
         }
     }
     

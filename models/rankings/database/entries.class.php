@@ -2,15 +2,20 @@
 namespace Modules\Necrolab\Models\Rankings\Database;
 
 use \DateTime;
+use \Framework\Data\ResultSet\SQL;
+use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
+use \Modules\Necrolab\Models\Rankings\Database\Entry as DatabaseEntry;
+use \Modules\Necrolab\Models\Rankings\Entries as BaseEntries;
 
-class Entries {
+class Entries
+extends BaseEntries {
     public static function createPartitionTable(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         db()->exec("        
             CREATE TABLE power_ranking_entries_{$date_formatted}
             (
-                power_ranking_id smallint NOT NULL,
+                power_ranking_id integer NOT NULL,
                 steam_user_id integer NOT NULL,
                 cadence_score_rank integer,
                 cadence_score_rank_points double precision,
@@ -215,5 +220,115 @@ class Entries {
         db()->delete("power_ranking_entries_{$date_formatted}", array(
             'power_ranking_id' => $power_ranking_id
         ));
+    }
+    
+    public static function getAllBaseResultset($release_name, DateTime $date) {    
+        $resultset = new SQL('power_ranking_entries');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            ),
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            )
+        ));
+        
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('power_rankings pr');
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = pr.release_id');
+        $resultset->addJoinCriteria("power_ranking_entries_{$date->format('Y_m')} pre ON pre.power_ranking_id = pr.power_ranking_id");
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
+        
+        $resultset->addFilterCriteria('pr.date = :date', array(
+            ':date' => $date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('r.name = :release_name', array(
+            ':release_name' => $release_name
+        ));
+        
+        $resultset->setSortCriteria('pre.rank', 'ASC');
+        
+        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        
+        return $resultset;
+    }
+    
+    public static function getAllScoreResultset($release_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $date);
+        
+        $resultset->addFilterCriteria('pre.score_rank IS NOT NULL');
+        $resultset->setSortCriteria('pre.score_rank', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getAllSpeedResultset($release_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $date);
+        
+        $resultset->addFilterCriteria('pre.speed_rank IS NOT NULL');
+        $resultset->setSortCriteria('pre.speed_rank', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getAllDeathlessResultset($release_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $date);
+        
+        $resultset->addFilterCriteria('pre.deathless_rank IS NOT NULL');
+        $resultset->setSortCriteria('pre.deathless_rank', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserBaseResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date) {                    
+        $resultset = new SQL('steam_user_power_ranking_entries');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'pr.date',
+                'alias' => 'date'
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            )
+        ));
+        
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('power_rankings pr');
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = pr.release_id');
+        $resultset->addJoinCriteria('{{PARTITION_TABLE}} pre ON pre.power_ranking_id = pr.power_ranking_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
+        
+        $parition_table_names = static::getPartitionTableNames('power_ranking_entries', $start_date, $end_date);
+        
+        foreach($parition_table_names as $parition_table_name) {
+            $resultset->addPartitionTable($parition_table_name);
+        }
+        
+        $resultset->addFilterCriteria('su.steamid = ?', array(
+            $steamid
+        ));
+        
+        $resultset->addFilterCriteria('pr.date BETWEEN ? AND ?', array(
+            $start_date->format('Y-m-d'),
+            $end_date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('r.name = ?', array(
+            $release_name
+        ));
+
+        $resultset->setSortCriteria('date', 'ASC');
+        
+        return $resultset;
     }
 }

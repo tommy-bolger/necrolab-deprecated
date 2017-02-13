@@ -3,6 +3,8 @@ namespace Modules\Necrolab\Models\Dailies\Rankings\Database;
 
 use \DateTime;
 use \Framework\Data\ResultSet\SQL;
+use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DatabaseEntry;
+use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
 use \Modules\Necrolab\Models\Dailies\Rankings\Entries as BaseEntries;
 
 class Entries
@@ -69,48 +71,56 @@ extends BaseEntries {
         ));
     }
 
-    public static function getEntriesResultset(DateTime $date, $number_of_days = NULL) {
+    public static function getAllBaseResultset($release_name, DateTime $date, $number_of_days = NULL) {
         if(empty($number_of_days)) {
             $number_of_days = 0;
         }
     
         $resultset = new SQL('daily_ranking_entries');
         
-        $resultset->setBaseQuery("
-            SELECT
-                dre.rank,
-                dre.first_place_ranks,
-                dre.top_5_ranks,
-                dre.top_10_ranks,
-                dre.top_20_ranks,
-                dre.top_50_ranks,
-                dre.top_100_ranks,
-                dre.total_points,
-                dre.points_per_day,
-                dre.total_dailies,
-                dre.total_wins,
-                dre.average_rank,
-                dre.sum_of_ranks,
-                dr.daily_ranking_id,
-                dre.steam_user_id,
-                drdt.daily_ranking_day_type_id,
-                drdt.number_of_days,
-                su.steamid,
-                su.personaname,
-                su.twitch_username,
-                su.twitter_username,
-                su.nico_nico_url,
-                su.hitbox_username,
-                su.website
-            FROM daily_rankings dr
-            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
-            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
-            JOIN daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id
-            {{WHERE_CRITERIA}}
-        ");
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'dr.date',
+                'alias' => 'date'
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            ),
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            ),
+            array(
+                'field' => 'dr.daily_ranking_id',
+                'alias' => 'daily_ranking_id'
+            ),
+            array(
+                'field' => 'drdt.daily_ranking_day_type_id',
+                'alias' => 'daily_ranking_day_type_id'
+            ),
+            array(
+                'field' => 'drdt.number_of_days',
+                'alias' => 'number_of_days'
+            )
+        ));
+        
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('daily_rankings dr');
+        
+        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
+        $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
+        $resultset->addJoinCriteria("daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
+        $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
+        
         
         $resultset->addFilterCriteria("dr.date = :date", array(
             ':date' => $date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('r.name = :release_name', array(
+            ':release_name' => $release_name
         ));
         
         $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
@@ -120,7 +130,76 @@ extends BaseEntries {
         $resultset->addSortCriteria('dre.rank', 'ASC');
         
         $resultset->setRowsPerPage(100);
+        
+        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
     
+        return $resultset;
+    }
+    
+    public static function getSteamUserBaseResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date, $number_of_days = NULL) {
+        if(empty($number_of_days)) {
+            $number_of_days = 0;
+        }
+    
+        $resultset = new SQL('steam_user_daily_ranking_entries');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'dr.date',
+                'alias' => 'date'
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            ),
+            array(
+                'field' => 'dr.daily_ranking_id',
+                'alias' => 'daily_ranking_id'
+            ),
+            array(
+                'field' => 'drdt.daily_ranking_day_type_id',
+                'alias' => 'daily_ranking_day_type_id'
+            ),
+            array(
+                'field' => 'drdt.number_of_days',
+                'alias' => 'number_of_days'
+            )
+        ));
+        
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('daily_rankings dr');
+        
+        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
+        $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
+        $resultset->addJoinCriteria("{{PARTITION_TABLE}} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
+        $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
+        
+        $parition_table_names = static::getPartitionTableNames('daily_ranking_entries', $start_date, $end_date);
+        
+        foreach($parition_table_names as $parition_table_name) {
+            $resultset->addPartitionTable($parition_table_name);
+        }
+        
+        $resultset->addFilterCriteria('su.steamid = ?', array(
+            $steamid
+        ));
+        
+        $resultset->addFilterCriteria('dr.date BETWEEN ? AND ?', array(
+            $start_date->format('Y-m-d'),
+            $end_date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('r.name = ?', array(
+            $release_name
+        ));
+        
+        $resultset->addFilterCriteria('drdt.number_of_days = ?', array(
+            $number_of_days
+        ));
+        
+        $resultset->setSortCriteria('date', 'ASC');
+        
         return $resultset;
     }
 }

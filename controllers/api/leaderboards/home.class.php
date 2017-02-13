@@ -1,6 +1,6 @@
 <?php
 /**
-* The home page of the leaderboards section of Necrolab.
+* The api endpoint of leaderboards of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -30,9 +30,7 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Page\Leaderboards;
-
-use \Modules\Necrolab\Controllers\Page\Leaderboards\Score\Home as ScoreHome;
+namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
 class Home
-extends ScoreHome {}
+extends Leaderboards {}

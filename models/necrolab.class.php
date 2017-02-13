@@ -1,6 +1,7 @@
 <?php
 namespace Modules\Necrolab\Models;
 
+use \Exception;
 use \DateTime;
 use \DateInterval;
 use \Framework\Core\Framework;
@@ -33,35 +34,5 @@ class Necrolab {
     
     public static function generateRankPoints($rank) {
         return 1.7 / (log($rank / 100 + 1.03) / log(10));
-    }
-    
-    public static function roundNumber($unrounded_number) {    
-        $rounded_number = NULL;
-    
-        if(!empty($unrounded_number)) {
-            $rounding_place = 1;
-            $unrounded_number_split = explode('.', (string)$unrounded_number);
-            
-            $left_decimal = $unrounded_number_split[0];
-        
-            if(strlen($left_decimal) == 2) {
-                $rounding_place = 2;
-            }
-            
-            if(strlen($left_decimal) == 1) {
-                $left_decimal = (int)$left_decimal;
-            
-                if($left_decimal < 1) {
-                    $rounding_place = 5;
-                }
-                else {
-                    $rounding_place = 3;
-                }
-            }
-        
-            $rounded_number = round($unrounded_number, $rounding_place);
-        }
-    
-        return $rounded_number;
     }
 }

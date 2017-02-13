@@ -84,7 +84,7 @@ extends Players {
     
     public function actionGet() {     
         $user_template = new TemplateElement("player.php");
-        
+
         if(isset(session()->steamid) && $this->steamid == session()->steamid) {
             $authenticated_user_form = new TableForm('authenticated_user_form');
             $authenticated_user_form->disableJavascript();
@@ -108,7 +108,7 @@ extends Players {
             $user_template->addChild($authenticated_user_form, 'steam_user_form');
         }
         else {            
-            $steam_login_form = new Form('steam_login', Http::generateUrl('/players/player/steam_login', array(
+            $steam_login_form = new Form('steam_login', Http::generateUrl('/players/player/login/steam', array(
                 'id' => $this->steamid
             )), 'post', false);
             $steam_login_form->disableJavascript();

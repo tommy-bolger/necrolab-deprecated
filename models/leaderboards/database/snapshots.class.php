@@ -4,7 +4,10 @@ namespace Modules\Necrolab\Models\Leaderboards\Database;
 use \DateTime;
 use \Exception;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Leaderboards\Snapshots as BaseSnapshots;
+use \Modules\Necrolab\Models\Releases\Database\Leaderboards;
+use \Modules\Necrolab\Models\Releases\Database\Releases;
 use \Modules\Necrolab\Models\leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 
 class Snapshots
@@ -67,5 +70,56 @@ extends BaseSnapshots {
         }
         
         return $leaderboard_snapshot_id;
+    }
+    
+    public static function getAllBaseResultset($lbid) {
+        $resultset = new SQL('leaderboard_snapshots');
+        
+        $resultset->setBaseQuery("
+            SELECT ls.*
+            FROM leaderboards l
+            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
+            {{WHERE_CRITERIA}}
+        ");
+        
+        $resultset->addFilterCriteria('l.lbid = :lbid', array(
+            ':lbid' => $lbid
+        ));
+        
+        $resultset->addSortCriteria('ls.date', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserBaseResultset($steamid, $lbid) {
+        $resultset = new SQL('leaderboard_snapshots');
+        
+        $resultset->setBaseQuery("
+            SELECT ls.*
+            FROM leaderboards l
+            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
+            JOIN {{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
+            JOIN steam_users su ON su.steam_user_id = le.steam_user_id
+            {{WHERE_CRITERIA}}
+            GROUP BY ls.leaderboard_snapshot_id
+        ");
+        
+        $parition_table_names = static::getPartitionTableNames('leaderboard_entries', new DateTime('2015-04-01'), new DateTime());
+        
+        foreach($parition_table_names as $parition_table_name) {
+            $resultset->addPartitionTable($parition_table_name);
+        }
+        
+        $resultset->addFilterCriteria('su.steamid = ?', array(
+            $steamid
+        ));
+        
+        $resultset->addFilterCriteria('l.lbid = ?', array(
+            $lbid
+        ));
+        
+        $resultset->addSortCriteria('date', 'ASC');
+        
+        return $resultset;
     }
 }

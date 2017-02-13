@@ -1,6 +1,6 @@
 <?php
 /**
-* The home page of the Necrolab.
+* The speed category of the power rankings of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -32,10 +32,6 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Rankings\Categories;
 
-use \Framework\Html\Table\DataTable;
-use \Framework\Utilities\Http;
-use \Modules\Necrolab\Models\Rankings\Database\Speed as SpeedRankingsModel;
-
 class Speed
 extends Categories {   
     protected $title = 'Speed Rankings';
@@ -46,50 +42,11 @@ extends Categories {
         $this->active_page = 'speed_rankings';
     }
     
-    public function action() {    
-        $this->page->body->addChild($this->getDataTable(), 'content');
+    public function setup() {
+        parent::setup();
+        
+        $this->page->addJavascriptFiles(array(
+            '/tables/speed_rankings.js'
+        ));
     }
-    
-    protected function getDataTable() {    
-        $resultset = SpeedRankingsModel::getEntriesDisplayResultset($this->date);  
-        
-        $data_table = new DataTable("speed_rankings", false);
-        
-        $data_table->disableJavascript();
-        
-        $data_table->addRequestVariable('date', $this->date->format('Y-m-d'));
-        
-        $data_table->setNumberofColumns(16);
-        
-        $data_table->setHeader($this->getTableHeader('speed'));
-        
-        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);
-        
-        $filter_textbox->setAttribute('placeholder', 'Search Players');
-        
-        $data_table->process($resultset, function($result_data) {
-            return $this->processTableData('speed', $result_data);
-        });
-        
-        return $data_table;
-    }
-    
-    /*public function apiLatestRankings() {
-        $page_number = request()->get->getVariable('page', 'integer');
-        
-        if(empty($page_number)) {
-            $page_number = 1;
-        }
-        
-        $resultset = SpeedRankingsModel::getLatestRankingsFromCache($page_number, 100);
-        
-        $resultset->process();
-
-        return array(
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'pages' => $resultset->getTotalPages(),
-            'current_page' => $page_number,
-            'data' => $resultset->getData()
-        );
-    }*/
 }

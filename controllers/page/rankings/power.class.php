@@ -32,10 +32,6 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Rankings;
 
-use \Framework\Html\Table\DataTable;
-use \Framework\Utilities\Http;
-use \Modules\Necrolab\Models\Rankings\Database\Power as PowerRankingsModel;
-
 class Power
 extends Rankings {   
     protected $title = 'Power Rankings';
@@ -47,109 +43,11 @@ extends Rankings {
         $this->active_page = 'power_rankings';
     }
     
-    public function action() {    
-        $this->page->body->addChild($this->getDataTable(), 'content');
-    }
-    
-    protected function getDataTable() {    
-        $resultset = PowerRankingsModel::getEntriesResultset($this->date);
-        $resultset->setRowsPerPage(100);
+    public function setup() {
+        parent::setup();
         
-        $data_table = new DataTable("power_rankings", false);
-        
-        $data_table->disableJavascript();
-        
-        $data_table->setNumberofColumns(10);
-        
-        $data_table->addRequestVariable('date', $this->date->format('Y-m-d'));
-        
-        $data_table->addHeader(array(
-            'name' => array(
-                'contents' => "&nbsp;",
-                'colspan' => 3
-            ),
-            'score' => array(
-                'contents' => "<div class=\"center menu_small\">Score</div>",
-                'classes' => array(
-                    'group_header_column',
-                    'group_header_column_first'
-                ),
-                'colspan' => 2,
-            ),
-            'speed' => array(
-                'contents' => "<div class=\"center menu_small\">Speed</div>",
-                'classes' => 'group_header_column',
-                'colspan' => 2,
-            ),
-            'deathless' => array(
-                'contents' => "<div class=\"center menu_small\">Deathless</div>",
-                'classes' => 'group_header_column',
-                'colspan' => 2
-            ),
-            'total' => array(
-                'contents' => "&nbsp;"
-            )
+        $this->page->addJavascriptFiles(array(
+            '/tables/power_rankings.js'
         ));
-        
-        $data_table->setHeader(array(
-            'rank' => 'Rank',
-            'social_media' => '&nbsp;',
-            'personaname' => 'Player',
-            'score_rank' => '<span class="no_wrap">Rank</span>',
-            'score_rank_points_total' => '<span class="no_wrap">Points</span>',
-            'speed_rank' => '<span class="no_wrap">Rank</span>',
-            'speed_rank_points_total' => '<span class="no_wrap">Points</span>',            
-            'deathless_rank' => '<span class="no_wrap">Rank</span>',
-            'deathless_rank_points_total' => '<span class="no_wrap">Points</span>',
-            'total_points' => '<span class="no_wrap">Total<br />Points</span>'            
-        ));
-        
-        $filter_textbox = $data_table->addFilterTextbox('personaname', "su.personaname ILIKE '%?%'", NULL);
-        
-        $filter_textbox->setAttribute('placeholder', 'Search Players');
-        
-        $data_table->process($resultset, function($result_data) {
-            $processed_data = array();
-
-            if(!empty($result_data)) {
-                foreach($result_data as $row) {
-                    $processed_data[] = array(
-                        'rank' => $row['rank'],
-                        'social_media' => $this->getSocialMedia($row),
-                        'personaname' => $this->getUsernameLink($row['personaname'], $row['steamid']),
-                        'score_rank' => $row['score_rank'],
-                        'score_rank_points_total' => PowerRankingsModel::roundNumber($row['score_rank_points_total']),
-                        'speed_rank' => $row['speed_rank'],
-                        'speed_rank_points_total' => PowerRankingsModel::roundNumber($row['speed_rank_points_total']),
-                        'deathless_rank' => $row['deathless_rank'],
-                        'deathless_rank_points_total' => PowerRankingsModel::roundNumber($row['deathless_rank_points_total']),
-                        'total_points' => PowerRankingsModel::roundNumber($row['total_points'])
-                    );
-                }
-            }
-            
-            return $processed_data;
-        });
-        
-        return $data_table;
     }
-    
-    /*public function apiLatestRankings() {
-        $page_number = request()->get->getVariable('page', 'integer');
-        
-        if(empty($page_number)) {
-            $page_number = 1;
-        }
-        
-        $resultset = PowerRankingsModel::getRankingsResultset($page_number, 100);
-        
-        $resultset->process();
-
-        return array(
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'pages' => $resultset->getTotalPages(),
-            'current_page' => $page_number,
-            'data' => $resultset->getData()
-        );
-    }*/
 }

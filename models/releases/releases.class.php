@@ -71,4 +71,13 @@ extends Necrolab {
         
         return $release_records;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return array(
+            'name' => $data_row['name'],
+            'display_name' => $data_row['display_name'],
+            'start_date' => $data_row['start_date'],
+            'end_date' => $data_row['end_date']
+        );
+    }
 }

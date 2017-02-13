@@ -1,5 +1,5 @@
-.cadence_header, .bard_header, .monk_header, .aria_header, .bolt_header, .dove_header, .eli_header, .melody_header, .dorian_header, .coda_header  {
-    background-image: url('/assets/images/modules/necrolab/characters.png');
+.character_header  {
+    background-image: url('/assets/images/modules/necrolab/styles/default/characters/characters.png');
     background-repeat: no-repeat;
 }
 
@@ -61,4 +61,15 @@
     width: 43px;
     height: 53px;
     background-position: -481px 0px;
+}
+
+.nocturna_header {
+    width: 43px;
+    height: 53px;
+    background-position: -535px 0px;
+}
+
+.sorting_asc .character_header,
+.sorting_desc .character_header {
+    background-position-y: -53px;
 }

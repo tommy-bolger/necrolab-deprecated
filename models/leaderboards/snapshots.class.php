@@ -37,4 +37,8 @@ extends Necrolab {
         
         return $snapshot_records;
     }
+    
+    public static function getFormattedApiRecord(array $data_row) {
+        return $data_row['date'];
+    }
 }

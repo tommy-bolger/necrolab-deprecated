@@ -52,4 +52,16 @@ extends RecordModel {
     protected $hitbox_username;
     
     protected $website;
+    
+    protected $twitch_user_id;
+    
+    protected $reddit_user_id;
+    
+    protected $discord_user_id;
+    
+    protected $youtube_user_id;
+    
+    protected $twitter_user_id;
+    
+    protected $beampro_user_id;
 }

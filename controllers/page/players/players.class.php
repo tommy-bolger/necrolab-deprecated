@@ -51,18 +51,10 @@ extends Necrolab {
     public function setup() {
         parent::setup();
         
-        $this->page->addCssFiles(array(
-            '/jquery.dataTables.css'
-        ));
+        $this->addDataTableFiles();
         
         $this->page->addJavascriptFiles(array(
-            '/jquery.min.js',
-            '/request.js',
-            '/datatables.min.js',
-            //'/loadingoverlay.min.js',
-            //'/entries_table.js',
-            '/formatting.js',
-            '/pages/players.js'
+            '/tables/players.js'
         ));
     }
     

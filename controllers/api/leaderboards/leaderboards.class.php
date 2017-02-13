@@ -1,6 +1,6 @@
 <?php
 /**
-* The base class for all leaderboard listing pages in Necrolab.
+* The the api endpoint for leaderboards of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -30,75 +30,52 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Page\Leaderboards;
+namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
-use \Framework\Core\Loader;
-use \Framework\Html\Misc\TemplateElement;
-use \Framework\Html\Table\Table;
-use \Modules\Necrolab\Controllers\Page\Necrolab;
-use \Modules\Necrolab\Models\Characters\Database\Characters;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
+use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Leaderboards
 extends Necrolab {
-    public function __construct() {
-        parent::__construct();
-
-        $this->active_page_category = 'leaderboards';
-    }
+    protected $lbid;
     
-    public function setup() {
-        parent::setup();
+    protected function setLbidFromRequest() {        
+        $lbid = request()->get->lbid;
         
-        $this->page->addCssFiles(array(
-            'characters_header.css',
-            'page/leaderboards_home.css'
-        ));
-    }    
-    
-    protected function getLeaderboardTable($category_name, $grouped_leaderboards) {
-        $characters = Characters::getAllBySortOrder();
-        $character_placeholder_image = $this->getCharacterImagePlaceholderUrl();
-        $base_leaderboard_url = "/leaderboards/{$category_name}/entries?id=";
-    
-        $leaderboards_table = new Table("{$category_name}_leaderboards");
-        
-        $leaderboards_table->addClass('leaderboard_category');
-            
-        $leaderboards_table->setNumberofColumns(14);
-
-        foreach($grouped_leaderboards as $grouped_leaderboard) {           
-            $leaderboard_row = array(
-                'name' => $grouped_leaderboard['name']
-            );
-                
-            foreach($characters as $character) {
-                $character_name = $character['name'];
-
-                if(!empty($grouped_leaderboard['characters'][$character_name])) {
-                    $link_display = '';
-                    
-                    switch($character_name) {   
-                        case 'all':
-                            $link_display = 'All<br />Chars';
-                            break;
-                        case 'story':
-                            $link_display = 'Story<br />Mode';
-                            break;
-                        default:
-                            $link_display = "<img class=\"{$character_name}_header\" src=\"{$character_placeholder_image}\" />";
-                            break;
-                    }
-
-                    $leaderboard_row[$character_name] = "<a href=\"{$base_leaderboard_url}{$grouped_leaderboard['characters'][$character_name]}\">{$link_display}</a>";
-                }
-                else {
-                    $leaderboard_row[$character_name] = "<img src=\"{$character_placeholder_image}\" />";
-                }
-            }
-            
-            $leaderboards_table->addRow($leaderboard_row);
+        if(empty($lbid)) {
+            $this->framework->outputManualError(400, "Required property 'lbid' was not found in the request.");
         }
         
-        return $leaderboards_table;
+        $this->lbid = request()->get->getVariable('lbid', 'integer');
+        
+        if(empty($this->lbid)) {
+            $this->framework->outputManualError(400, "Property '{$this->lbid}' is invalid. Please refer to /api/leaderboards for a list of valid lbids.");
+        }
+        
+        $this->request['lbid'] = $this->lbid;
+    }
+
+    public function init() {
+        $this->setReleaseFromRequest();
+    
+        $this->getResultsetStateFromRequest();
+    }
+
+    protected function getResultSet() {
+        $resultset = LeaderboardsModel::getAllBaseResultset($this->release_name);
+        
+        return $resultset;
+    }
+    
+    public function formatResponse($data) {        
+        $processed_data = array();
+        
+        if(!empty($data)) {        
+            foreach($data as $row) {
+                $processed_data[] = LeaderboardsModel::getFormattedApiRecord($row);
+            }
+        }
+        
+        return $processed_data;
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
-* The home page of the Necrolab.
+* The home page of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -36,7 +36,6 @@ use \DateTime;
 use \Framework\Core\Controllers\Page as PageController;
 use \Framework\Modules\ModulePage;
 use \Framework\Display\Template;
-use \Modules\Necrolab\Models\Rankings\Database\Power as PowerRankingsModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes;
 
 class Necrolab
@@ -69,6 +68,25 @@ extends PageController {
         }
     }
     
+    protected function addDataTableFiles() {
+        $this->page->addCssFiles(array(
+            '/jquery.dataTables.css',
+            '/bootstrap-datepicker3.min.css'
+        ));
+        
+        $this->page->addJavascriptFiles(array(
+            'jquery.min.js',
+            'datatables.min.js',
+            //'/loadingoverlay.min.js',
+            'url.js',
+            'formatting.js',
+            'bootstrap-datepicker.min.js',
+            'moment.min.js',
+            'necrotable.js',
+            'request.js'
+        ));
+    }
+    
     public function setup() {    
         $this->page = new ModulePage('necrolab', 'necrolab_home');
         
@@ -79,17 +97,6 @@ extends PageController {
             'bootstrap.css',
             'main.css'
         ));
-        
-        //Google Analytics tracking
-        $this->page->addInlineJavascript("
-            (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-            (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-            
-            ga('create', 'UA-41045236-2', 'auto');
-            ga('send', 'pageview');
-        ");
         
         header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
         header('Last-Modified: ' . gmdate( 'D, d M Y H:i:s') . ' GMT');
@@ -105,7 +112,7 @@ extends PageController {
         $this->page->body->addChild($this->active_page, 'active_page');
         $this->page->body->addChild(DayTypes::getAll(), 'daily_ranking_day_types');
         
-        $last_refreshed_date = new DateTime(PowerRankingsModel::getLastRefreshed());
+        $last_refreshed_date = new DateTime();
         
         $current_time = new DateTime();
         $time_difference = $current_time->diff($last_refreshed_date);
@@ -115,17 +122,6 @@ extends PageController {
     
     protected function getCharacterImagePlaceholderUrl() {
         return "{$this->page->getImagesHttpPath()}/character_placeholder.png";
-    }
-    
-    protected function getUsernameLink($personaname, $steamid) {
-        $username_html = new Template('username.php');
-        
-        $username_html->setPlaceholderValues(array(
-            'personaname' => $personaname,
-            'steamid' => $steamid
-        ));
-    
-        return $username_html->parseTemplate();
     }
     
     protected function getSocialMedia($row) { 

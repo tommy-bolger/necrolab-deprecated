@@ -4,6 +4,8 @@ namespace Modules\Necrolab\Models\Leaderboards\Database;
 use \DateTime;
 use \Exception;
 use \Framework\Data\ResultSet\SQL;
+use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
+use \Modules\Necrolab\Models\Leaderboards\Database\Entry as DatabaseEntry;
 use \Modules\Necrolab\Models\Leaderboards\Entries as BaseEntries;
 
 class Entries
@@ -87,36 +89,55 @@ extends BaseEntries {
         ), array(), "leaderboard_entries_{$date_formatted}_delete");
     }
 
-    public static function getEntriesResultset(DateTime $date) {
+    public static function getAllBaseResultset(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         $resultset = new SQL("leaderboard_entries_{$date_formatted}");
         
-        $resultset->setBaseQuery("
-            SELECT 
-                l.lbid,
-                l.daily_date, 
-                l.character_id,
-                le.steam_user_id,
-                le.score,
-                le.time,
-                le.rank,
-                le.is_win,
-                le.zone,
-                le.level,
-                le.win_count,
-                sr.ugcid,
-                sr.seed,
-                let.details,
-                l.leaderboard_id
-            FROM leaderboards l
-            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
-            JOIN leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-            JOIN steam_replays sr ON sr.steam_replay_id = le.steam_replay_id
-            JOIN leaderboard_entry_details let ON let.leaderboard_entry_details_id = le.leaderboard_entry_details_id
-            {{WHERE_CRITERIA}}
-        ");
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'l.lbid',
+                'alias' => 'lbid'
+            ),
+            array(
+                'field' => 'l.daily_date',
+                'alias' => 'daily_date'
+            ),
+            array(
+                'field' => 'l.character_id',
+                'alias' => 'character_id'
+            ),
+            array(
+                'field' => 'sr.ugcid',
+                'alias' => 'ugcid'
+            ),
+            array(
+                'field' => 'sr.seed',
+                'alias' => 'seed'
+            ),
+            array(
+                'field' => 'led.details',
+                'alias' => 'details'
+            ),
+            array(
+                'field' => 'l.leaderboard_id',
+                'alias' => 'leaderboard_id'
+            )
+        ));
         
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('leaderboards l');
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id');
+        $resultset->addJoinCriteria("leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id");
+        $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = le.leaderboard_entry_details_id');
+        $resultset->addLeftJoinCriteria("
+            steam_replays sr ON sr.steam_replay_id = le.steam_replay_id
+            AND sr.downloaded = 1
+        ");
+
         $resultset->addFilterCriteria('ls.date = :date', array(
             ':date' => $date->format('Y-m-d')
         ));
@@ -125,7 +146,7 @@ extends BaseEntries {
     }
     
     public static function getPowerRankingsResultset($release_id, DateTime $date) {
-        $resultset = static::getEntriesResultset($date);
+        $resultset = static::getAllBaseResultset($date);
         
         $resultset->addFilterCriteria('l.release_id = :release_id', array(
             ':release_id' => $release_id
@@ -137,7 +158,7 @@ extends BaseEntries {
     }
     
     public static function getDailyRankingsResultset($release_id, DateTime $date) {
-        $resultset = static::getEntriesResultset($date);
+        $resultset = static::getAllBaseResultset($date);
         
         $resultset->addFilterCriteria('l.release_id = :release_id', array(
             ':release_id' => $release_id
@@ -152,90 +173,21 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getEntriesPartitionResultset(DateTime $start_date, DateTime $end_date) {
-        $partition_table_names = static::getPartitionTableNames('leaderboard_entries', $start_date, $end_date);
-    
-        $resultset = new SQL("leaderboard_entries_{$date_formatted}");
-        
-        $resultset->setBaseQuery("
-            SELECT 
-                l.lbid,
-                l.daily_date, 
-                l.character_id,
-                le.steam_user_id,
-                le.score,
-                le.time,
-                le.rank,
-                le.is_win,
-                le.zone,
-                le.level,
-                le.win_count,
-                l.leaderboard_id
-            FROM leaderboards l
-            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
-            JOIN {{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-            {{WHERE_CRITERIA}}
-        ");
-        
-        $resultset->addFilterCriteria('ls.date BETWEEN :start_date AND :end_date', array(
-            ':start_date' => $start_date,
-            ':end_date' => $end_date
-        ));
-        
-        return $resultset;
-    }
-    
-    public static function getDailyRankingsPartitionResultset(DateTime $start_date, DateTime $end_date) {
-        $resultset = static::getEntriesPartitionResultset($start_date, $end_date);
-        
-        $resultset->addFilterCriteria('l.is_daily_ranking = 1');
-        
-        return $resultset;
-    }
-    
-    public static function getEntriesDisplayResultset(DateTime $date, $lbid) {
+    public static function getApiAllResultset(DateTime $date, $lbid) {
         $date_formatted = $date->format('Y_m');
+        
+        $resultset = static::getAllBaseResultset($date);
     
-        $resultset = new SQL("display_leaderboard_entries_{$date_formatted}");
+        $resultset->setName("api_leaderboard_entries_{$date_formatted}");
         
-        $resultset->setBaseQuery("
-            SELECT 
-                l.lbid,
-                l.daily_date, 
-                l.character_id,
-                le.steam_user_id,
-                le.score,
-                le.time,
-                le.rank,
-                le.is_win,
-                le.zone,
-                le.level,
-                le.win_count,
-                sr.ugcid,
-                sr.seed,
-                led.details,
-                l.leaderboard_id,
-                su.steamid,
-                su.personaname,
-                su.twitch_username,
-                su.twitter_username,
-                su.nico_nico_url,
-                su.hitbox_username,
-                su.website
-            FROM leaderboards l
-            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
-            JOIN leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-            JOIN leaderboard_entry_details let ON let.leaderboard_entry_details_id = le.leaderboard_entry_details_id
-            JOIN steam_users su ON su.steam_user_id = le.steam_user_id
-            JOIN leaderboard_entry_details led on led.leaderboard_entry_details_id = le.leaderboard_entry_details_id
-            LEFT JOIN steam_replays sr ON sr.steam_replay_id = le.steam_replay_id
-                AND sr.downloaded = 1
-            {{WHERE_CRITERIA}}
-        ");
-        
-        $resultset->addFilterCriteria('ls.date = :date', array(
-            ':date' => $date->format('Y-m-d')
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            ),
         ));
+        
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = le.steam_user_id');
         
         $resultset->addFilterCriteria('l.lbid = :lbid', array(
             ':lbid' => $lbid
@@ -243,6 +195,85 @@ extends BaseEntries {
         
         $resultset->addSortCriteria('le.rank', 'ASC');
         
+        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserResultset(DateTime $date, $steamid, $release_name) {
+        $date_formatted = $date->format('Y_m');
+        
+        $resultset = static::getAllBaseResultset($date);
+    
+        $resultset->setName("steam_user_entries_{$date_formatted}");
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'l.name',
+                'alias' => 'leaderboard_name'
+            ),
+            array(
+                'field' => 'l.display_name',
+                'alias' => 'leaderboard_display_name'
+            ),
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            )
+        ));
+        
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = le.steam_user_id');
+        
+        $resultset->addFilterCriteria('su.steamid = :steamid', array(
+            ':steamid' => $steamid
+        ));
+        
+        $resultset->addFilterCriteria('r.name = :release_name', array(
+            ':release_name' => $release_name
+        ));
+        
+        $resultset->addSortCriteria('l.name', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserDailyResultset(DateTime $date, $steamid, $release_name) {                       
+        $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
+        
+        $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_daily = 1");
+        $resultset->addFilterCriteria("l.is_co_op = 0");
+        $resultset->addFilterCriteria("l.is_daily_ranking = 1");
+    
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserScoreResultset(DateTime $date, $steamid, $release_name) {                       
+        $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
+        
+        $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_daily = 0");
+    
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserSpeedResultset(DateTime $date, $steamid, $release_name) {                       
+        $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
+        
+        $resultset->addFilterCriteria("l.is_speedrun = 1");
+    
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserDeathlessResultset(DateTime $date, $steamid, $release_name) {                       
+        $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
+        
+        $resultset->addFilterCriteria("l.is_deathless = 1");
+    
         return $resultset;
     }
 }

@@ -32,12 +32,24 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
+use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Web as WebController;
+use \Modules\Necrolab\Models\Releases\Database\Releases as ReleasesModel;
+use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as ExternalSitesModel;
+use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DayTypesModel;
 
 class Necrolab
-extends WebController {       
+extends WebController {
+    protected $request = array();
+
+    protected $release_name;
+
     protected $date;
+    
+    protected $number_of_days;
+    
+    protected $site;
     
     protected $start;
     
@@ -51,12 +63,28 @@ extends WebController {
         parent::__construct('necrolab');
     }
     
-    protected function setDateFromRequest() {
-        request()->setRequired(array(
-            'date'
-        ));
+    protected function setReleaseFromRequest() {        
+        $this->release_name = request()->get->release;
+        
+        if(empty($this->release_name)) {
+            $this->framework->outputManualError(400, "Required property 'release' was not found in the request.");
+        }
+        
+        $release_record = ReleasesModel::getByName($this->release_name);
+        
+        if(empty($release_record)) {
+            $this->framework->outputManualError(400, "Specified release '{$this->release_name}' is invalid. Please refer to the /api/releases endpoint for a list of valid releases.");
+        }
+        
+        $this->request['release'] = $this->release_name;
+    }
     
+    protected function setDateFromRequest() {    
         $submitted_date = request()->date;
+        
+        if(empty($submitted_date)) {
+            $this->framework->outputManualError(400, "Required property 'date' was not found in the request.");
+        }
         
         if(!empty($submitted_date)) {
             $submitted_date_object = DateTime::createFromFormat('Y-m-d', $submitted_date);
@@ -67,8 +95,10 @@ extends WebController {
         }
         
         if(empty($this->date)) {
-            throw new Exception("date provided in request is invalid.");
+            $this->framework->outputManualError(400, "Required property 'date' is invalid. All dates must be specified in YYYY-MM-DD format.");
         }
+        
+        $this->request['date'] = $this->date->format('Y-m-d');
     }
     
     protected function getResultsetStateFromRequest() {
@@ -80,16 +110,59 @@ extends WebController {
         
         $this->limit = request()->get->getVariable('limit', 'integer');
         
-        if(empty($this->limit) || $this->limit < 0 || $this->limit > 10000) {
+        if(empty($this->limit) || $this->limit < 0 || $this->limit > 1000) {
             $this->limit = 100;
         }
         
         $this->sort_by = request()->sort_by;
         
         $this->sort_direction = request()->sort_direction;
+        
+        $this->request['start'] = $this->start;
+        $this->request['limit'] = $this->limit;
+        $this->request['sort_by'] = $this->sort_by;
+        $this->request['sort_direction'] = $this->sort_direction;
+    }
+    
+    protected function setNumberOfDaysFromRequest() {
+        $number_of_days = request()->get->number_of_days;
+
+        if(strlen($number_of_days) == 0) {
+            $this->framework->outputManualError(400, "Required property 'number_of_days' was not found in the request.");
+        }
+    
+        $this->number_of_days = request()->get->getVariable('number_of_days', 'integer');
+        
+        if(!isset($this->number_of_days)) {
+            $this->framework->outputManualError(400, "Specified property 'number_of_days' is not a valid integer. Please refer to /api/rankings/daily/number_of_days for a list of valid values.");
+        }
+        
+        $active_day_types = DayTypesModel::getActive();
+        
+        if(empty($active_day_types[$this->number_of_days])) {
+            $this->framework->outputManualError(400, "Specified property 'number_of_days' is not valid. Please refer to /api/rankings/daily/number_of_days for a list of valid values.");
+        }
+        
+        $this->request['number_of_days'] = $this->number_of_days;
+    }
+    
+    protected function setSiteFromRequest() {        
+        $this->site = request()->get->site;
+        
+        if(!empty($this->site)) {
+            $external_site_record = ExternalSitesModel::getActiveByName($this->site);
+            
+            if(empty($external_site_record)) {
+                $this->framework->outputManualError(400, "Specified site '{$this->site}' is invalid. Please refer to the /api/external_sites endpoint for a list of valid sites.");
+            }
+        }
+        
+        $this->request['site'] = $this->site;
     }
  
-    public function init() {
+    public function init() {        
+        $this->setReleaseFromRequest();
+    
         $this->setDateFromRequest();
         
         $this->getResultsetStateFromRequest();
@@ -101,11 +174,23 @@ extends WebController {
         return array(
             'steamid' => $row['steamid'],
             'personaname' => $row['personaname'],
-            'twitch_username' => $row['twitch_username'],
-            'twitter_username' => $row['twitter_username'],
-            'nico_nico_url' => $row['nico_nico_url'],
-            'hitbox_username' => $row['hitbox_username'],
+            'linked' => array(
+                'twitch' => $row['twitch_username'],
+                'discord' => array(
+                    'username' => $row['discord_username'],
+                    'discriminator' => $row['discord_discriminator']
+                ),
+                'reddit' => $row['reddit_username'],
+                'youtube' => $row['youtube_username'],
+                'twitter' => array(
+                    'nickname' => $row['twitter_nickname'],
+                    'name' => $row['twitter_name']
+                ),
+                'beampro' => $row['beampro_username'],
+                'hitbox' => $row['hitbox_username']
+            ),
             'website' => $row['website']
+            //'nico_nico_url' => $row['nico_nico_url'],
         );
     }
     
@@ -115,6 +200,10 @@ extends WebController {
     
     public function actionGet() {        
         $resultset = $this->getResultset();
+        
+        if(!empty($this->site)) {
+            ExternalSitesModel::addSiteUserJoin($resultset, $this->site);
+        }
         
         $resultset->enableTotalRecordCount();
         
@@ -135,20 +224,10 @@ extends WebController {
         
         $resultset->process();
         
-        $request = array(
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'start' => $this->start,
-            'sort_by' => $this->sort_by,
-            'sort_direction' => $this->sort_direction,
-            'limit' => $this->limit
-        );
-        
-        if(!empty($this->date)) {
-            $request['date'] = $this->date->format('Y-m-d');
-        }
+        $this->request['record_count'] = $resultset->getTotalNumberOfRecords();
 
         return array(
-            'request' => $request,
+            'request' => $this->request,
             'data' => $resultset->getData()
         );
     }

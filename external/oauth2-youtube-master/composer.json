@@ -1,0 +1,20 @@
+{
+    "name": "mitchwilliamson/oauth2-youtube",
+    "description": "A YouTube OAuth2 provider for league/oauth2-client",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mitchell Williamson",
+            "email": "me@mitchellwilliamson.com.au"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0",
+        "league/oauth2-client": "^1.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "League\\OAuth2\\Client\\": "src/"
+        }
+    }
+}

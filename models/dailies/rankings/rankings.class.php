@@ -23,4 +23,8 @@ extends Necrolab {
         
         return $ranking;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return $data_row['date'];
+    }
 }

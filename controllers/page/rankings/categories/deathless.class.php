@@ -1,6 +1,6 @@
 <?php
 /**
-* The home page of the Necrolab.
+* The deathless category of the power rankings of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -32,10 +32,6 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Rankings\Categories;
 
-use \Framework\Html\Table\DataTable;
-use \Framework\Utilities\Http;
-use \Modules\Necrolab\Models\Rankings\Database\Deathless as DeathlessRankingsModel;
-
 class Deathless
 extends Categories {   
     protected $title = 'Deathless Rankings';
@@ -46,46 +42,11 @@ extends Categories {
         $this->active_page = 'deathless_rankings';
     }
     
-    public function action() {    
-        $this->page->body->addChild($this->getDataTable(), 'content');
+    public function setup() {
+        parent::setup();
+        
+        $this->page->addJavascriptFiles(array(
+            '/tables/deathless_rankings.js'
+        ));
     }
-    
-    protected function getDataTable() {    
-        $resultset = DeathlessRankingsModel::getEntriesDisplayResultset($this->date);      
-        
-        $data_table = new DataTable("deathless_rankings", false);
-        
-        $data_table->setNumberofColumns(14);
-        
-        $data_table->setHeader($this->getTableHeader('deathless'));
-        
-        $filter_textbox = $data_table->addFilterTextbox('personaname', '*?*', NULL);
-        
-        $filter_textbox->setAttribute('placeholder', 'Search Players');
-        
-        $data_table->process($resultset, function($result_data) {
-            return $this->processTableData('deathless', $result_data);
-        });
-        
-        return $data_table;
-    }
-    
-    /*public function apiLatestRankings() {
-        $page_number = request()->get->getVariable('page', 'integer');
-        
-        if(empty($page_number)) {
-            $page_number = 1;
-        }
-        
-        $resultset = DeathlessScoreRankingsModel::getLatestRankingsFromCache($page_number, 100);
-        
-        $resultset->process();
-
-        return array(
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'pages' => $resultset->getTotalPages(),
-            'current_page' => $page_number,
-            'data' => $resultset->getData()
-        );
-    }*/
 }

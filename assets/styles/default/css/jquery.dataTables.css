@@ -279,9 +279,18 @@ table.dataTable td {
   *zoom: 1;
   zoom: 1;
 }
-.dataTables_wrapper .dataTables_length {
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .top_menu_item
+{
   float: left;
 }
+
+.dataTables_wrapper .top_menu_item
+{
+  padding-right: 20px;
+  padding-top: 10px;
+}
+
 .dataTables_wrapper .dataTables_filter {
   float: right;
   text-align: right;
@@ -472,6 +481,33 @@ table.dataTable td {
 .btn-group > .btn:last-child,
 {
   border-radius: 0px;
+}
+
+.top_info .dataTables_info {
+    padding-bottom: 20px;
+}
+
+.top_buttons {
+    float: left;
+}
+
+.top_pagination {
+    padding-top: 0px;
+    float: right;
+}
+
+.top_pagination .dataTables_paginate {
+    padding-top: 0px;
+    margin: 0px;
+}
+
+.top_pagination ul.pagination {
+    margin: 0px;
+}
+
+.top_pagination li.paginate_button {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;s
 }
 
 .form-control:focus {

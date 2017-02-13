@@ -146,4 +146,18 @@ class SteamUsers {
         
         return $json_files;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        $processed_data = array();
+        
+        $processed_data['steamid'] = $data_row['steamid'];
+        $processed_data['steam_profile_url'] = $data_row['profileurl'];
+        $processed_data['twitch'] = $data_row['twitch_username'];
+        $processed_data['twitter'] = $data_row['twitter_username'];
+        $processed_data['hitbox'] = $data_row['hitbox_username'];
+        $processed_data['nico_nico'] = $data_row['nico_nico_url'];
+        $processed_data['website'] = $data_row['website'];
+        
+        return $processed_data;
+    }
 }

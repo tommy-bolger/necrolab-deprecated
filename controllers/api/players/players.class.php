@@ -37,7 +37,11 @@ use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as SteamUsersModel;
 
 class Players
 extends Necrolab {
-    protected function setDateFromRequest() {}
+    public function init() {
+        $this->getResultsetStateFromRequest();
+        
+        $this->setSiteFromRequest();
+    }
 
     protected function getResultset() {
         return SteamUsersModel::getAllDisplayResultset();

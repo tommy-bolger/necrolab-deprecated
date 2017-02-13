@@ -316,4 +316,24 @@ extends Necrolab {
         
         return $xml_file_groups;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return array(
+            'lbid' => $data_row['lbid'],
+            'name' => $data_row['name'],
+            'display_name' => $data_row['display_name'],
+            'entries_url' => $data_row['url'],
+            'character' => $data_row['character_name'],
+            'is_daily' => $data_row['is_daily'],
+            'daily_date' => $data_row['daily_date'],
+            'is_score_run' => $data_row['is_score_run'],
+            'is_speedrun' => $data_row['is_speedrun'],
+            'is_deathless' => $data_row['is_deathless'],
+            'is_seeded' => $data_row['is_seeded'],
+            'is_co_op' => $data_row['is_co_op'],
+            'is_custom' => $data_row['is_custom'],
+            'is_power_ranking' => $data_row['is_power_ranking'],
+            'is_daily_ranking' => $data_row['is_daily_ranking']
+        );
+    }
 }

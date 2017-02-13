@@ -13,4 +13,41 @@ extends BaseEntry {
     
         db()->insert("leaderboard_entries_{$date_formatted}", $database_entry->toArray(), "leaderboard_entries_{$date_formatted}_insert", false);
     }
+    
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'le.steam_user_id',
+                'alias' => 'steam_user_id',
+            ),
+            array(
+                'field' => 'le.score',
+                'alias' => 'score',
+            ),
+            array(
+                'field' => 'le.time',
+                'alias' => 'time',
+            ),
+            array(
+                'field' => 'le.rank',
+                'alias' => 'rank',
+            ),
+            array(
+                'field' => 'le.is_win',
+                'alias' => 'is_win',
+            ),
+            array(
+                'field' => 'le.zone',
+                'alias' => 'zone',
+            ),
+            array(
+                'field' => 'le.level',
+                'alias' => 'level',
+            ),
+            array(
+                'field' => 'le.win_count',
+                'alias' => 'win_count',
+            )
+        ));
+    }
 }

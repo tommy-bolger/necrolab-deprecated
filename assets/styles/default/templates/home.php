@@ -13,7 +13,7 @@
                     <a class="site-header site_logo" href="/">
                         <span class="site_logo_small">The</span>
                         <br />
-                        <span class="site_logo_medium">Necro Lab</span>
+                        <span class="site_logo_medium no_wrap">Necro Lab<img src="/assets/images/modules/necrolab/styles/default/Amplified2.png" /></span>
                     </a>
                 </div>
                 <div class="no_wrap">
@@ -138,5 +138,14 @@
         </div>
     </footer>
     <?php echo $this->javascript; ?>
+    <script type="text/javascript">
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+        
+        ga('create', 'UA-41045236-2', 'auto');
+        ga('send', 'pageview');
+    </script>
 </body>
 </html>

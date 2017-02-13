@@ -16,6 +16,11 @@
 <div class="menu_small">Player Info</div>
 <?php echo $this->steam_user_table; ?>
 <?php echo $this->steam_user_form; ?>
+<?php 
+    if(!empty($this->steam_user_form)) {
+        echo "<a href=\"/players/player/login/hitbox\"><img src=\"/assets/images/modules/necrolab/styles/default/connections/connect_with_twitch_light.png\" /></a>";
+    }
+?>
 <?php if(!empty($this->power_rankings_table)): ?>
 <br />
 <br />
