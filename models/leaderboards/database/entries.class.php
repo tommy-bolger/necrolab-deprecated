@@ -5,7 +5,12 @@ use \DateTime;
 use \Exception;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
+use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
+use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
+use \Modules\Necrolab\Models\Leaderboards\Database\Details as DatabaseDetails;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry as DatabaseEntry;
+use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as DatabaseLeaderboards;
+use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots as DatabaseSnapshots;
 use \Modules\Necrolab\Models\Leaderboards\Entries as BaseEntries;
 
 class Entries
@@ -93,43 +98,18 @@ extends BaseEntries {
         $date_formatted = $date->format('Y_m');
     
         $resultset = new SQL("leaderboard_entries_{$date_formatted}");
-        
-        $resultset->addSelectFields(array(
-            array(
-                'field' => 'l.lbid',
-                'alias' => 'lbid'
-            ),
-            array(
-                'field' => 'l.daily_date',
-                'alias' => 'daily_date'
-            ),
-            array(
-                'field' => 'l.character_id',
-                'alias' => 'character_id'
-            ),
-            array(
-                'field' => 'sr.ugcid',
-                'alias' => 'ugcid'
-            ),
-            array(
-                'field' => 'sr.seed',
-                'alias' => 'seed'
-            ),
-            array(
-                'field' => 'led.details',
-                'alias' => 'details'
-            ),
-            array(
-                'field' => 'l.leaderboard_id',
-                'alias' => 'leaderboard_id'
-            )
-        ));
-        
+
+        DatabaseLeaderboards::setSelectFields($resultset);
+        DatabaseSnapshots::setSelectFields($resultset);
+        DatabaseCharacters::setSelectFields($resultset);
         DatabaseEntry::setSelectFields($resultset);
+        DatabaseReplays::setSelectFields($resultset);
+        DatabaseDetails::setSelectFields($resultset);
         
         $resultset->setFromTable('leaderboards l');
         
         $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
         $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id');
         $resultset->addJoinCriteria("leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id");
         $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = le.leaderboard_entry_details_id');
@@ -200,6 +180,39 @@ extends BaseEntries {
         return $resultset;
     }
     
+    public static function getApiAllDailyResultset($release_name, DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+        
+        $resultset = static::getAllBaseResultset($date);
+    
+        $resultset->setName("api_daily_leaderboard_entries_{$date_formatted}");
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            ),
+        ));
+        
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = le.steam_user_id');
+        
+        $resultset->addFilterCriteria('l.daily_date = :daily_date', array(
+            ':daily_date' => $date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('l.is_daily_ranking = 1');
+        
+        $resultset->addFilterCriteria('r.name = :release_name', array(
+            ':release_name' => $release_name
+        ));
+        
+        $resultset->addSortCriteria('le.rank', 'ASC');
+        
+        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        
+        return $resultset;
+    }
+    
     public static function getApiSteamUserResultset(DateTime $date, $steamid, $release_name) {
         $date_formatted = $date->format('Y_m');
         
@@ -208,14 +221,6 @@ extends BaseEntries {
         $resultset->setName("steam_user_entries_{$date_formatted}");
         
         $resultset->addSelectFields(array(
-            array(
-                'field' => 'l.name',
-                'alias' => 'leaderboard_name'
-            ),
-            array(
-                'field' => 'l.display_name',
-                'alias' => 'leaderboard_display_name'
-            ),
             array(
                 'field' => 'su.personaname',
                 'alias' => 'personaname'
@@ -241,17 +246,6 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getApiSteamUserDailyResultset(DateTime $date, $steamid, $release_name) {                       
-        $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
-        
-        $resultset->addFilterCriteria("l.is_score_run = 1");
-        $resultset->addFilterCriteria("l.is_daily = 1");
-        $resultset->addFilterCriteria("l.is_co_op = 0");
-        $resultset->addFilterCriteria("l.is_daily_ranking = 1");
-    
-        return $resultset;
-    }
-    
     public static function getApiSteamUserScoreResultset(DateTime $date, $steamid, $release_name) {                       
         $resultset = static::getApiSteamUserResultset($date, $steamid, $release_name);
         
@@ -274,6 +268,69 @@ extends BaseEntries {
         
         $resultset->addFilterCriteria("l.is_deathless = 1");
     
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserDailyResultset(DateTime $start_date, DateTime $end_date, $steamid, $release_name) {    
+        $resultset = new SQL("steam_user_leaderboard_daily_entries_{$start_date->format('Y-m-d')}_{$end_date->format('Y-m-d')}");
+        
+        
+        DatabaseLeaderboards::setSelectFields($resultset);
+        DatabaseReplays::setSelectFields($resultset);
+        DatabaseDetails::setSelectFields($resultset);
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid'
+            )
+        ));
+        
+        DatabaseEntry::setSelectFields($resultset);
+        
+        $resultset->setFromTable('leaderboards l');
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addJoinCriteria("
+            leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
+            AND ls.date = l.daily_date
+        ");
+        $resultset->addJoinCriteria("{{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id");
+        $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = le.leaderboard_entry_details_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = le.steam_user_id');
+        $resultset->addLeftJoinCriteria("
+            steam_replays sr ON sr.steam_replay_id = le.steam_replay_id
+            AND sr.downloaded = 1
+        ");
+        
+        $resultset->addFilterCriteria('su.steamid = ?', array(
+            $steamid
+        ));
+        
+        $resultset->addFilterCriteria('l.daily_date BETWEEN ? AND ?', array(
+            $start_date->format('Y-m-d'),
+            $end_date->format('Y-m-d')
+        ));
+        
+        $resultset->addFilterCriteria('r.name = ?', array(
+            $release_name
+        ));
+        
+        $resultset->addFilterCriteria("l.is_daily_ranking = 1");
+        $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_daily = 1");
+        $resultset->addFilterCriteria("l.is_co_op = 0");
+        
+        $parition_table_names = static::getPartitionTableNames('leaderboard_entries', $start_date, $end_date);
+        
+        foreach($parition_table_names as $parition_table_name) {
+            $resultset->addPartitionTable($parition_table_name);
+        }
+        
         return $resultset;
     }
 }

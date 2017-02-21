@@ -32,7 +32,6 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Rankings;
 
-use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Controllers\Page\Necrolab;
 
 class Rankings
@@ -45,11 +44,5 @@ extends Necrolab {
         parent::setup();
         
         $this->addDataTableFiles();
-    }
-    
-    public function actionGet() {            
-        $entries_table = new TemplateElement('entries_table.php');
-        
-        $this->page->body->addChild($entries_table, 'content');
     }
 }

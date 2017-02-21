@@ -32,73 +32,26 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards;
 
-use \Framework\Core\Loader;
-use \Framework\Html\Misc\TemplateElement;
-use \Framework\Html\Table\Table;
 use \Modules\Necrolab\Controllers\Page\Necrolab;
-use \Modules\Necrolab\Models\Characters\Database\Characters;
 
 class Leaderboards
-extends Necrolab {
-    public function __construct() {
-        parent::__construct();
-
+extends Necrolab {    
+    public function init() {
+        parent::init();
+    
         $this->active_page_category = 'leaderboards';
+        
+        $this->title = "Leaderboards";
     }
     
     public function setup() {
         parent::setup();
         
+        $this->addDataTableFiles();
+        
         $this->page->addCssFiles(array(
             'characters_header.css',
             'page/leaderboards_home.css'
         ));
-    }    
-    
-    protected function getLeaderboardTable($category_name, $grouped_leaderboards) {
-        $characters = Characters::getAllBySortOrder();
-        $character_placeholder_image = $this->getCharacterImagePlaceholderUrl();
-        $base_leaderboard_url = "/leaderboards/{$category_name}/entries?id=";
-    
-        $leaderboards_table = new Table("{$category_name}_leaderboards");
-        
-        $leaderboards_table->addClass('leaderboard_category');
-            
-        $leaderboards_table->setNumberofColumns(14);
-
-        foreach($grouped_leaderboards as $grouped_leaderboard) {           
-            $leaderboard_row = array(
-                'name' => $grouped_leaderboard['name']
-            );
-                
-            foreach($characters as $character) {
-                $character_name = $character['name'];
-
-                if(!empty($grouped_leaderboard['characters'][$character_name])) {
-                    $link_display = '';
-                    
-                    switch($character_name) {   
-                        case 'all':
-                            $link_display = 'All<br />Chars';
-                            break;
-                        case 'story':
-                            $link_display = 'Story<br />Mode';
-                            break;
-                        default:
-                            $link_display = "<img class=\"{$character_name}_header\" src=\"{$character_placeholder_image}\" />";
-                            break;
-                    }
-
-                    $leaderboard_row[$character_name] = "<a href=\"{$base_leaderboard_url}{$grouped_leaderboard['characters'][$character_name]}\">{$link_display}</a>";
-                }
-                else {
-                    $leaderboard_row[$character_name] = "<img src=\"{$character_placeholder_image}\" />";
-                }
-            }
-            
-            $leaderboards_table->addRow($leaderboard_row);
-        }
-        
-        return $leaderboards_table;
     }
 }

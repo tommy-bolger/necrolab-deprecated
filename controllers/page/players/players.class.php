@@ -32,13 +32,7 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Players;
 
-use \Framework\Html\Misc\TemplateElement;
-use \Framework\Html\Table\DataTable;
 use \Modules\Necrolab\Controllers\Page\Necrolab;
-use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as SteamUsersModel;
-use \Modules\Necrolab\Models\TwitchUsers\TwitchUsers as TwitchUsersModel;
-use \Modules\Necrolab\Models\TwitterUsers\TwitterUsers as TwitterUsersModel;
-use \Modules\Necrolab\Models\HitboxUsers\HitboxUsers as HitboxUsersModel;
 
 class Players
 extends Necrolab {    
@@ -56,11 +50,5 @@ extends Necrolab {
         $this->page->addJavascriptFiles(array(
             '/tables/players.js'
         ));
-    }
-    
-    public function actionGet() {            
-        $entries_table = new TemplateElement('entries_table.php');
-        
-        $this->page->body->addChild($entries_table, 'content');
     }
 }

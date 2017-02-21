@@ -1,6 +1,6 @@
 <?php
 /**
-* The score entries page of the leaderboards section of Necrolab.
+* The daily entries page of the leaderboards section of Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -32,61 +32,27 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Daily;
 
-use \Framework\Utilities\Http;
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Entries as BaseEntries;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
-use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
-use \Modules\Necrolab\Models\Leaderboards\Replays;
 
 class Entries
 extends BaseEntries {
-    protected function loadLeaderboard() {        
-        $this->leaderboard_record = LeaderboardsModel::getDailyByDate($this->date);
-        
-        if(empty($this->leaderboard_record)) {
-            $this->leaderboard_record = LeaderboardsModel::getLatestDaily();
-        
-            if(empty($this->leaderboard_record)) {
-                Http::redirect('/leaderboards/');
-            }
-        }
+    protected $has_table_title = false;
 
-        $this->lbid = $this->leaderboard_record['lbid'];
-
-        $this->leaderboard_type = 'score';
-    }
-
-    protected function getTableHeader() {
-        $header = parent::getTableHeader();
+    public function init() {
+        parent::init();
         
-        $header['score'] = 'Score';
-        $header['highest_zone'] = 'Zone';
-        $header['highest_level'] = 'Level';
-        $header['is_win'] = "Win";
-        $header['seed'] = 'Seed';
-        $header['replay'] = 'Replay';
+        $this->active_page = 'daily_leaderboards';
         
-        return $header;
+        $this->title = "Leaderboard::Daily::Entries";
     }
     
-    protected function getTableRow(array $row) {
-        $table_row = parent::getTableRow($row);
+    protected function loadLeaderboard() {}
+    
+    public function setup() {
+        parent::setup();
         
-        $table_row['score'] = $row['score'];
-        $table_row['highest_zone'] = $row['zone'];
-        $table_row['highest_level'] = $row['level'];
-        $table_row['is_win'] = $row['is_win'];
-        $table_row['seed'] = $row['seed'];
-        
-        $ugcid = $row['ugcid'];
-        $replay = NULL;
-        
-        if(!empty($ugcid)) {
-            $replay = $this->getReplayLink(Replays::getHttpFilePath($ugcid));
-        }
-        
-        $table_row['replay'] = $replay;
-        
-        return $table_row;
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/daily.js'
+        ));
     }
 }

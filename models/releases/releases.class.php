@@ -72,6 +72,25 @@ extends Necrolab {
         return $release_records;
     }
     
+    public static function getByDateAndId(DateTime $date, $release_id) {
+        static::loadAll();
+        
+        $release_record = array();
+        
+        if(!empty(static::$releases)) {        
+            foreach(static::$releases as $release) {
+                $start_date = new DateTime($release['start_date']);
+                $end_date = new DateTime($release['end_date']);
+            
+                if($release_id == $release['release_id'] && $date >= $start_date && $date <= $end_date) {
+                    $release_record = $release;
+                }
+            }
+        }
+        
+        return $release_record;
+    }
+    
     public static function getFormattedApiRecord($data_row) {
         return array(
             'name' => $data_row['name'],

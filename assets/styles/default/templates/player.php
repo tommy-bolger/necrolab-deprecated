@@ -13,76 +13,50 @@
     <br />
     <?php endif; ?>
 </div>
-<div class="menu_small">Player Info</div>
-<?php echo $this->steam_user_table; ?>
-<?php echo $this->steam_user_form; ?>
-<?php 
-    if(!empty($this->steam_user_form)) {
-        echo "<a href=\"/players/player/login/hitbox\"><img src=\"/assets/images/modules/necrolab/styles/default/connections/connect_with_twitch_light.png\" /></a>";
-    }
-?>
-<?php if(!empty($this->power_rankings_table)): ?>
+<table id="player_info_table"></table>
 <br />
 <br />
-<div class="menu_small">Power Ranking</div>
-<?php echo $this->power_rankings_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->score_rankings_table)): ?>
+<div class="menu_small">Rankings</div>
+<br />
+<div class="menu_smaller">Power</div>
+<br />
+<table id="player_power_rankings_table"></table>
+<br />
+<div class="menu_smaller">Score</div>
+<br />
+<table id="player_score_rankings_table"></table>
+<br />
+<div class="menu_smaller">Speed</div>
+<br />
+<table id="player_speed_rankings_table"></table>
+<br />
+<div class="menu_smaller">Deathless</div>
+<br />
+<table id="player_deathless_rankings_table"></table>
+<br />
+<div class="menu_smaller">Character</div>
+<br />
+<table id="player_character_rankings_table"></table>
+<br />
+<div class="menu_smaller">Daily</div>
+<br />
+<table id="player_daily_rankings_table"></table>
 <br />
 <br />
-<div class="menu_small">Score Ranking</div>
-<?php echo $this->score_rankings_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->speed_rankings_table)): ?>
+<div class="menu_small">Leaderboards</div>
 <br />
+<div class="menu_smaller">Score</div>
 <br />
-<div class="menu_small">Speed Ranking</div>
-<?php echo $this->speed_rankings_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->deathless_score_rankings_table)): ?>
+<table id="player_score_leaderboards_table"></table>
 <br />
+<div class="menu_smaller">Speed</div>
 <br />
-<div class="menu_small">Deathless Ranking</div>
-<?php echo $this->deathless_score_rankings_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->daily_ranking_table)): ?>
+<table id="player_speed_leaderboards_table"></table>
 <br />
+<div class="menu_smaller">Deathless</div>
 <br />
-<div class="menu_small">Daily Ranking(s)</div>
-<?php echo $this->daily_ranking_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->daily_season_table)): ?>
+<table id="player_deathless_leaderboards_table"></table>
 <br />
+<div class="menu_smaller">Daily</div>
 <br />
-<div class="menu_small"><?php echo $this->season_title; ?></div>
-<?php echo $this->daily_season_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->score_leaderboards_table)): ?>
-<br />
-<br />
-<div class="menu_small">Score Leaderboards</div>
-<?php echo $this->score_leaderboards_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->speed_leaderboards_table)): ?>
-<br />
-<br />
-<div class="menu_small">Speed Leaderboards</div>
-<?php echo $this->speed_leaderboards_table; ?>
-<?php endif; ?>
-
-<?php if(!empty($this->deathless_leaderboards_table)): ?>
-<br />
-<br />
-<div class="menu_small">Deathless Leaderboards</div>
-<?php echo $this->deathless_leaderboards_table; ?>
-<?php endif; ?>
-
-<div id="power_ranking"></div>
-<div id="daily_ranking"></div>
+<table id="player_daily_leaderboards_table"></table>

@@ -32,20 +32,19 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
-use \Exception;
-use \Framework\Html\Table\DataTable;
-use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry as LeaderboardEntryModel;
 
 class Entries
 extends Leaderboards {    
-    public function init() {
-        parent::init();
-        
+    public function init() {        
         $this->setLbidFromRequest();
         
+        $this->setSiteFromRequest();
+        
         $this->setDateFromRequest();
+        
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {

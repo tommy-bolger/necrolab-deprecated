@@ -1,0 +1,7 @@
+.datepicker {
+    background-color: inherit;
+}
+
+.datepicker table tr td span.focused, .datepicker table tr td span:hover {
+    color: #999999;
+}

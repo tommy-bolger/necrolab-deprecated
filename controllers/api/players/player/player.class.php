@@ -69,7 +69,7 @@ extends Players {
         $processed_data = array();
 
         if(!empty($data[0])) {        
-            $processed_data = SteamUsersModel::getFormattedApiRecord($data[0]);
+            $processed_data = $this->getPlayerData($data[0]);
         }
         
         return $processed_data;

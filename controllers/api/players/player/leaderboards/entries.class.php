@@ -35,11 +35,15 @@ namespace Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards;
 use \Exception;
 use \Framework\Html\Table\DataTable;
 use \Framework\Html\Misc\TemplateElement;
+use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
+use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry as LeaderboardEntryModel;
 
 class Entries
 extends Leaderboards {
+    protected $limit = 30;
+
     public function init() {
         $this->setSteamidFromRequest();
         
@@ -61,11 +65,13 @@ extends Leaderboards {
             foreach($data as $row) {
                 $processed_row = array();
             
-                $processed_row['lbid'] = $row['lbid'];
-                $processed_row['leaderboard_name'] = $row['leaderboard_name'];
-                $processed_row['leaderboard_display_name'] = $row['leaderboard_display_name'];
+                $processed_row['leaderboard'] = LeaderboardsModel::getFormattedApiRecord($row);
                 
-                $processed_row = array_merge($processed_row, LeaderboardEntryModel::getFormattedApiRecord($row));
+                if(!empty($row['character_name'])) {
+                    $processed_row['leaderboard']['character_name'] = $row['character_name'];
+                }
+                
+                $processed_row['entry'] = LeaderboardEntryModel::getFormattedApiRecord($row);
                 
                 $processed_data[] = $processed_row;
             }

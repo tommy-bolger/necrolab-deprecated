@@ -112,10 +112,6 @@ extends BaseSteamUsers {
         return $resultset;
     }
     
-    protected static function getUngroupedLeaderboards($category_name) {
-        return Leaderboards::getAllByCategory($category_name);
-    }
-    
     public static function getOutdatedIds() {
         $thirty_days_ago = new DateTime('-30 day');
     

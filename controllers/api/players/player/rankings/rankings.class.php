@@ -37,9 +37,7 @@ use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
 
 class Rankings
 extends Player {
-    protected $start_date;
-    
-    protected $end_date;
+    protected $limit = 30;
     
     public function init() {
         $this->setSteamidFromRequest();
@@ -47,42 +45,5 @@ extends Player {
         $this->setReleaseFromRequest();
     
         $this->getResultsetStateFromRequest();
-    }
-
-    protected function setDateRangeFromRequest() {    
-        $start_date = request()->get->start_date;
-        
-        if(empty($start_date)) {
-            $this->framework->outputManualError(400, "Required property 'start_date' was not found in the request.");
-        }
-        
-        if(!empty($start_date)) {
-            $start_date_object = DateTime::createFromFormat('Y-m-d', $start_date);
-        
-            if(!empty($start_date_object)) {
-                $this->start_date = new DateTime($start_date_object->format('Y-m-d'));
-            }
-        }
-        
-        if(empty($this->start_date)) {
-            $this->framework->outputManualError(400, "Property 'start_date' is not a valid date. Please specify a date in the YYYY-MM-DD format.");
-        }
-        
-        $end_date = request()->get->end_date;
-        
-        if(!empty($end_date)) {
-            $end_date_object = DateTime::createFromFormat('Y-m-d', $end_date);
-        
-            if(!empty($end_date_object)) {
-                $this->end_date = new DateTime($end_date_object->format('Y-m-d'));
-            }
-        }
-        
-        if(empty($this->end_date)) {
-            $this->end_date = new DateTime(date('Y-m-d'));
-        }
-        
-        $this->request['start_date'] = $this->start_date->format('Y-m-d');
-        $this->request['end_date'] = $this->end_date->format('Y-m-d');
     }
 }

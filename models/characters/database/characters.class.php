@@ -43,4 +43,21 @@ extends BaseCharacters {
         
         return $resultset;
     }
+    
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'c.character_id',
+                'alias' => 'character_id'
+            ),
+            array(
+                'field' => 'c.name',
+                'alias' => 'character_name',
+            ),
+            array(
+                'field' => 'c.sort_order',
+                'alias' => 'character_number',
+            )
+        ));
+    }
 }

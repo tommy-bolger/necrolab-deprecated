@@ -32,29 +32,24 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Score;
 
-use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Leaderboards;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Home
-extends Leaderboards {
-    public function __construct() {
-        parent::__construct();
+extends Leaderboards {    
+    public function init() {
+        parent::init();
         
         $this->active_page = 'score_leaderboards';
+        
+        $this->title = 'Leaderboards::Score';
     }
     
-    public function action() {
-        $score_leaderboards = LeaderboardsModel::getAllByCategory('score');
+    public function setup() {
+        parent::setup();
         
-        $grouped_score_leaderboards = LeaderboardsModel::getGroupedLeaderboards('score', $score_leaderboards);
-    
-        $leaderboards_template = new TemplateElement("leaderboards.php");
-        
-        $score_leaderboards_table = $this->getLeaderboardTable('score', $grouped_score_leaderboards);
-        
-        $leaderboards_template->addChild($score_leaderboards_table, 'leaderboards_table');
-        
-        $this->page->body->addChild($leaderboards_template, 'content');
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/leaderboardlisting.js',
+            '/tables/leaderboards/score/listing.js'
+        ));
     }
 }

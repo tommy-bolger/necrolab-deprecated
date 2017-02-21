@@ -33,41 +33,22 @@
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Deathless;
 
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Entries as BaseEntries;
-use \Modules\Necrolab\Models\Leaderboards\Replays;
 
 class Entries
 extends BaseEntries {
-    protected function getTableHeader() {
-        $header = parent::getTableHeader();
+    public function init() {
+        parent::init();
         
-        $header['win_count'] = 'Wins';
-        $header['highest_zone'] = 'Zone';
-        $header['highest_level'] = 'Level';
-        $header['is_win'] = "Win";
-        $header['seed'] = 'Seed';
-        $header['replay'] = 'Replay';
+        $this->active_page = 'deathless_leaderboards';
         
-        return $header;
+        $this->title = "Leaderboard::Deathless::Entries::{$this->lbid}";
     }
     
-    protected function getTableRow(array $row) {
-        $table_row = parent::getTableRow($row);
+    public function setup() {
+        parent::setup();
         
-        $table_row['win_count'] = $row['win_count'];
-        $table_row['highest_zone'] = $row['zone'];
-        $table_row['highest_level'] = $row['level'];
-        $table_row['is_win'] = $row['is_win'];
-        $table_row['seed'] = $row['seed'];
-        
-        $ugcid = $row['ugcid'];
-        $replay = NULL;
-        
-        if(!empty($ugcid)) {
-            $replay = $this->getReplayLink(Replays::getHttpFilePath($ugcid));
-        }
-        
-        $table_row['replay'] = $replay;
-        
-        return $table_row;
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/deathless/entries.js'
+        ));
     }
 }

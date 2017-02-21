@@ -87,4 +87,31 @@ extends Cli {
             }
         }
     }
+    
+    public function actionCreateEntriesParition($date = NULL) {
+        $date = new DateTime($date);
+    
+        DatabaseDailyRankingEntries::createPartitionTable($date);
+    }
+    
+    public function actionCreateNextMonthEntriesPartition($date = NULL) {
+        $date = new DateTime($date);
+        
+        $date->add(new DateInterval('P1M'));
+        
+        DatabaseDailyRankingEntries::createPartitionTable($date);
+    }
+    
+    public function actionCreateEntriesParitions($start_date, $end_date) {
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+    
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            DatabaseDailyRankingEntries::createPartitionTable($current_date);
+        
+            $current_date->add(new DateInterval('P1M'));
+        }
+    }
 }

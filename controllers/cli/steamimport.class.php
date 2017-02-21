@@ -13,13 +13,9 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays;
 use \Modules\Necrolab\Models\Leaderboards\Database\Details;
-use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers;
-use \Modules\Necrolab\Models\Leaderboards\RecordModels\Leaderboard;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\LeaderboardEntry;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\LeaderboardEntry as DatabaseLeaderboardEntry;
-use \Modules\Necrolab\Models\SteamUsers\RecordModels\SteamUser;
-use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
 class SteamImport
 extends Cli {
@@ -119,17 +115,13 @@ extends Cli {
             db()->beginTransaction();
         
             foreach($parsed_xml->leaderboard as $leaderboard) {
-                $leaderboard_record = new Leaderboard();
+                $database_leaderboard = new DatabaseLeaderboard();
                 
-                $leaderboard_record->setPropertiesFromObject($leaderboard);
+                $database_leaderboard->setPropertiesFromObject($leaderboard);
                 
-                $lbid = $leaderboard_record->lbid;
+                $lbid = $database_leaderboard->lbid;
                 
-                if($leaderboard_record->isValid($this->as_of_date)) {
-                    $database_leaderboard = new DatabaseLeaderboard();
-                    
-                    $database_leaderboard->setPropertiesFromArray($leaderboard_record->toArray(false));
-                
+                if($database_leaderboard->isValid($this->as_of_date)) {                
                     $leaderboard_id = Leaderboards::save($database_leaderboard);
                     
                     $database_leaderboard->leaderboard_id = $leaderboard_id;
@@ -158,32 +150,12 @@ extends Cli {
                                 $rank = 1;
                             
                                 foreach($entries as $entry) {
-                                    $entry_record = new LeaderboardEntry();
+                                    $database_entry = new DatabaseLeaderboardEntry();
                                     
-                                    $entry_record->setPropertiesFromSteamObject($entry, $leaderboard_record);
+                                    $database_entry->setPropertiesFromSteamObject($entry, $database_leaderboard, $rank, $this->as_of_date);
                                     
-                                    $steam_user_id = SteamUsers::getId($entry->steamid);
-                                    
-                                    if(empty($steam_user_id)) {
-                                        $database_steam_user = new DatabaseSteamUser();
-                                        
-                                        $database_steam_user->steamid = $entry->steamid;
-                                    
-                                        $steam_user_id = SteamUsers::save($database_steam_user, 'steam_import');
-                                    }
-                                    
-                                    if($entry_record->isValid($leaderboard_record)) {
-                                        $steam_replay_id = Replays::save($entry_record->ugcid, $steam_user_id);
-                                        $leaderboard_entry_details_id = Details::save($entry_record->details);
-                                    
-                                        $database_entry = new DatabaseLeaderboardEntry();
-                                        
-                                        $database_entry->setPropertiesFromArray($entry_record->toArray(false));
-                                        
+                                    if($database_entry->isValid($database_leaderboard)) {
                                         $database_entry->leaderboard_snapshot_id = $leaderboard_snapshot_id;
-                                        $database_entry->steam_user_id = $steam_user_id;
-                                        $database_entry->steam_replay_id = $steam_replay_id;
-                                        $database_entry->leaderboard_entry_details_id = $leaderboard_entry_details_id;
                                         
                                         Entry::save($this->as_of_date, $database_entry);                                        
                                     
@@ -289,5 +261,83 @@ extends Cli {
         
             $current_date->add(new DateInterval('P1D'));
         }
+    }
+    
+    public function actionCreateEntriesParition($date = NULL) {
+        $date = new DateTime($date);
+    
+        Entries::createPartitionTable($date);
+    }
+    
+    public function actionCreateNextMonthEntriesPartition($date = NULL) {
+        $date = new DateTime($date);
+        
+        $date->add(new DateInterval('P1M'));
+        
+        Entries::createPartitionTable($date);
+    }
+    
+    public function actionCreateEntriesParitions($start_date, $end_date) {
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+    
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            Entries::createPartitionTable($current_date);
+        
+            $current_date->add(new DateInterval('P1M'));
+        }
+    }  
+    
+    public function actionFixEntryRecords($start_date, $end_date) {
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {            
+            $leaderboard_entries_resulset = Entries::getAllBaseResultset($current_date);
+        
+            $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
+            
+            while($leaderboard_entry = db()->getStatementRow($leaderboard_entries)) {
+                $entry_record = new DatabaseLeaderboardEntry();
+                
+                $score = $leaderboard_entry['score'];
+                
+                $entry_record->score = $score;
+                
+                if(!empty($leaderboard_entry['is_speedrun'])) {
+                    $entry_record->time = Entry::getTime($score);
+                    $entry_record->is_win = 1;
+                }
+                else {
+                    $zone_level = Entry::getHighestZoneLevel($leaderboard_entry['details']);
+                
+                    $entry_record->zone = $zone_level['highest_zone'];
+                    $entry_record->level = $zone_level['highest_level'];
+                    
+                    $entry_record->is_win = Entry::getIfWin($current_date, $leaderboard_entry['release_id'], $entry_record->zone, $entry_record->level);
+                
+                    if(!empty($leaderboard_entry['is_deathless'])) {
+                        $entry_record->win_count = Entry::getWinCount($score);
+                    }
+                }
+                
+                Entry::update(
+                    $current_date, 
+                    $leaderboard_entry['leaderboard_snapshot_id'], 
+                    $leaderboard_entry['steam_user_id'], 
+                    $leaderboard_entry['rank'], 
+                    $entry_record,
+                    'fix_record_update'
+                );
+            }
+            
+            $transaction->commit();  
+            
+            $current_date->add(new DateInterval('P1M'));
+        }  
     }
 }

@@ -39,6 +39,19 @@ extends BaseReplays {
         return $steam_replay_id;
     }
     
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'sr.ugcid',
+                'alias' => 'ugcid'
+            ),
+            array(
+                'field' => 'sr.seed',
+                'alias' => 'seed'
+            )
+        ));
+    }
+    
     public static function updateBatch($steam_replay_id, SteamReplay $steam_replay) { 
         $array_record = $steam_replay->toArray();
         

@@ -1,4 +1,4 @@
-function process_player_data(data, players_table) {
+function process_player_data(data, table) {
     var processed_data = [];
     
     if(data.length != null) {
@@ -12,12 +12,13 @@ function process_player_data(data, players_table) {
                 
                 processed_data.push([
                     Formatting.getNecrolabUserLink(row_data.steamid, row_data.personaname),
-                    Formatting.getSteamLogoLink(row_data.steamid, row_data.personaname),
-                    Formatting.getTwitchFancyLink(row_data.twitch_username),
-                    Formatting.getTwitterFancyLink(row_data.twitter_username),
-                    Formatting.getHitboxFancyLink(row_data.hitbox_username),
-                    Formatting.getNicoNicoFancyLink(row_data.nico_nico_url),
-                    Formatting.getWebsiteFancyLink(row_data.website)
+                    Formatting.getSteamFancyLink(row_data.linked.steam.personaname, row_data.linked.steam.profile_url),
+                    Formatting.getBeamproFancyLink(row_data.linked.beampro),
+                    Formatting.getDiscordFancyLink(row_data.linked.discord.username, row_data.linked.discord.discriminator),
+                    Formatting.getRedditFancyLink(row_data.linked.reddit),
+                    Formatting.getTwitchFancyLink(row_data.linked.twitch),
+                    Formatting.getTwitterFancyLink(row_data.linked.twitter.name),
+                    Formatting.getYoutubeFancyLink(row_data.linked.youtube)
                 ]);
             }
         }
@@ -27,16 +28,17 @@ function process_player_data(data, players_table) {
 };
 
 $(document).ready(function() {
-    var players_table = new NecroTable($('#entries_table'));
+    var table = new NecroTable($('#entries_table'));
     
-    players_table.enableLengthMenu();
-    players_table.enableButtons();
-    players_table.enablePaging();
-    players_table.enableSiteField();
+    table.enableLengthMenu();
+    table.enableButtons();
+    table.enablePaging();
+    table.enableSearchField();
+    table.enableSiteField();
     
-    players_table.setAjaxUrl('/api/players');
+    table.setAjaxUrl('/api/players');
     
-    players_table.addColumns([
+    table.addColumns([
         {
             name: 'personaname',
             title: 'Player',
@@ -49,6 +51,21 @@ $(document).ready(function() {
             orderable: false
         },
         {
+            name: 'beampro_username',
+            title: 'Beam.pro',
+            type: 'string'
+        },
+        {
+            name: 'discord_username',
+            title: 'Discord',
+            type: 'string'
+        },
+        {
+            name: 'reddit_username',
+            title: 'Reddit',
+            type: 'string'
+        },
+        {
             name: 'twitch_username',
             title: 'Twitch',
             type: 'string'
@@ -59,23 +76,13 @@ $(document).ready(function() {
             type: 'string'
         },
         {
-            name: 'hitbox_username',
-            title: 'Hitbox',
-            type: 'string'
-        },
-        {
-            name: 'nico_nico_url',
-            title: '<span class="no_wrap">Nico Nico</span>',
-            type: 'string'
-        },
-        {
-            name: 'website',
-            title: 'Website',
+            name: 'youtube_username',
+            title: 'Youtube',
             type: 'string'
         }
     ]);
     
-    players_table.setDataProcessCallback(window, 'process_player_data');
+    table.setDataProcessCallback(window, 'process_player_data');
     
-    players_table.render();
+    table.render();
 });

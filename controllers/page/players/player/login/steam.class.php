@@ -77,6 +77,13 @@ extends Player {
                 if(!empty($steam_user_record)) {
                     session()->steamid = $this->steamid;
                     
+                    session()->beampro_user_id = $steam_user_record['beampro_user_id'];
+                    session()->discord_user_id = $steam_user_record['discord_user_id'];
+                    session()->reddit_user_id = $steam_user_record['reddit_user_id'];
+                    session()->twitch_user_id = $steam_user_record['twitch_user_id'];
+                    session()->twitter_user_id = $steam_user_record['twitter_user_id'];
+                    session()->youtube_user_id = $steam_user_record['youtube_user_id'];
+                    
                     Http::redirect(Http::generateUrl('/players/player/', array(
                         'id' => $this->steamid
                     )));

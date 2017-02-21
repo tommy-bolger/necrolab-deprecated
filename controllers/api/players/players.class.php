@@ -46,4 +46,16 @@ extends Necrolab {
     protected function getResultset() {
         return SteamUsersModel::getAllDisplayResultset();
     }
+    
+    public function formatResponse($data) {        
+        $processed_data = array();
+        
+        if(!empty($data)) {        
+            foreach($data as $row) {
+                $processed_data[] = $this->getPlayerData($row);
+            }
+        }
+        
+        return $processed_data;
+    }
 }

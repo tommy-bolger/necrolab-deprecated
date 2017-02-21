@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Controllers\Cli\Rankings;
 
 use \DateTime;
+use \DateInterval;
 use \Framework\Core\Controllers\Cli;
 use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
 use \Modules\Necrolab\Models\Releases\Database\Releases;
@@ -88,6 +89,33 @@ extends Cli {
                 
                 $this->generate();
             }
+        }
+    }
+    
+    public function actionCreateEntriesParition($date = NULL) {
+        $date = new DateTime($date);
+    
+        DatabaseEntries::createPartitionTable($date);
+    }
+    
+    public function actionCreateNextMonthEntriesPartition($date = NULL) {
+        $date = new DateTime($date);
+        
+        $date->add(new DateInterval('P1M'));
+        
+        DatabaseEntries::createPartitionTable($date);
+    }
+    
+    public function actionCreateEntriesParitions($start_date, $end_date) {
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+    
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            DatabaseEntries::createPartitionTable($current_date);
+        
+            $current_date->add(new DateInterval('P1M'));
         }
     }
 }

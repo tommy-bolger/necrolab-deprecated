@@ -32,29 +32,24 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Deathless;
 
-use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Leaderboards;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Home
-extends Leaderboards {
-    public function __construct() {
-        parent::__construct();
+extends Leaderboards {    
+    public function init() {
+        parent::init();
         
         $this->active_page = 'deathless_leaderboards';
+        
+        $this->title = 'Leaderboards::Deathless';
     }
     
-    public function action() {          
-        $deathless_leaderboards = LeaderboardsModel::getAllByCategory('deathless');
+    public function setup() {
+        parent::setup();
         
-        $grouped_deathless_leaderboards = LeaderboardsModel::getGroupedLeaderboards('deathless', $deathless_leaderboards);
-    
-        $leaderboards_template = new TemplateElement("leaderboards.php");
-        
-        $deathless_leaderboards_table = $this->getLeaderboardTable('deathless', $grouped_deathless_leaderboards);
-        
-        $leaderboards_template->addChild($deathless_leaderboards_table, 'leaderboards_table');
-        
-        $this->page->body->addChild($leaderboards_template, 'content');
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/leaderboardlisting.js',
+            '/tables/leaderboards/deathless/listing.js'
+        ));
     }
 }

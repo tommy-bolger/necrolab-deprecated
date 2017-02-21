@@ -1,8 +1,6 @@
 <br />
-<div class="menu_small">
-    <?php if(!empty($this->has_character_image)): ?>
-    <img class="<?php echo $this->character_name; ?>_header" src=<?php echo $this->character_placeholder_image_url; ?> alt="<?php echo $this->character_name; ?>" />
-    <?php endif; ?>
-    <?php echo $this->table_title; ?>
-</div>
+<?php if(!empty($this->has_table_title)): ?>
+<div id="table_title" class="menu_small"></div>
+<br />
+<?php endif; ?>
 <table id="entries_table"></table>

@@ -3,7 +3,7 @@ function Formatting() {}
 /* ---------- Necrolab ---------- */
 
 Formatting.getNecrolabUserUrl = function(steamid) {
-    return '/players/player/?id=' + steamid;
+    return '/players/player?id=' + steamid;
 };
 
 Formatting.getNecrolabUserLink = function(steamid, personaname) {
@@ -42,11 +42,45 @@ Formatting.roundNumber = function(unrounded_number) {
         rounded_number = casted_unrounded_number.toFixed(rounding_place);
     }
     else {
-        rounded_number = '&nbsp;';
+        rounded_number = null;
     }
 
     return rounded_number;
 }
+
+Formatting.convertSecondsToTime = function(seconds) {
+    var parsed_time = null;
+    
+    if(seconds != null) {
+        seconds = parseFloat(seconds);
+        
+        if(seconds > 0) {
+            //Solution found at: http://stackoverflow.com/a/31340408
+            var format = 'mm:ss.SS';
+            
+            if(seconds >= 3600) {
+                format = 'H:' + format;
+            }
+            else {
+                format = '00:' + format;
+            }
+            
+            parsed_time = moment("2015-01-01").startOf('day').millisecond(seconds * 1000).format(format);
+        }
+    }
+    
+    return parsed_time;
+};
+
+Formatting.addCommasToNumber = function(unformatted_number) {
+    var formatted_number;
+    
+    if(unformatted_number != null) {
+        formatted_number = unformatted_number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+    
+    return formatted_number;
+};
 
 /* ---------- Characters ---------- */
 
@@ -60,20 +94,28 @@ Formatting.getCharacterImageHtml = function(character_name) {
 
 /* ---------- Steam ---------- */
 
-Formatting.getSteamProfileUrl = function(steamid) {
-    return 'http://steamcommunity.com/profiles/' + steamid;
-};
-
 Formatting.getSteamLogo = function() {
     return '<img src="/assets/images/modules/necrolab/styles/default/logos/share_steam_logo_small.png" />';
 };
 
-Formatting.getSteamLogoLink = function(steamid, personaname) {
-    return '<a href="' + Formatting.getSteamProfileUrl(steamid) + '" target="_blank">' + Formatting.getSteamLogo() + '</a>';
+Formatting.getSteamLogoLink = function(personaname, profile_url) {
+    var link_html = null;
+    
+    if(profile_url != null) {
+        link_html = '<a href="' + profile_url + '" target="_blank">' + Formatting.getSteamLogo() + '</a>';
+    }
+    
+    return link_html;
 };
 
-Formatting.getSteamFancyLink = function(steamid, personaname) {
-    return '<a href="' + Formatting.getSteamProfileUrl(steamid) + '" target="_blank">' + Formatting.getSteamLogo() + '&nbsp' + personaname + '</a>';
+Formatting.getSteamFancyLink = function(personaname, profile_url) {    
+    var link_html = null;
+    
+    if(profile_url != null) {
+        link_html = '<a href="' + profile_url + '" target="_blank">' + Formatting.getSteamLogo() + '&nbsp' + personaname + '</a>';
+    }
+    
+    return link_html;
 };
 
 /* ---------- Twitch ---------- */
@@ -87,7 +129,7 @@ Formatting.getTwitchLogo = function() {
 };
 
 Formatting.getTwitchUsernameLink = function(twitch_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitch_username != null) {
         link_html = '<a href="' + Formatting.getTwitchUrl(twitch_username) + '" target="_blank">' + twitch_username + '</a>';
@@ -97,7 +139,7 @@ Formatting.getTwitchUsernameLink = function(twitch_username) {
 };
 
 Formatting.getTwitchLogoLink = function(twitch_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitch_username != null) {
         link_html = '<a href="' + Formatting.getTwitchUrl(twitch_username) + '" target="_blank">' + Formatting.getTwitchLogo() + '</a>';
@@ -107,13 +149,17 @@ Formatting.getTwitchLogoLink = function(twitch_username) {
 };
 
 Formatting.getTwitchFancyLink = function(twitch_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitch_username != null) {
-        link_html = '<a href="' + Formatting.getTwitchUrl(twitch_username) + '" target="_blank">' + Formatting.getTwitchLogo() + '&nbsp;' + twitch_username + '</a>';
+        link_html = '<a href="' + Formatting.getTwitchUrl(twitch_username) + '">' + Formatting.getTwitchLogo() + '&nbsp;' + twitch_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getTwitchLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/twitch" target="_blank"><img src="/assets/images/modules/necrolab/styles/default/connections/connect_with_twitch_light.png" /></a>';
 };
 
 /* ---------- Twitter ---------- */
@@ -127,7 +173,7 @@ Formatting.getTwitterLogo = function() {
 };
 
 Formatting.getTwitterUsernameLink = function(twitter_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitter_username != null) {
         link_html = '<a href="' + Formatting.getTwitterUrl(twitter_username) + '" target="_blank">' + twitter_username + '</a>';
@@ -137,7 +183,7 @@ Formatting.getTwitterUsernameLink = function(twitter_username) {
 };
 
 Formatting.getTwitterLogoLink = function(twitter_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitter_username != null) {
         link_html = '<a href="' + Formatting.getTwitterUrl(twitter_username) + '" target="_blank">' + Formatting.getTwitterLogo() + '</a>';
@@ -147,13 +193,17 @@ Formatting.getTwitterLogoLink = function(twitter_username) {
 };
 
 Formatting.getTwitterFancyLink = function(twitter_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(twitter_username != null) {
         link_html = '<a href="' + Formatting.getTwitterUrl(twitter_username) + '" target="_blank">' + Formatting.getTwitterLogo() + '&nbsp;' + twitter_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getTwitterLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/twitter"><img src="/assets/images/modules/necrolab/styles/default/connections/sign-in-with-twitter-gray.png" /></a>';
 };
 
 /* ---------- Hitbox ---------- */
@@ -167,7 +217,7 @@ Formatting.getHitboxLogo = function() {
 };
 
 Formatting.getHitboxUsernameLink = function(hitbox_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(hitbox_username != null) {
         link_html = '<a href="' + Formatting.getHitboxUrl(hitbox_username) + '" target="_blank">' + hitbox_username + '</a>';
@@ -177,7 +227,7 @@ Formatting.getHitboxUsernameLink = function(hitbox_username) {
 };
 
 Formatting.getHitboxLogoLink = function(hitbox_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(hitbox_username != null) {
         link_html = '<a href="' + Formatting.getHitboxUrl(hitbox_username) + '" target="_blank">' + Formatting.getHitboxLogo() + '</a>';
@@ -187,13 +237,17 @@ Formatting.getHitboxLogoLink = function(hitbox_username) {
 };
 
 Formatting.getHitboxFancyLink = function(hitbox_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(hitbox_username != null) {
         link_html = '<a href="' + Formatting.getHitboxUrl(hitbox_username) + '" target="_blank">' + Formatting.getHitboxLogo() + '&nbsp;' + hitbox_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getHitboxLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/hitbox">Connect with Hitbox</a>';
 };
 
 /* ---------- Beampro ---------- */
@@ -207,7 +261,7 @@ Formatting.getBeamproLogo = function() {
 };
 
 Formatting.getBeamproUsernameLink = function(beampro_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(beampro_username != null) {
         link_html = '<a href="' + Formatting.getBeamproUrl(beampro_username) + '" target="_blank">' + beampro_username + '</a>';
@@ -217,7 +271,7 @@ Formatting.getBeamproUsernameLink = function(beampro_username) {
 };
 
 Formatting.getBeamproLogoLink = function(beampro_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(beampro_username != null) {
         link_html = '<a href="' + Formatting.getBeamproUrl(beampro_username) + '" target="_blank">' + Formatting.getBeamproLogo() + '</a>';
@@ -227,13 +281,17 @@ Formatting.getBeamproLogoLink = function(beampro_username) {
 };
 
 Formatting.getBeamproFancyLink = function(beampro_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(beampro_username != null) {
         link_html = '<a href="' + Formatting.getBeamproUrl(beampro_username) + '" target="_blank">' + Formatting.getBeamproLogo() + '&nbsp;' + beampro_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getBeamproLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/beampro">Connect with Beam.pro</a>';
 };
 
 /* ---------- Discord ---------- */
@@ -245,13 +303,17 @@ Formatting.getDiscordLogo = function(discord_username, discriminator) {
 };
 
 Formatting.getDiscordFancyLink = function(discord_username, discriminator) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(discord_username != null) {
         link_html = '<span class="no_wrap">' + Formatting.getDiscordLogo() + '&nbsp;' + discord_username + '#' + discriminator + '</span>';
     }
     
     return link_html;
+};
+
+Formatting.getDiscordLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/discord">Connect with Discord</a>';
 };
 
 /* ---------- Youtube ---------- */
@@ -265,7 +327,7 @@ Formatting.getYoutubeLogo = function() {
 };
 
 Formatting.getYoutubeUsernameLink = function(youtube_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(youtube_username != null) {
         link_html = '<a href="' + Formatting.getYoutubeUrl(youtube_username) + '" target="_blank">' + youtube_username + '</a>';
@@ -275,7 +337,7 @@ Formatting.getYoutubeUsernameLink = function(youtube_username) {
 };
 
 Formatting.getYoutubeLogoLink = function(youtube_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(youtube_username != null) {
         link_html = '<a href="' + Formatting.getYoutubeUrl(youtube_username) + '" target="_blank">' + Formatting.getYoutubeLogo() + '</a>';
@@ -285,13 +347,17 @@ Formatting.getYoutubeLogoLink = function(youtube_username) {
 };
 
 Formatting.getYoutubeFancyLink = function(youtube_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(youtube_username != null) {
         link_html = '<a href="' + Formatting.getYoutubeUrl(youtube_username) + '" target="_blank">' + Formatting.getYoutubeLogo() + '&nbsp;' + youtube_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getYoutubeLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/youtube"><img src="/assets/images/modules/necrolab/styles/default/connections/google_signin_dark_normal_web.png" /></a>';
 };
 
 /* ---------- Reddit ---------- */
@@ -305,7 +371,7 @@ Formatting.getRedditLogo = function() {
 };
 
 Formatting.getRedditUsernameLink = function(reddit_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(reddit_username != null) {
         link_html = '<a href="' + Formatting.getRedditUrl(reddit_username) + '" target="_blank">' + reddit_username + '</a>';
@@ -315,7 +381,7 @@ Formatting.getRedditUsernameLink = function(reddit_username) {
 };
 
 Formatting.getRedditLogoLink = function(reddit_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(reddit_username != null) {
         link_html = '<a href="' + Formatting.getRedditUrl(reddit_username) + '" target="_blank">' + Formatting.getRedditLogo() + '</a>';
@@ -325,13 +391,17 @@ Formatting.getRedditLogoLink = function(reddit_username) {
 };
 
 Formatting.getRedditFancyLink = function(reddit_username) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(reddit_username != null) {
         link_html = '<a href="' + Formatting.getRedditUrl(reddit_username) + '" target="_blank">' + Formatting.getRedditLogo() + '&nbsp;' + reddit_username + '</a>';
     }
     
     return link_html;
+};
+
+Formatting.getRedditLoginLink = function() {    
+    return link_html = '<a href="/players/player/login/reddit">Connect with Reddit</a>';
 };
 
 /* ---------- Nico Nico ---------- */
@@ -341,7 +411,7 @@ Formatting.getNicoNicoLogo = function() {
 };
 
 Formatting.getNicoNicoFancyLink = function(nico_nico_url) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(nico_nico_url != null) {
         link_html = '<a href="' + nico_nico_url + '" target="_blank">' + Formatting.getNicoNicoLogo() + '" /></a>';
@@ -353,7 +423,7 @@ Formatting.getNicoNicoFancyLink = function(nico_nico_url) {
 /* ---------- External Website ---------- */
 
 Formatting.getWebsiteFancyLink = function(website_url) {
-    var link_html = '&nbsp;';
+    var link_html = null;
     
     if(website_url != null) {
         link_html = '<a href="' + website_url + '" target="_blank"><img src="/assets/images/modules/necrolab/styles/default/logos/external_link_small.png" /></a>';
@@ -407,4 +477,73 @@ Formatting.getSocialMedia = function(steamid, social_media) {
     social_media_html += '</span>';
     
     return social_media_html;
+};
+
+/* ---------- Table Titles ---------- */
+
+Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {
+    var table_title = '';
+
+    if(leaderboard_record.character_name == 'all') {
+        table_title = 'All Chars';
+    }
+    else if(leaderboard_record.character_name == 'story') {
+        table_title = 'Story';
+    }
+    else {
+        table_title = Formatting.getCharacterImageHtml(leaderboard_record.character_name);
+    }
+    
+    table_title += ' ';
+    
+    if(leaderboard_record.is_speedrun == 1) {
+        table_title += 'Speedrun';
+    }
+    else if(leaderboard_record.is_deathless == 1) {
+        table_title += 'Deathless';
+    }
+    else {
+        table_title += 'Score'; 
+    }
+    
+    table_title += ' ';
+    
+    if(leaderboard_record.is_co_op == 0) {
+        if(leaderboard_record.is_seeded == 0) {
+            if(leaderboard_record.is_custom == 0) {
+                table_title += 'All Zones';
+            }
+            else {
+                table_title += 'Custom Music';
+            }
+        }
+        else {
+            if(leaderboard_record.is_custom == 0) {
+                table_title += 'Seeded';
+            }
+            else {
+                table_title += 'Seeded Custom Music';
+            }
+        }
+    }
+    else {
+        if(leaderboard_record.is_seeded == 0) {
+            if(leaderboard_record.is_custom == 0) {
+                table_title += 'Co-Op';
+            }
+            else {
+                table_title += 'Co-Op Custom Music';
+            }
+        }
+        else {
+            if(leaderboard_record.is_custom == 0) {
+                table_title += 'Seeded Co-Op';
+            }
+            else {
+                table_title += 'Seeded Co-Op Custom Music';
+            }
+        }
+    }
+    
+    return table_title;
 };

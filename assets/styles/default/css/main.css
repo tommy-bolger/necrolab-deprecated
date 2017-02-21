@@ -26,11 +26,24 @@ a:link, a:visited, a:hover, a:active {
     height: auto;
     margin: 0 auto -60px;
     padding: 0 0 60px;
-    width: 1240px;
+    width: 1600px;
+}
+
+.row {
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
 .wrap > .container {
     padding: 0px 15px 20px 0px;
+}
+
+.header > .container {
+    width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 0px !important;
+    padding-right: 0px;
 }
 
 .footer {
@@ -43,7 +56,7 @@ a:link, a:visited, a:hover, a:active {
 }
 
 .footer > .container {
-    width: 1240px;
+    width: 1600px;
     margin-left: auto;
     margin-right: auto;
     padding-left: 0px;
@@ -116,6 +129,10 @@ a:link, a:visited, a:hover, a:active {
     font-size: 36px;
 }
 
+.menu_smaller {
+    font-size: 24px;
+}
+
 .navbar-nav > li > a.site_logo {
     padding-right: 0px;
 }
@@ -145,7 +162,7 @@ a:link, a:visited, a:hover, a:active {
 }
 
 .table {
-    width: 1234px;
+    width: 1600px;
     border: 0px solid #FFFFFF;
 }
 

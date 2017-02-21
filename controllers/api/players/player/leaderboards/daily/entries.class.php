@@ -37,7 +37,17 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntries
 
 class Entries
 extends BaseEntries {
+    public function init() {
+        $this->setSteamidFromRequest();
+        
+        $this->setDateRangeFromRequest();
+        
+        $this->setReleaseFromRequest();
+        
+        $this->getResultsetStateFromRequest();
+    }
+
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiSteamUserDailyResultset($this->date, $this->steamid, $this->release_name);
+        return LeaderboardEntriesModel::getApiSteamUserDailyResultset($this->start_date, $this->end_date, $this->steamid, $this->release_name);
     }
 }

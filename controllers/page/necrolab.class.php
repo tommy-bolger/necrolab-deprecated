@@ -36,11 +36,13 @@ use \DateTime;
 use \Framework\Core\Controllers\Page as PageController;
 use \Framework\Modules\ModulePage;
 use \Framework\Display\Template;
-use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes;
+use \Framework\Html\Misc\TemplateElement;
 
 class Necrolab
 extends PageController {   
     protected $title;
+    
+    protected $has_table_title = false;
     
     protected $active_page_category;
 
@@ -71,13 +73,13 @@ extends PageController {
     protected function addDataTableFiles() {
         $this->page->addCssFiles(array(
             '/jquery.dataTables.css',
-            '/bootstrap-datepicker3.min.css'
+            '/bootstrap-datepicker3.min.css',
+            '/datepicker.css'
         ));
         
         $this->page->addJavascriptFiles(array(
             'jquery.min.js',
             'datatables.min.js',
-            //'/loadingoverlay.min.js',
             'url.js',
             'formatting.js',
             'bootstrap-datepicker.min.js',
@@ -110,7 +112,6 @@ extends PageController {
         
         $this->page->body->addChild($this->active_page_category, 'active_page_category');
         $this->page->body->addChild($this->active_page, 'active_page');
-        $this->page->body->addChild(DayTypes::getAll(), 'daily_ranking_day_types');
         
         $last_refreshed_date = new DateTime();
         
@@ -118,6 +119,14 @@ extends PageController {
         $time_difference = $current_time->diff($last_refreshed_date);
         
         $this->page->body->addChild("Last updated {$time_difference->format('%i')} minutes and {$time_difference->format('%s')} seconds ago.", 'last_refreshed');
+    }
+    
+    public function actionGet() {            
+        $entries_table = new TemplateElement('entries_table.php');
+        
+        $entries_table->addChild($this->has_table_title, 'has_table_title');
+        
+        $this->page->body->addChild($entries_table, 'content');
     }
     
     protected function getCharacterImagePlaceholderUrl() {

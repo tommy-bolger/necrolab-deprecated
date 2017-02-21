@@ -44,4 +44,13 @@ extends BaseDetails {
     
         return $leaderboard_entry_details_id;
     }
+    
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'led.details',
+                'alias' => 'details'
+            )
+        ));
+    }
 }

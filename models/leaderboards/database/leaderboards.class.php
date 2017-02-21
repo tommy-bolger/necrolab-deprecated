@@ -6,6 +6,7 @@ use \Exception;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\Leaderboards\Leaderboards as BaseLeaderboards;
 use \Modules\Necrolab\Models\Releases\Database\Releases;
+use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 
 class Leaderboards
@@ -56,34 +57,107 @@ extends BaseLeaderboards {
         return $leaderboard_id;
     }
     
-    public static function getAllBaseResultset($release_name) {
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'l.lbid',
+                'alias' => 'lbid',
+            ),
+            array(
+                'field' => 'l.name',
+                'alias' => 'leaderboard_name',
+            ),
+            array(
+                'field' => 'l.display_name',
+                'alias' => 'leaderboard_display_name',
+            ),
+            array(
+                'field' => 'l.url',
+                'alias' => 'url',
+            ),
+            array(
+                'field' => 'l.is_speedrun',
+                'alias' => 'is_speedrun',
+            ),
+            array(
+                'field' => 'l.is_custom',
+                'alias' => 'is_custom',
+            ),
+            array(
+                'field' => 'l.is_co_op',
+                'alias' => 'is_co_op',
+            ),
+            array(
+                'field' => 'l.is_seeded',
+                'alias' => 'is_seeded',
+            ),
+            array(
+                'field' => 'l.is_daily',
+                'alias' => 'is_daily',
+            ),
+            array(
+                'field' => 'l.daily_date',
+                'alias' => 'daily_date',
+            ),
+            array(
+                'field' => 'l.is_score_run',
+                'alias' => 'is_score_run',
+            ),
+            array(
+                'field' => 'l.is_all_character',
+                'alias' => 'is_all_character',
+            ),
+            array(
+                'field' => 'l.is_deathless',
+                'alias' => 'is_deathless',
+            ),
+            array(
+                'field' => 'l.is_story_mode',
+                'alias' => 'is_story_mode',
+            ),
+            array(
+                'field' => 'l.is_power_ranking',
+                'alias' => 'is_power_ranking',
+            ),
+            array(
+                'field' => 'l.is_daily_ranking',
+                'alias' => 'is_daily_ranking',
+            ),
+            array(
+                'field' => 'l.release_id',
+                'alias' => 'release_id',
+            )
+        ));
+    }
+    
+    public static function getBaseResultset() {
         $resultset = new SQL('leaderboards');
         
-        $resultset->setBaseQuery("
-            SELECT
-                l.lbid,
-                l.name,
-                l.display_name,
-                c.name AS character_name,
-                l.url,
-                l.is_speedrun,
-                l.is_custom,
-                l.is_co_op,
-                l.is_seeded,
-                l.is_daily,
-                l.daily_date,
-                l.is_score_run,
-                l.is_all_character,
-                l.is_deathless,
-                l.is_story_mode,
-                l.is_power_ranking,
-                l.is_daily_ranking
-            FROM leaderboards l
-            JOIN characters c ON c.character_id = l.character_id
-            JOIN releases r ON r.release_id = l.release_id
-            LEFT JOIN leaderboards_blacklist lb ON lb.leaderboard_id = l.leaderboard_id
-            {{WHERE_CRITERIA}}
-        ");
+        static::setSelectFields($resultset);
+        DatabaseCharacters::setSelectFields($resultset);
+        
+        $resultset->setFromTable('leaderboards l');
+        
+        $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
+        
+        return $resultset;
+    }
+    
+    public static function getOneResultset($lbid) {
+        $resultset = static::getBaseResultset();
+        
+        $resultset->addFilterCriteria('l.lbid = :lbid', array(
+            ':lbid' => $lbid
+        ));
+        
+        return $resultset;
+    }
+    
+    public static function getAllResultset($release_name) {
+        $resultset = static::getBaseResultset();
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addLeftJoinCriteria('leaderboards_blacklist lb ON lb.leaderboard_id = l.leaderboard_id');
         
         $resultset->addFilterCriteria('r.name = :release_name', array(
             ':release_name' => $release_name
@@ -95,7 +169,7 @@ extends BaseLeaderboards {
     }
     
     public static function getAllDailyResultset($release_name) {                       
-        $resultset = static::getAllBaseResultset($release_name);
+        $resultset = static::getAllResultset($release_name);
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
         $resultset->addFilterCriteria("l.is_daily = 1");
@@ -106,16 +180,17 @@ extends BaseLeaderboards {
     }
     
     public static function getAllScoreResultset($release_name) {                       
-        $resultset = static::getAllBaseResultset($release_name);
+        $resultset = static::getAllResultset($release_name);
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
         $resultset->addFilterCriteria("l.is_daily = 0");
+        $resultset->addFilterCriteria("l.is_deathless = 0");
     
         return $resultset;
     }
     
     public static function getAllSpeedResultset($release_name) {                       
-        $resultset = static::getAllBaseResultset($release_name);
+        $resultset = static::getAllResultset($release_name);
         
         $resultset->addFilterCriteria("l.is_speedrun = 1");
     
@@ -123,45 +198,15 @@ extends BaseLeaderboards {
     }
     
     public static function getAllDeathlessResultset($release_name) {                       
-        $resultset = static::getAllBaseResultset($release_name);
+        $resultset = static::getAllResultset($release_name);
         
         $resultset->addFilterCriteria("l.is_deathless = 1");
     
         return $resultset;
     }
     
-    public static function getSteamUserBaseResultset($steamid, $release_name) {
-        $resultset = new SQL('leaderboards');
-        
-        $resultset->setBaseQuery("
-            SELECT DISTINCT 
-                l.leaderboard_id,
-                l.lbid,
-                l.name,
-                l.display_name,
-                c.name AS character_name,
-                l.url,
-                l.is_speedrun,
-                l.is_custom,
-                l.is_co_op,
-                l.is_seeded,
-                l.is_daily,
-                l.daily_date,
-                l.is_score_run,
-                l.is_all_character,
-                l.is_deathless,
-                l.is_story_mode,
-                l.is_power_ranking,
-                l.is_daily_ranking
-            FROM leaderboards l
-            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
-            JOIN {{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-            JOIN characters c ON c.character_id = l.character_id
-            JOIN releases r ON r.release_id = l.release_id
-            JOIN steam_users su ON su.steam_user_id = le.steam_user_id
-            LEFT JOIN leaderboards_blacklist lb ON lb.leaderboard_id = l.leaderboard_id
-            {{WHERE_CRITERIA}}
-        ");
+    public static function getSteamUserResultset($steamid, $release_name) {
+        $resultset = static::getBaseResultset();        
         
         $release = Releases::getByName($release_name);
 
@@ -170,6 +215,10 @@ extends BaseLeaderboards {
         foreach($parition_table_names as $parition_table_name) {
             $resultset->addPartitionTable($parition_table_name);
         }
+        
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = le.steam_user_id');
+        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addLeftJoinCriteria('leaderboards_blacklist lb ON lb.leaderboard_id = l.leaderboard_id');       
         
         $resultset->addFilterCriteria('su.steamid = ?', array(
             $steamid
@@ -185,7 +234,7 @@ extends BaseLeaderboards {
     }
     
     public static function getSteamUserDailyResultset($steamid, $release_name) {                       
-        $resultset = static::getSteamUserBaseResultset($steamid, $release_name);
+        $resultset = static::getSteamUserResultset($steamid, $release_name);
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
         $resultset->addFilterCriteria("l.is_daily = 1");
@@ -196,7 +245,7 @@ extends BaseLeaderboards {
     }
     
     public static function getSteamUserScoreResultset($steamid, $release_name) {                       
-        $resultset = static::getSteamUserBaseResultset($steamid, $release_name);
+        $resultset = static::getSteamUserResultset($steamid, $release_name);
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
         $resultset->addFilterCriteria("l.is_daily = 0");
@@ -205,7 +254,7 @@ extends BaseLeaderboards {
     }
     
     public static function getSteamUserSpeedResultset($steamid, $release_name) {                       
-        $resultset = static::getSteamUserBaseResultset($steamid, $release_name);
+        $resultset = static::getSteamUserResultset($steamid, $release_name);
         
         $resultset->addFilterCriteria("l.is_speedrun = 1");
     
@@ -213,7 +262,7 @@ extends BaseLeaderboards {
     }
     
     public static function getSteamUserDeathlessResultset($steamid, $release_name) {                       
-        $resultset = static::getSteamUserBaseResultset($steamid, $release_name);
+        $resultset = static::getSteamUserResultset($steamid, $release_name);
         
         $resultset->addFilterCriteria("l.is_deathless = 1");
     

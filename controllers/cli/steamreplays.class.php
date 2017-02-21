@@ -114,19 +114,27 @@ extends Cli {
                 
                 if($successful) {
                     //Run result
-                    $run_result = new DatabaseRunResult();
+                    $run_result_id = NULL;
                     
-                    $run_result->name = $steam_replay->run_result;
-                    $run_result->is_win = $steam_replay->is_win;
-                    
-                    $run_result_id = DatabaseRunResults::save($run_result);
+                    if(!empty($steam_replay->run_result)) {
+                        $run_result = new DatabaseRunResult();
+                        
+                        $run_result->name = $steam_replay->run_result;
+                        $run_result->is_win = $steam_replay->is_win;
+                        
+                        $run_result_id = DatabaseRunResults::save($run_result);
+                    }
                     
                     //Steam replay version
-                    $replay_version = new DatabaseReplayVersion();
+                    $replay_version_id = NULL;
                     
-                    $replay_version->name = $steam_replay->replay_version;
-                    
-                    $replay_version_id = DatabaseReplayVersions::save($replay_version);
+                    if(!empty($steam_replay->replay_version)) {
+                        $replay_version = new DatabaseReplayVersion();
+                        
+                        $replay_version->name = $steam_replay->replay_version;
+                        
+                        $replay_version_id = DatabaseReplayVersions::save($replay_version);
+                    }
                     
                     //Steam replay save
                     $steam_replay_record = new DatabaseSteamReplay();

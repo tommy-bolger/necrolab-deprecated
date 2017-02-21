@@ -36,6 +36,7 @@ use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Web as WebController;
 use \Modules\Necrolab\Models\Releases\Database\Releases as ReleasesModel;
+use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as ExternalSitesModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DayTypesModel;
 
@@ -51,13 +52,21 @@ extends WebController {
     
     protected $site;
     
+    protected $character_name;
+    
+    protected $start_date;
+    
+    protected $end_date;
+    
     protected $start;
     
-    protected $limit;
+    protected $limit = 100;
     
     protected $sort_by;
     
     protected $sort_direction;
+    
+    protected $search;
     
     public function __construct() {
         parent::__construct('necrolab');
@@ -118,6 +127,8 @@ extends WebController {
         
         $this->sort_direction = request()->sort_direction;
         
+        $this->search = request()->search;
+        
         $this->request['start'] = $this->start;
         $this->request['limit'] = $this->limit;
         $this->request['sort_by'] = $this->sort_by;
@@ -159,6 +170,61 @@ extends WebController {
         
         $this->request['site'] = $this->site;
     }
+    
+    protected function setCharacterFromRequest() {
+        $character_name = request()->get->character;
+
+        if(strlen($character_name) == 0) {
+            $this->framework->outputManualError(400, "Required property 'character' was not found in the request.");
+        }
+    
+        $this->character_name = $character_name;
+        
+        $character_record = CharactersModel::getActiveByName($this->character_name);
+        
+        if(empty($character_record)) {
+            $this->framework->outputManualError(400, "Specified property 'character' is not a valid character name. Please refer to /api/characters for a list of valid values.");
+        }
+        
+        $this->request['character'] = $this->character_name;
+    }
+    
+    protected function setDateRangeFromRequest() {    
+        $start_date = request()->get->start_date;
+        
+        if(empty($start_date)) {
+            $this->framework->outputManualError(400, "Required property 'start_date' was not found in the request.");
+        }
+        
+        if(!empty($start_date)) {
+            $start_date_object = DateTime::createFromFormat('Y-m-d', $start_date);
+        
+            if(!empty($start_date_object)) {
+                $this->start_date = new DateTime($start_date_object->format('Y-m-d'));
+            }
+        }
+        
+        if(empty($this->start_date)) {
+            $this->framework->outputManualError(400, "Property 'start_date' is not a valid date. Please specify a date in the YYYY-MM-DD format.");
+        }
+        
+        $end_date = request()->get->end_date;
+        
+        if(!empty($end_date)) {
+            $end_date_object = DateTime::createFromFormat('Y-m-d', $end_date);
+        
+            if(!empty($end_date_object)) {
+                $this->end_date = new DateTime($end_date_object->format('Y-m-d'));
+            }
+        }
+        
+        if(empty($this->end_date)) {
+            $this->end_date = new DateTime(date('Y-m-d'));
+        }
+        
+        $this->request['start_date'] = $this->start_date->format('Y-m-d');
+        $this->request['end_date'] = $this->end_date->format('Y-m-d');
+    }
  
     public function init() {        
         $this->setReleaseFromRequest();
@@ -172,9 +238,13 @@ extends WebController {
     
     protected function getPlayerData($row) {
         return array(
-            'steamid' => $row['steamid'],
+            'steamid' => (string)$row['steamid'],
             'personaname' => $row['personaname'],
             'linked' => array(
+                'steam' => array(
+                    'personaname' => $row['steam_personaname'],
+                    'profile_url' => $row['steam_profile_url']
+                ),
                 'twitch' => $row['twitch_username'],
                 'discord' => array(
                     'username' => $row['discord_username'],
@@ -187,10 +257,7 @@ extends WebController {
                     'name' => $row['twitter_name']
                 ),
                 'beampro' => $row['beampro_username'],
-                'hitbox' => $row['hitbox_username']
-            ),
-            'website' => $row['website']
-            //'nico_nico_url' => $row['nico_nico_url'],
+            )
         );
     }
     
@@ -209,12 +276,20 @@ extends WebController {
         
         $resultset->setOffset($this->start);
         
-        if(!empty($this->limit)) {
-            $resultset->setRowsPerPage($this->limit);
-        }
+        $resultset->setRowsPerPage($this->limit);
         
         if(!empty($this->sort_by) && !empty($this->sort_direction)) {
             $resultset->setSortCriteriaFromAlias($this->sort_by, $this->sort_direction);
+        }
+        
+        if(!empty($this->search)) {
+            $search_select_field = $resultset->getSelectField('personaname');
+            
+            if(!empty($search_select_field)) {
+                $resultset->addFilterCriteria("{$search_select_field} ILIKE :search", array(
+                    ':search' => "%{$this->search}%"
+                ));
+            }
         }
         
         $resultset->addProcessorFunction(array(

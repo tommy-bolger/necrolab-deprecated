@@ -32,29 +32,24 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Speed;
 
-use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Leaderboards;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Home
-extends Leaderboards {
-    public function __construct() {
-        parent::__construct();
+extends Leaderboards {    
+    public function init() {
+        parent::init();
         
         $this->active_page = 'speed_leaderboards';
+        
+        $this->title = 'Leaderboards::Speed';
     }
     
-    public function action() {          
-        $speed_leaderboards = LeaderboardsModel::getAllByCategory('speed');
-
-        $grouped_speed_leaderboards = LeaderboardsModel::getGroupedLeaderboards('speed', $speed_leaderboards);
-    
-        $leaderboards_template = new TemplateElement("leaderboards.php");
+    public function setup() {
+        parent::setup();
         
-        $speed_leaderboards_table = $this->getLeaderboardTable('speed', $grouped_speed_leaderboards);
-        
-        $leaderboards_template->addChild($speed_leaderboards_table, 'leaderboards_table');
-        
-        $this->page->body->addChild($leaderboards_template, 'content');
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/leaderboardlisting.js',
+            '/tables/leaderboards/speed/listing.js'
+        ));
     }
 }

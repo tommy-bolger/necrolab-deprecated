@@ -11,15 +11,21 @@ function NecroTable(dom_object) {
     this.data_process_callback;
     this.url = new Url();
     this.init_requests = [];
-    
-    this.length_menu = false;
-    this.buttons = false;
-    this.paging = false;
-    this.pagingType = false;
-    
+    this.default_request = {};
     this.header_row_html = [];
     
-    this.default_request = {};
+    this.has_length_menu = false;
+    this.length_menu = false;
+    this.limit = 100;
+    
+    this.enable_buttons = false;
+    this.buttons = [];
+    
+    this.paging = false;
+    this.pagingType = false;
+    this.start = 0;
+    
+    this.enable_history = false;
     
     this.enable_date_field = false;
     this.date_field;
@@ -50,8 +56,7 @@ function NecroTable(dom_object) {
     this.enable_search_field = false;
     this.search_field_value = '';
     
-    this.start = 0;
-    this.limit = 100;
+    this.enable_sort = false;
     this.sort_by;
     this.sort_direction = 'asc';
 };
@@ -104,6 +109,10 @@ NecroTable.prototype.getSiteRecord = function() {
 
 NecroTable.character_field_values = [];
 
+NecroTable.prototype.getCharacterFieldValue = function() {      
+    return this.character_field_value;
+};
+
 NecroTable.prototype.getCharacterRecord = function() {      
     var character_values_length = NecroTable.character_field_values.length;
     
@@ -126,21 +135,44 @@ NecroTable.prototype.getCharacterRecord = function() {
 
 NecroTable.number_of_days_field_values = [];
 
-NecroTable.prototype.enableLengthMenu = function() {      
+NecroTable.prototype.getUrl = function() {
+    return this.url;
+};
+
+NecroTable.prototype.enableLengthMenu = function() {  
+    this.has_length_menu = true;
+    
     this.length_menu = [
         100,
         500,
         1000
     ];
     
-    var url_limit = this.url.getValue('limit');
-    
-    if(url_limit != null) {
-        this.limit = parseInt(url_limit);
+    if(this.enable_history) {
+        var url_limit = this.url.getValue('limit');
+        
+        if(url_limit != null) {
+            this.limit = parseInt(url_limit);
+        }
     }
 };
 
-NecroTable.prototype.enableButtons = function() {      
+NecroTable.prototype.setDefaultLimit = function(limit) {  
+    limit = parseInt(limit);
+    
+    if(limit > 1000) {
+        limit = 1000;
+    }   
+    
+    if(limit <= 0) {
+        limit = 100;
+    } 
+    
+    this.limit = limit;
+};
+
+NecroTable.prototype.enableButtons = function() {  
+    this.enable_buttons = true;
     this.buttons = [
         'copy', 
         'csv', 
@@ -154,86 +186,112 @@ NecroTable.prototype.enablePaging = function() {
     this.paging = true;
     this.pagingType = 'full';
     
-    var url_start = this.url.getValue('start');
-    
-    if(url_start != null) {
-        this.start = parseInt(url_start);
+    if(this.enable_history) {
+        var url_start = this.url.getValue('start');
+        
+        if(url_start != null) {
+            this.start = parseInt(url_start);
+        }
     }
+};
+
+NecroTable.prototype.enableSort = function(default_sort_by, default_sort_direction) {  
+    this.enable_sort = true;
+    this.sort_by = default_sort_by;
+    this.sort_direction = default_sort_direction;
+};
+
+NecroTable.prototype.enableHistory = function() {      
+    this.enable_history = true;
 };
 
 NecroTable.prototype.enableDateField = function() {      
     this.enable_date_field = true;
     
-    var url_date = this.url.getValue('date');
-    
-    if(url_date != null) {
-        this.date_field_value = url_date;
+    if(this.enable_history) {
+        var url_date = this.url.getValue('date');
+        
+        if(url_date != null) {
+            this.date_field_value = url_date;
+        }
     }
 };
 
 NecroTable.prototype.enableDateRangeFields = function() {      
     this.enable_date_range_fields = true;
     
-    var url_start_date = this.url.getValue('start_date');
-    
-    if(url_start_date != null) {
-        this.start_date_field_value = url_start_date;
-    }
-    
-    var url_end_date = this.url.getValue('end_date');
-    
-    if(url_end_date != null) {
-        this.end_date_field_value = url_end_date;
+    if(this.enable_history) {
+        var url_start_date = this.url.getValue('start_date');
+        
+        if(url_start_date != null) {
+            this.start_date_field_value = url_start_date;
+        }
+        
+        var url_end_date = this.url.getValue('end_date');
+        
+        if(url_end_date != null) {
+            this.end_date_field_value = url_end_date;
+        }
     }
 };
 
 NecroTable.prototype.enableReleaseField = function() {      
     this.enable_release_field = true;
     
-    var url_release = this.url.getValue('release');
-    
-    if(url_release != null) {
-        this.release_field_value = url_release;
+    if(this.enable_history) {
+        var url_release = this.url.getValue('release');
+        
+        if(url_release != null) {
+            this.release_field_value = url_release;
+        }
     }
 };
 
 NecroTable.prototype.enableSiteField = function() {      
     this.enable_site_field = true;
     
-    var url_site = this.url.getValue('site');
-    
-    if(url_site != null) {
-        this.site_field_value = url_site;
+    if(this.enable_history) {
+        var url_site = this.url.getValue('site');
+        
+        if(url_site != null) {
+            this.site_field_value = url_site;
+        }
     }
 };
 
 NecroTable.prototype.enableCharacterField = function() {      
     this.enable_character_field = true;
     
-    var url_character = this.url.getValue('character');
-    
-    if(url_character != null) {
-        this.character_field_value = url_character;
+    if(this.enable_history) {
+        var url_character = this.url.getValue('character');
+        
+        if(url_character != null) {
+            this.character_field_value = url_character;
+        }
     }
 };
 
 NecroTable.prototype.enableNumberOfDaysField = function() {      
     this.enable_number_of_days_field = true;
     
-    var url_number_of_days = this.url.getValue('number_of_days');
-    
-    if(url_number_of_days != null) {
-        this.number_of_days_field_value = url_number_of_days;
+    if(this.enable_history) {
+        var url_number_of_days = this.url.getValue('number_of_days');
+        
+        if(url_number_of_days != null) {
+            this.number_of_days_field_value = url_number_of_days;
+        }
     }
 };
 
 NecroTable.prototype.enableSearchField = function() {      
     this.enable_search_field = true;
     
-    var url_search = this.url.getValue('search');
-    
-    if(url_search != null) {
-        this.search_field_value = url_search;
+    if(this.enable_history) {
+        var url_search = this.url.getValue('search');
+        
+        if(url_search != null) {
+            this.search_field_value = url_search;
+        }
     }
 };
 
@@ -254,13 +312,12 @@ NecroTable.prototype.addColumns = function(columns) {
     }
 };
 
-NecroTable.prototype.setDefaultSort = function(sort_by, sort_direction) {  
-    this.sort_by = sort_by;
-    this.sort_direction = sort_direction;
-};
-
-NecroTable.prototype.addRequestParameter = function(parameter_name) {  
-    this.default_request[parameter_name] = this.url.getValue(parameter_value);
+NecroTable.prototype.addRequestParameter = function(parameter_name, request_name) {      
+    if(request_name == null) {
+        request_name = parameter_name;
+    }
+    
+    this.default_request[request_name] = this.url.getValue(parameter_name);
 };
 
 NecroTable.prototype.prependHeaderRow = function(header_row_html) {  
@@ -406,7 +463,18 @@ NecroTable.prototype.initializeDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.date_field_value != null) {
-        this.date_field.val(moment(this.date_field_value).format('YYYY-MM-DD'));
+        var date_field_value = moment(this.date_field_value);
+        
+        if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
+            var start_date = moment(datepicker_options.startdate);
+            var end_date = moment(datepicker_options.endDate);
+            
+            if(!date_field_value.isBetween(start_date, end_date)) {
+                date_field_value = moment(datepicker_options.defaultViewDate);
+            }
+        }
+        
+        this.date_field.val(date_field_value.format('YYYY-MM-DD'));
     }
     else {
         this.date_field.val(datepicker_options.defaultViewDate);
@@ -429,10 +497,21 @@ NecroTable.prototype.initializeStartDateFieldPicker = function(destroy = false) 
         this.start_date_field.datepicker('destroy');
     }
     
-    var datepicker_options = this.getDatepickerOptions();
+    var datepicker_options = this.getDatepickerOptions();    
     
     if(this.start_date_field_value != null) {
-        this.start_date_field.val(moment(this.start_date_field_value).format('YYYY-MM-DD'));
+        var start_date_field_value = moment(this.start_date_field_value);
+        
+        if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
+            var start_date = moment(datepicker_options.startdate);
+            var end_date = moment(datepicker_options.endDate);
+            
+            if(!start_date_field_value.isBetween(start_date, end_date)) {
+                start_date_field_value = moment(datepicker_options.defaultViewDate);
+            }
+        }
+        
+        this.start_date_field.val(start_date_field_value.format('YYYY-MM-DD'));
     }
     else {
         this.start_date_field.val(datepicker_options.defaultViewDate);
@@ -458,7 +537,18 @@ NecroTable.prototype.initializeEndDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.end_date_field_value != null) {
-        this.end_date_field.val(moment(this.end_date_field_value).format('YYYY-MM-DD'));
+        var end_date_field_value = moment(this.end_date_field_value);
+        
+        if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
+            var start_date = moment(datepicker_options.startdate);
+            var end_date = moment(datepicker_options.endDate);
+            
+            if(!end_date_field_value.isBetween(start_date, end_date)) {
+                end_date_field_value = moment(datepicker_options.defaultViewDate);
+            }
+        }
+        
+        this.end_date_field.val(end_date_field_value.format('YYYY-MM-DD'));
     }
     else {
         this.end_date_field.val(datepicker_options.defaultViewDate);
@@ -507,7 +597,21 @@ NecroTable.prototype.render = function() {
     
     /* ---------- The dom string ---------- */
     
-    var dom = "<'row'<'col'l><'col'f>>";
+    var dom = '';
+    
+    var top_fields = '';
+    
+    if(instance.has_length_menu) {
+        top_fields += "<'col'l>";
+    }
+    
+    if(instance.enable_search_field) {
+        top_fields += "<'col'f>";
+    }
+    
+    if(top_fields.length > 0) {
+        dom += "<'row'" + top_fields + ">";
+    }
     
     var custom_fields = '';
     
@@ -544,13 +648,46 @@ NecroTable.prototype.render = function() {
         dom += "<'row'" + custom_fields + ">";
     }
     
-    dom += "<'row'<'col top_info'i><br /><'clear'>>" + 
-        "<'row'<'col top_buttons'B><'col top_pagination'p><'clear'>>" + 
-        "<'row'<'col'tr>>" + 
-        "<'row'<'col'i><'col'p>>";
+    if(instance.paging) {
+        dom += "<'row'<'col top_info'i><br /><'clear'>>";
+    }
+    
+    var last_top_bar = '';
+    
+    if(instance.enable_buttons) {
+        last_top_bar += "<'col top_buttons'B>";
+    }
+    
+    if(instance.paging) {
+        last_top_bar += "<'col top_pagination'p><'clear'>";
+    }
+    
+    if(last_top_bar.length > 0) {
+        dom += "<'row'" + last_top_bar + ">";
+    }
+    
+    dom += "<'row'<'col'tr>>";
+    
+    if(instance.paging) {
+        dom += "<'row'<'col'i><'col'p>>";
+    }
+    
+    /* ---------- Set datatable default sort ---------- */
+        
+    var default_order = [[
+            0,
+            'asc'
+        ]];
+    
+    if(instance.enable_sort) {
+        default_order = [[
+            instance.column_names.indexOf(instance.sort_by),
+            instance.sort_direction
+        ]];
+    }
     
     /* ---------- Render the actual datatable ---------- */
-    
+
     instance.datatable = instance.dom_object.DataTable({
         dom: dom,
         columns: instance.columns,
@@ -566,12 +703,13 @@ NecroTable.prototype.render = function() {
         lengthMenu: instance.length_menu,
         pageLength: instance.limit,
         searching: instance.enable_search_field,
+        ordering: instance.enable_sort,
         processing: true,
         serverSide: true,
         deferRender: true,
         ajax: {
             url: instance.ajax_url,
-            data: function(table_state) {                        
+            data: function(table_state) { 
                 var request = instance.default_request;
                 
                 if(NecroTable.user_api_key != null) {
@@ -581,18 +719,21 @@ NecroTable.prototype.render = function() {
                 if(instance.paging) {                    
                     instance.start = table_state.start;
                     request.start = instance.start;
+                    request.limit = instance.limit;
                 }
                 
-                if(instance.length_menu) {                    
+                if(instance.has_length_menu) {                    
                     instance.limit = table_state.length;
                     request.limit = instance.limit;
                 }
                 
-                instance.sort_by = instance.column_names[table_state.order[0].column];
-                instance.sort_direction = table_state.order[0].dir;
-                
-                request.sort_by = instance.sort_by;
-                request.sort_direction = instance.sort_direction;
+                if(instance.enable_sort) {
+                    instance.sort_by = instance.column_names[table_state.order[0].column];
+                    instance.sort_direction = table_state.order[0].dir;
+                    
+                    request.sort_by = instance.sort_by;
+                    request.sort_direction = instance.sort_direction;
+                }
                 
                 if(instance.enable_release_field) {
                     request.release = instance.release_field_value;
@@ -623,7 +764,9 @@ NecroTable.prototype.render = function() {
                     request.search = instance.search_field_value;
                 }
 
-                window.history.pushState("placeholder", "Table", Url.generateUrl(instance.url.getBaseUrl(), request));
+                if(instance.enable_history) {
+                    window.history.pushState(instance.url.getBaseUrl(), "Table", Url.generateUrl(instance.url.getBaseUrl(), request));
+                }
                 
                 return request;
             },
@@ -650,12 +793,7 @@ NecroTable.prototype.render = function() {
                 return json.data;
             }
         },
-        order: [
-            [
-                instance.column_names.indexOf(instance.sort_by),
-                instance.sort_direction
-            ]
-        ],
+        order: default_order,
         initComplete: function(settings, json) {
             var table_id = $(this).attr('id');
             
@@ -694,6 +832,22 @@ NecroTable.prototype.render = function() {
             instance.dom_object_wrapper.LoadingOverlay('hide');
         }
     });*/
+    
+    /* ---------- Add a back button event to reload page state ---------- */
+    
+    /*if(instance.enable_history) {
+        window.addEventListener("popstate", function(event) {
+            //TODO: get state loading into this
+            if(event.state == instance.url.getBaseUrl()) {
+                
+                console.log('Page history!');
+                console.log(location.url);
+            }
+            else {
+                window.history.back();
+            }
+        });
+    }*/
     
     /* ---------- Prepend any additional header rows ---------- */
     

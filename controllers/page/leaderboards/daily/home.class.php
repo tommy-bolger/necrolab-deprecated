@@ -32,11 +32,15 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Daily;
 
-class Home
-extends Entries {
-    public function __construct() {
-        parent::__construct();
+use \Modules\Necrolab\Controllers\Page\Leaderboards\Leaderboards;
 
+class Home
+extends Leaderboards {    
+    public function init() {
+        parent::init();
+        
         $this->active_page = 'daily_leaderboards';
+        
+        $this->title = 'Leaderboards::Daily';
     }
 }

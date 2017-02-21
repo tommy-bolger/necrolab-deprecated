@@ -33,35 +33,22 @@
 namespace Modules\Necrolab\Controllers\Page\Leaderboards\Speed;
 
 use \Modules\Necrolab\Controllers\Page\Leaderboards\Entries as BaseEntries;
-use \Modules\Necrolab\Models\Leaderboards\Replays;
 
 class Entries
 extends BaseEntries {
-    protected function getTableHeader() {
-        $header = parent::getTableHeader();
+    public function init() {
+        parent::init();
         
-        $header['time'] = 'Time';
-        $header['seed'] = 'Seed';
-        $header['replay'] = 'Replay';
+        $this->active_page = 'speed_leaderboards';
         
-        return $header;
+        $this->title = "Leaderboard::Speed::Entries::{$this->lbid}";
     }
     
-    protected function getTableRow(array $row) {
-        $table_row = parent::getTableRow($row);
+    public function setup() {
+        parent::setup();
         
-        $table_row['time'] = $row['time'];
-        $table_row['seed'] = $row['seed'];
-        
-        $ugcid = $row['ugcid'];
-        $replay = NULL;
-        
-        if(!empty($ugcid)) {
-            $replay = $this->getReplayLink(Replays::getHttpFilePath($ugcid));
-        }
-        
-        $table_row['replay'] = $replay;
-        
-        return $table_row;
+        $this->page->addJavascriptFiles(array(
+            '/tables/leaderboards/speed/entries.js'
+        ));
     }
 }

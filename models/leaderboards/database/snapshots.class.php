@@ -72,6 +72,19 @@ extends BaseSnapshots {
         return $leaderboard_snapshot_id;
     }
     
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'ls.leaderboard_snapshot_id',
+                'alias' => 'leaderboard_snapshot_id',
+            ),
+            array(
+                'field' => 'ls.date',
+                'alias' => 'snapshot_date',
+            )
+        ));
+    }
+    
     public static function getAllBaseResultset($lbid) {
         $resultset = new SQL('leaderboard_snapshots');
         

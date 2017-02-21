@@ -32,5 +32,7 @@
 */
 namespace Modules\Necrolab\Controllers\Page\Rankings;
 
+use \Modules\Necrolab\Controllers\Page\Rankings\Power\Power;
+
 class Home
 extends Power {}

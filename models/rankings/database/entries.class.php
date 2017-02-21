@@ -286,6 +286,15 @@ extends BaseEntries {
         return $resultset;
     }
     
+    public static function getAllCharacterResultset($character_name, $release_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $date);
+        
+        $resultset->addFilterCriteria("pre.{$character_name}_rank IS NOT NULL");
+        $resultset->setSortCriteria("pre.{$character_name}_rank", 'ASC');
+        
+        return $resultset;
+    }
+    
     public static function getSteamUserBaseResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date) {                    
         $resultset = new SQL('steam_user_power_ranking_entries');
         
@@ -327,7 +336,39 @@ extends BaseEntries {
             $release_name
         ));
 
-        $resultset->setSortCriteria('date', 'ASC');
+        $resultset->setSortCriteria('date', 'DESC');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserScoreResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date) { 
+        $resultset = static::getSteamUserBaseResultset($release_name, $steamid, $start_date, $end_date);
+        
+        $resultset->addFilterCriteria('pre.score_rank IS NOT NULL');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserSpeedResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date) { 
+        $resultset = static::getSteamUserBaseResultset($release_name, $steamid, $start_date, $end_date);
+        
+        $resultset->addFilterCriteria('pre.speed_rank IS NOT NULL');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserDeathlessResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date) { 
+        $resultset = static::getSteamUserBaseResultset($release_name, $steamid, $start_date, $end_date);
+        
+        $resultset->addFilterCriteria('pre.deathless_rank IS NOT NULL');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserCharacterResultset($character_name, $release_name, $steamid, DateTime $start_date, DateTime $end_date) { 
+        $resultset = static::getSteamUserBaseResultset($release_name, $steamid, $start_date, $end_date);
+        
+        $resultset->addFilterCriteria("pre.{$character_name}_rank IS NOT NULL");
         
         return $resultset;
     }
