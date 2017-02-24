@@ -20,6 +20,7 @@
         "phergie/phergie-irc-plugin-react-commandhelp": "^2.1",
         "ircmaxell/random-lib": "^1.2",
         "league/oauth1-client": "^1.7",
-        "ezyang/htmlpurifier": "^4.8"
+        "ezyang/htmlpurifier": "^4.8",
+        "aws/aws-sdk-php-resources": "^0.3.0"
     }
 }

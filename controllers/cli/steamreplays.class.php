@@ -3,9 +3,12 @@ namespace Modules\Necrolab\Controllers\Cli;
 
 use \Exception;
 use \DateTime;
+use Aws\Resource\Aws;
+use Aws\S3\S3Client;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Api\Steam\ISteamRemoteStorage;
+use \Framework\Core\Loader;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
 use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
 use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
@@ -171,6 +174,55 @@ extends Cli {
             }
             
             db()->commit();
+        }
+    }
+    
+    public function actionUploadFilesToS3() {        
+        $replays_to_upload_resultset = DatabaseReplays::getUnuploadedReplaysResultset();
+        
+        $replays_to_upload = $replays_to_upload_resultset->prepareExecuteQuery();
+        
+        $database = db();
+        
+        Loader::load('autoload.php');
+        
+        $aws_client = new Aws(array(
+            'version' => $this->module->configuration->aws_s3_version,
+            'region' => $this->module->configuration->aws_s3_region,
+            'credentials' => array(
+                'key'    => $this->module->configuration->aws_s3_write_key,
+                'secret' => $this->module->configuration->aws_s3_write_secret
+            )
+        ));
+
+        $s3_client = $aws_client->s3;
+        
+        $bucket = $s3_client->bucket('necrolab');
+        
+        while($replay_to_upload = $database->getStatementRow($replays_to_upload)) { 
+            $ugcid = $replay_to_upload['ugcid'];
+            
+            if($ugcid != -1) {
+                $s3_file_path = DatabaseReplays::addFileToS3Queue($ugcid);
+                
+                $zipped_file_handle = fopen($s3_file_path, 'r');
+            
+                $object = $bucket->putObject([
+                    'Key'  => "replays/{$ugcid}.zip",
+                    'Body' => $zipped_file_handle,
+                ]);
+                
+                fclose($zipped_file_handle);
+                
+                DatabaseReplays::deleteS3ZippedQueueFile($ugcid);
+                
+                //Steam replay save
+                $steam_replay_record = new DatabaseSteamReplay();
+
+                $steam_replay_record->uploaded_to_s3 = 1;
+                
+                DatabaseReplays::update($replay_to_upload['steam_replay_id'], $steam_replay_record);
+            }
         }
     }
 }

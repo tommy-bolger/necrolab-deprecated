@@ -4,8 +4,11 @@ namespace Modules\Necrolab\Controllers\Cli;
 use \Exception;
 use \DateTime;
 use \DateInterval;
+use Aws\Resource\Aws;
+use Aws\S3\S3Client;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
+use \Framework\Core\Loader;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries;
@@ -188,6 +191,80 @@ extends Cli {
         
         while($current_date <= $end_date) {
             $this->saveXml($current_date);
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
+    protected function uploadXmlToS3(DateTime $date) {
+        $this->as_of_date = clone $date;
+        
+        Leaderboards::deleteS3Xml($this->as_of_date);
+    
+        $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date);
+        
+        if(!empty($xml_file_groups)) {
+            Loader::load('autoload.php');
+        
+            $aws_client = new Aws(array(
+                'version' => $this->module->configuration->aws_s3_version,
+                'region' => $this->module->configuration->aws_s3_region,
+                'credentials' => array(
+                    'key'    => $this->module->configuration->aws_s3_write_key,
+                    'secret' => $this->module->configuration->aws_s3_write_secret
+                )
+            ));
+
+            $s3_client = $aws_client->s3;
+            
+            $bucket = $s3_client->bucket('necrolab');
+        
+            $leaderboards_xml_path = $xml_file_groups['leaderboards_xml'];
+        
+            $leaderboards_xml = Leaderboards::getXml($leaderboards_xml_path);
+            
+            Leaderboards::saveS3Xml($this->as_of_date, $leaderboards_xml);
+            
+            unset($xml_file_groups['leaderboards_xml']);
+            unset($leaderboards_xml);
+        
+            foreach($xml_file_groups as $lbid => $xml_file_group) {
+                if(!empty($xml_file_group)) {
+                    foreach($xml_file_group as $page => $xml_file) {
+                        $entries_xml = Leaderboards::getXml($xml_file);
+                        
+                        Entries::saveS3Xml($lbid, $this->as_of_date, $page, $entries_xml);
+                    }
+                }
+            }
+            
+            $s3_file_path = Leaderboards::compressS3Xml($this->as_of_date);
+            
+            $zipped_file_handle = fopen($s3_file_path, 'r');
+            
+            $object = $bucket->putObject([
+                'Key'  => "leaderboard_xml/{$this->as_of_date->format('Y-m-d')}.zip",
+                'Body' => $zipped_file_handle,
+            ]);
+            
+            fclose($zipped_file_handle);
+            
+            Leaderboards::deleteS3ZippedXml($this->as_of_date);
+        }
+    }
+    
+    public function actionUploadXmlToS3($date = NULL) {
+        $this->uploadXmlToS3(new DateTime($date));
+    }
+    
+    public function actionUploadRankXmlToS3($start_date, $end_date) {    
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->uploadXmlToS3($current_date);
         
             $current_date->add(new DateInterval('P1D'));
         }

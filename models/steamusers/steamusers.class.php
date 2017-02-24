@@ -41,59 +41,6 @@ class SteamUsers {
         static::$user_ids[$steamid] = $steam_user_id;
     }
     
-    protected static function getUngroupedLeaderboards($category_name) {}
-    
-    public static function getUserCategoryLeaderboards($steamid, $category_name, array $ungrouped_leaderboards, array $leaderboard_entries) {
-        assert('!empty($leaderboard_entries)');
-    
-        $empty_leaderboard_row = array(
-            'name' => '',
-            'cadence' => NULL,
-            'bard' => NULL,
-            'monk' => NULL,
-            'aria' => NULL,
-            'bolt' => NULL,
-            'dove' => NULL,
-            'eli' => NULL,
-            'melody' => NULL,
-            'dorian' => NULL,
-            'coda' => NULL,
-            'all' => NULL,
-            'story' => NULL
-        );
-        
-        $ungrouped_leaderboards = static::getUngroupedLeaderboards($category_name);
-            
-        $grouped_leaderboards = Leaderboards::getGroupedLeaderboards($category_name, $ungrouped_leaderboards);
-    
-        $category_entries = array();
-    
-        if(!empty($grouped_leaderboards)) {
-            foreach($grouped_leaderboards as $leaderboard_group_name => $leaderboard_group) {
-                $leaderboard_characters = $leaderboard_group['characters'];
-                
-                $rank_row = array();
-            
-                foreach($leaderboard_characters as $character_name => $lbid) {
-                    foreach($leaderboard_entries as $leaderboard_entry) {
-                        if($leaderboard_entry['lbid'] == $lbid) {
-                            $rank_row['name'] = $leaderboard_group['name'];
-                            $rank_row[$character_name] = $leaderboard_entry['rank'];
-                        }
-                    }
-                }
-                
-                if(!empty($rank_row)) {
-                    $group_rank_row = array_merge($empty_leaderboard_row, $rank_row);
-                    
-                    $category_entries[] = $group_rank_row;
-                }
-            }
-        }
-        
-        return $category_entries;
-    }
-    
     public static function getProfileUrl($steamid) {
         return "http://steamcommunity.com/profiles/{$steamid}";        
     }

@@ -23,7 +23,7 @@ extends Cli {
     protected $release;
     
     public function init() {
-        $this->cache = cache();
+        $this->cache = cache('daily_rankings');
     }
     
     protected function generate() {

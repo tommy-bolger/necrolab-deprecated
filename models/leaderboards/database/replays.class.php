@@ -39,6 +39,33 @@ extends BaseReplays {
         return $steam_replay_id;
     }
     
+    public static function updateBatch($steam_replay_id, SteamReplay $steam_replay) { 
+        $array_record = $steam_replay->toArray();
+        
+        unset($array_record['ugcid']);
+        unset($array_record['steam_user_id']);
+    
+        db()->update('steam_replays', $array_record, array(
+            'steam_replay_id' => $steam_replay_id
+        ), '', 'steam_replay_update');
+    }
+    
+    public static function update($steam_replay_id, SteamReplay $steam_replay) { 
+        $array_record = $steam_replay->toArray(false);
+        
+        if(array_key_exists('ugcid', $array_record)) {
+            unset($array_record['ugcid']);
+        }
+        
+        if(array_key_exists('steam_user_id', $array_record)) {
+            unset($array_record['steam_user_id']);
+        }
+    
+        db()->update('steam_replays', $array_record, array(
+            'steam_replay_id' => $steam_replay_id
+        ));
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(
@@ -50,17 +77,6 @@ extends BaseReplays {
                 'alias' => 'seed'
             )
         ));
-    }
-    
-    public static function updateBatch($steam_replay_id, SteamReplay $steam_replay) { 
-        $array_record = $steam_replay->toArray();
-        
-        unset($array_record['ugcid']);
-        unset($array_record['steam_user_id']);
-    
-        db()->update('steam_replays', $array_record, array(
-            'steam_replay_id' => $steam_replay_id
-        ), '', 'steam_replay_update');
     }
     
     public static function getEntriesResultset() {    
@@ -80,6 +96,18 @@ extends BaseReplays {
         
         $resultset->addFilterCriteria('downloaded = 0');
         $resultset->addFilterCriteria('invalid = 0');
+        
+        $resultset->addSortCriteria('ugcid', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getUnuploadedReplaysResultset() {
+        $resultset = static::getEntriesResultset();
+        
+        $resultset->addFilterCriteria('downloaded = 1');
+        $resultset->addFilterCriteria('invalid = 0');
+        $resultset->addFilterCriteria('uploaded_to_s3 = 0');
         
         $resultset->addSortCriteria('ugcid', 'ASC');
         

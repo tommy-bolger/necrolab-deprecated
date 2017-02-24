@@ -20,4 +20,6 @@ extends RecordModel {
     protected $downloaded;
     
     protected $invalid;
+    
+    protected $uploaded_to_s3;
 }

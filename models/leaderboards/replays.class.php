@@ -7,6 +7,7 @@ use \RecursiveIteratorIterator;
 use \RegexIterator;
 use \RecursiveRegexIterator;
 use \Framework\Modules\Module;
+use \Framework\Utilities\File;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Replays
@@ -173,5 +174,38 @@ extends Necrolab {
         }
         
         return $invalid_files;
+    }
+    
+    public static function getS3QueueFilePath($ugcid) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        return "{$installation_path}/assets/files/steam_replays/original/s3_queue/{$ugcid}";
+    }
+    
+    public static function compressS3QueueFile($ugcid) {
+        return File::zipFile(static::getS3QueueFilePath($ugcid));
+    }
+    
+    public static function deleteS3QueueFile($ugcid) {
+        unlink(static::getS3QueueFilePath($ugcid));
+    }
+    
+    public static function getS3QueueZippedFilePath($ugcid) {
+        return static::getS3QueueFilePath($ugcid) . '.zip';
+    }
+    
+    public static function deleteS3ZippedQueueFile($ugcid) {
+        unlink(static::getS3QueueZippedFilePath($ugcid));
+    }
+    
+    public static function addFileToS3Queue($ugcid) {
+        $replay_file_data = static::getFile(static::getFilePath($ugcid));
+        
+        file_put_contents(static::getS3QueueFilePath($ugcid), $replay_file_data);
+        
+        static::compressS3QueueFile($ugcid);
+        
+        static::deleteS3QueueFile($ugcid);
+        
+        return static::getS3QueueZippedFilePath($ugcid);
     }
 }

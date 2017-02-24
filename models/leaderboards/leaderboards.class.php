@@ -31,174 +31,6 @@ extends Necrolab {
         return $leaderboard_record;
     }
     
-    public static function getDailyByDate(DateTime $date) {
-        static::loadAll();
-        
-        $leaderboard_record = array();
-        
-        if(!empty(static::$leaderboards)) {            
-            foreach(static::$leaderboards as $leaderboard) {
-                if($leaderboard['is_daily_ranking'] == 1) {
-                    $daily_date = new DateTime($leaderboard['daily_date']);
-                    
-                    if($daily_date == $date) {
-                        $leaderboard_record = $leaderboard;
-                        
-                        break;
-                    }
-                }
-            }
-        }
-        
-        return $leaderboard_record;
-    }
-    
-    public static function getLatestDaily() {
-        static::loadAll();
-        
-        $leaderboard_record = array();
-        $latest_date = NULL;
-        $current_date = new DateTime();
-        
-        if(!empty(static::$leaderboards)) {            
-            foreach(static::$leaderboards as $leaderboard) {
-                if($leaderboard['is_daily_ranking'] == 1) {
-                    $daily_date = new DateTime($leaderboard['daily_date']);
-                    
-                    if(($daily_date <= $current_date) && (empty($latest_date) || $daily_date > $latest_date)) {
-                        $leaderboard_record = $leaderboard;
-                        $latest_date = clone $daily_date;
-                    }
-                }
-            }
-        }
-        
-        return $leaderboard_record;
-    }
-
-    public static function getGroupedLeaderboards($category_name, array $ungrouped_leaderboards) {
-        $grouped_score_leaderboards = array(
-            'main' => array(
-                'name' => 'All Zones Mode',
-                'characters' => array()
-            ),
-            'seeded' => array(
-                'name' => 'Seeded',
-                'characters' => array()
-            ),
-            'custom' => array(
-                'name' => 'Custom Music',
-                'characters' => array()
-            ),
-            'seeded_custom' => array(
-                'name' => 'Seeded Custom Music',
-                'characters' => array()
-            ),
-            'co_op' => array(
-                'name' => 'Co-op',
-                'characters' => array()
-            ),
-            'seeded_co_op' => array(
-                'name' => 'Seeded Co-op',
-                'characters' => array()
-            ),
-            'co_op_custom' => array(
-                'name' => 'Co-op Custom Music',
-                'characters' => array()
-            ),
-            'seeded_co_op_custom' => array(
-                'name' => 'Seeded Co-op Custom Music',
-                'characters' => array()
-            )
-        );
-        
-        if(!empty($ungrouped_leaderboards)) {
-            foreach($ungrouped_leaderboards as $leaderboard_record) {   
-                if($category_name == 'deathless' || empty($leaderboard_record['is_deathless'])) {
-                    $character_name = $leaderboard_record['character_name'];
-                
-                    $group_name_segments = array();
-
-                    if($leaderboard_record['is_seeded'] == 1) {
-                        $group_name_segments[] = 'seeded';
-                    }
-                    
-                    if($leaderboard_record['is_co_op'] == 1) {
-                        $group_name_segments[] = 'co_op';
-                    }
-                    
-                    if($leaderboard_record['is_custom'] == 1) {
-                        $group_name_segments[] = 'custom';
-                    }
-
-                    if(empty($group_name_segments)) {
-                        $group_name_segments[] = 'main';
-                    }
-                    
-                    $group_name = implode('_', $group_name_segments);
-                    
-                    $grouped_score_leaderboards[$group_name]['characters'][$character_name] = $leaderboard_record['lbid'];
-                }
-            }
-        }
-        
-        return $grouped_score_leaderboards;
-    }
-    
-    public static function getAllByCategory($category_name) {}
-    
-    public static function getFancyName($leaderboard_record, $prepend_run_type = false) {
-        $raw_leaderboard_name = $leaderboard_record['name'];
-        
-        $fancy_leaderboard_name = '';
-        
-        if($prepend_run_type) {
-            if($leaderboard_record['is_score_run'] == 1) {
-                $fancy_leaderboard_name .= 'Score';
-            }
-            elseif($leaderboard_record['is_speedrun'] == 1) {
-                $fancy_leaderboard_name .= 'Speedrun';
-            }
-            elseif($leaderboard_record['is_deathless'] == 1) {
-                $fancy_leaderboard_name .= 'Deathless';
-            }
-            
-            $fancy_leaderboard_name .= ' - ';
-        }
-        
-        $second_half_name_segments = array();
-        
-        if($leaderboard_record['is_story_mode'] == 1) {
-            $second_half_name_segments[] = 'Story Mode';
-        }
-        
-        if($leaderboard_record['is_all_character'] == 1) {
-            $second_half_name_segments[] = 'All Chars';
-        }
-        
-        if($leaderboard_record['is_seeded'] == 1) {
-            $second_half_name_segments[] = 'Seeded';
-        }
-        
-        if($leaderboard_record['is_co_op'] == 1) {
-            $second_half_name_segments[] = 'Co-op';
-        }
-        
-        if($leaderboard_record['is_custom'] == 1) {
-            $second_half_name_segments[] = 'Custom Music';
-        }        
-        
-        if(empty($second_half_name_segments)) {
-            $second_half_name_segments[] = 'All Zones Mode';
-        }
-        
-        $second_half_name = implode(' ', $second_half_name_segments);
-        
-        $fancy_leaderboard_name .= $second_half_name;
-        
-        return $fancy_leaderboard_name;
-    }
-    
     public static function getSteamXml($leaderboards_url) {    
         $request = curl_init($leaderboards_url);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);
@@ -315,6 +147,53 @@ extends Necrolab {
         }
         
         return $xml_file_groups;
+    }
+    
+    public static function deleteS3Xml(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}";
+        
+        if(is_dir($snapshot_path)) {
+            File::deleteDirectoryRecursive("{$snapshot_path}");
+        }
+    }
+    
+    public static function saveS3Xml(DateTime $date, $xml) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}";
+        
+        if(!is_dir($snapshot_path)) {
+            mkdir($snapshot_path);
+        }
+    
+        file_put_contents("{$snapshot_path}/leaderboards.xml", $xml);
+    }
+    
+    public static function compressS3Xml(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+    
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $snapshot_parent_path = "{$installation_path}/leaderboard_xml/s3_queue";
+        $snapshot_path = "{$snapshot_parent_path}/{$date_formatted}";
+        
+        $zip_snapshot_path = "{$snapshot_path}.zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to compress an entire folder.
+            TODO: Implement a method in the File utility to recursively compress all files in a file using ZipArchive.
+        */
+        exec("cd {$snapshot_parent_path} ; zip -r {$date_formatted}.zip {$date_formatted}");
+        
+        static::deleteS3Xml($date);
+    
+        return $zip_snapshot_path;
+    }
+    
+    public static function deleteS3ZippedXml(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}.zip";
+    
+        unlink($snapshot_path);
     }
     
     public static function getFormattedApiRecord($data_row) {
