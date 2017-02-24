@@ -7,7 +7,7 @@ CREATE TABLE twitch_users (
   bio text,
   username character varying(255) NOT NULL,
   user_display_name character varying(255) NOT NULL,
-  updated timestamp without timezone NOT NULL,
+  updated timestamp without time zone NOT NULL,
   CONSTRAINT pk_tu_twitch_user_id PRIMARY KEY (twitch_user_id),
   CONSTRAINT uq_twitch_users_twitch_id UNIQUE (twitch_id)
 );
