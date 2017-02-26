@@ -49,9 +49,11 @@ extends Necrolab {
     public static function getFormattedApiRecord(array $data_row) {
         $processed_row = array();
         
+        $ugcid = $data_row['ugcid'];
+        
         $processed_row['rank'] = $data_row['rank'];
         $processed_row['seed'] = $data_row['seed'];
-        $processed_row['ugcid'] = $data_row['ugcid'];
+        $processed_row['ugcid'] = $ugcid;
         $processed_row['details'] = $data_row['details'];
         $processed_row['zone'] = $data_row['zone'];
         $processed_row['level'] = $data_row['level'];
@@ -66,6 +68,14 @@ extends Necrolab {
                 $processed_row['time'] = $data_row['time'];
             }
         }
+        
+        $replay_url = NULL;
+        
+        if(!empty($ugcid) && !empty($data_row['uploaded_to_s3'])) {
+            $replay_url = "https://necrolab.s3.amazonaws.com/replays/{$ugcid}.zip";
+        }
+        
+        $processed_row['replay_file'] = $replay_url;
         
         return $processed_row;
     }

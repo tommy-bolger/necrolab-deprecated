@@ -24,7 +24,7 @@ function process_data(data, table) {
                     row_data.win,
                     null,
                     row_data.seed,
-                    null
+                    Formatting.getReplayFileHtml(row_data.replay_file)
                 ];
                 
                 processed_data.push(processed_row);

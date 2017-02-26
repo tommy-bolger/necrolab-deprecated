@@ -82,6 +82,16 @@ Formatting.addCommasToNumber = function(unformatted_number) {
     return formatted_number;
 };
 
+Formatting.getReplayFileHtml = function(replay_file_url) {
+    var replay_file_html = null;
+    
+    if(replay_file_url != null) {
+        replay_file_html = '<a href="' + replay_file_url + '">Download</a>';
+    }
+    
+    return replay_file_html;
+};
+
 /* ---------- Characters ---------- */
 
 Formatting.getCharacterImagePlaceholderUrl = function() {
