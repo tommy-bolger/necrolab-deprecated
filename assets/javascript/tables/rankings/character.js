@@ -72,7 +72,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/rankings/power/character/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/character/entries'));
     
     table.addColumns([
         {

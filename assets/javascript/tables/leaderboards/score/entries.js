@@ -48,7 +48,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/leaderboards/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/leaderboards/entries'));
 
     table.addColumns([
         {

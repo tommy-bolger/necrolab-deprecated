@@ -42,7 +42,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/leaderboards/daily/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/leaderboards/daily/entries'));
     
     table.addColumns([
         {

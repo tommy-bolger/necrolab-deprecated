@@ -337,7 +337,7 @@ NecroTable.prototype.removeInitRequest = function(init_request_name) {
 
 NecroTable.prototype.releaseRequestCallback = function(request, response) {      
     NecroTable.release_field_values = response.data;
-    
+
     this.removeInitRequest('releases');
     
     this.render();
@@ -384,37 +384,37 @@ NecroTable.prototype.initialize = function() {
     if(this.enable_release_field && NecroTable.release_field_values.length == 0) {
         this.init_requests.push('releases');
         
-        Request.get('/api/releases', {}, {
+        Request.get(Formatting.getNecrolabApiUrl('/releases'), {}, {
             context: this,
             method: 'releaseRequestCallback'
-        });
+        }, true);
     }
     
     if(this.enable_site_field && NecroTable.site_field_values.length == 0) {
         this.init_requests.push('sites');
         
-        Request.get('/api/external_sites', {}, {
+        Request.get(Formatting.getNecrolabApiUrl('/external_sites'), {}, {
             context: this,
             method: 'siteRequestCallback'
-        });
+        }, true);
     }
     
     if(this.enable_character_field && NecroTable.character_field_values.length == 0) {
         this.init_requests.push('characters');
         
-        Request.get('/api/characters', {}, {
+        Request.get(Formatting.getNecrolabApiUrl('/characters'), {}, {
             context: this,
             method: 'characterRequestCallback'
-        });
+        }, true);
     }
     
     if(this.enable_number_of_days_field && NecroTable.number_of_days_field_values.length == 0) {
         this.init_requests.push('number_of_days');
         
-        Request.get('/api/rankings/daily/number_of_days', {}, {
+        Request.get(Formatting.getNecrolabApiUrl('/rankings/daily/number_of_days'), {}, {
             context: this,
             method: 'numberOfDaysRequestCallback'
-        });
+        }, true);
     }
 };
 
@@ -709,6 +709,7 @@ NecroTable.prototype.render = function() {
         deferRender: true,
         ajax: {
             url: instance.ajax_url,
+            dataType: "jsonp",
             data: function(table_state) { 
                 var request = instance.default_request;
                 

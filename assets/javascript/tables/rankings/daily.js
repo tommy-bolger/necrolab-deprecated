@@ -43,7 +43,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableNumberOfDaysField();
     
-    table.setAjaxUrl('/api/rankings/daily/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/daily/entries'));
     
     table.addColumns([
         {

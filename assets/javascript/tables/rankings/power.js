@@ -56,7 +56,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/rankings/power/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/entries'));
     
     table.addColumns([
         {

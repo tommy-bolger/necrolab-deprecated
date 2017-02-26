@@ -89,7 +89,7 @@ extends PageController {
         ));
     }
     
-    public function setup() {    
+    public function setup() {        
         $this->page = new ModulePage('necrolab', 'necrolab_home');
         
         $this->page->setTitle("NecroLab::{$this->title}");
@@ -104,7 +104,11 @@ extends PageController {
         header('Last-Modified: ' . gmdate( 'D, d M Y H:i:s') . ' GMT');
         header('Cache-Control: no-store, no-cache, must-revalidate');
         header('Cache-Control: post-check=0, pre-check=0', false);
-        header('Pragma: no-cache'); 
+        header('Pragma: no-cache');
+        header('Access-Control-Allow-Origin: *', false);
+        //header('Access-Control-Allow-Origin: https://api.necrolab.com/*', false);
+        //header('Access-Control-Allow-Origin: http://dev.necrolab.com/*', false);
+        //header('Access-Control-Allow-Origin: https://www.necrolab.com/*', false);
         
         $this->page->setTemplate('home.php');
     

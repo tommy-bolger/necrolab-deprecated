@@ -78,7 +78,7 @@ $(document).ready(function() {
     table.enableDateField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/rankings/power/deathless/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/deathless/entries'));
     
     table.addColumns([
         {

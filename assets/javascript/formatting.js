@@ -2,6 +2,10 @@ function Formatting() {}
 
 /* ---------- Necrolab ---------- */
 
+Formatting.getNecrolabApiUrl = function(uri) {
+    return 'https://api.necrolab.com' + uri;
+};
+
 Formatting.getNecrolabUserUrl = function(steamid) {
     return '/players/player?id=' + steamid;
 };
@@ -169,7 +173,7 @@ Formatting.getTwitchFancyLink = function(twitch_username) {
 };
 
 Formatting.getTwitchLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/twitch" target="_blank"><img src="/assets/images/modules/necrolab/styles/default/connections/connect_with_twitch_light.png" /></a>';
+    return link_html = '<a href="/players/player/login/twitch" target="_blank"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithTwitch.png" /></a>';
 };
 
 /* ---------- Twitter ---------- */
@@ -213,7 +217,7 @@ Formatting.getTwitterFancyLink = function(twitter_username) {
 };
 
 Formatting.getTwitterLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/twitter"><img src="/assets/images/modules/necrolab/styles/default/connections/sign-in-with-twitter-gray.png" /></a>';
+    return link_html = '<a href="/players/player/login/twitter"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithTwitter.png" /></a>';
 };
 
 /* ---------- Hitbox ---------- */
@@ -301,7 +305,7 @@ Formatting.getBeamproFancyLink = function(beampro_username) {
 };
 
 Formatting.getBeamproLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/beampro">Connect with Beam.pro</a>';
+    return link_html = '<a href="/players/player/login/beampro"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithBeam.png" /></a>';
 };
 
 /* ---------- Discord ---------- */
@@ -323,7 +327,7 @@ Formatting.getDiscordFancyLink = function(discord_username, discriminator) {
 };
 
 Formatting.getDiscordLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/discord">Connect with Discord</a>';
+    return link_html = '<a href="/players/player/login/discord"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithDiscord.png" /></a>';
 };
 
 /* ---------- Youtube ---------- */
@@ -367,7 +371,7 @@ Formatting.getYoutubeFancyLink = function(youtube_username) {
 };
 
 Formatting.getYoutubeLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/youtube"><img src="/assets/images/modules/necrolab/styles/default/connections/google_signin_dark_normal_web.png" /></a>';
+    return link_html = '<a href="/players/player/login/youtube"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithYouTube.png" /></a>';
 };
 
 /* ---------- Reddit ---------- */
@@ -411,7 +415,7 @@ Formatting.getRedditFancyLink = function(reddit_username) {
 };
 
 Formatting.getRedditLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/reddit">Connect with Reddit</a>';
+    return link_html = '<a href="/players/player/login/reddit"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithReddit.png" /></a>';
 };
 
 /* ---------- Nico Nico ---------- */

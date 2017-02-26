@@ -5,7 +5,7 @@ function LeaderboardListing(type) {
 
     this.table.enableReleaseField();
     
-    this.table.setAjaxUrl('/api/leaderboards/' + this.type);
+    this.table.setAjaxUrl(Formatting.getNecrolabApiUrl('/leaderboards/' + this.type));
     
     var columns = [
         {

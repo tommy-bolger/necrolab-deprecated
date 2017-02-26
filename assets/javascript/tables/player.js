@@ -54,7 +54,7 @@ function process_info_data(data, table) {
 function initialize_info_table() {
     var table = new NecroTable($('#player_info_table'));
     
-    table.setAjaxUrl('/api/players/player');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -160,7 +160,7 @@ function initialize_power_table() {
     table.enableDateRangeFields();
     
     
-    table.setAjaxUrl('/api/players/player/rankings/power/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -276,7 +276,7 @@ function initialize_ranking_score_table() {
     table.enableReleaseField();
     table.enableDateRangeFields();
     
-    table.setAjaxUrl('/api/players/player/rankings/power/score/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/score/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -441,7 +441,7 @@ function initialize_ranking_speed_table() {
     table.enableReleaseField();
     table.enableDateRangeFields();
     
-    table.setAjaxUrl('/api/players/player/rankings/power/speed/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/speed/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -605,7 +605,7 @@ function initialize_ranking_deathless_table() {
     table.enableReleaseField();
     table.enableDateRangeFields();
     
-    table.setAjaxUrl('/api/players/player/rankings/power/deathless/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/deathless/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -753,7 +753,7 @@ function initialize_ranking_character_table() {
     table.enableReleaseField();
     table.enableDateRangeFields();
     
-    table.setAjaxUrl('/api/players/player/rankings/power/character/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/character/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -833,7 +833,7 @@ function initialize_ranking_daily_table() {
     table.enableDateRangeFields();
     table.enableNumberOfDaysField();
     
-    table.setAjaxUrl('/api/players/player/rankings/daily/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/daily/entries'));
     
     table.addRequestParameter('id', 'steamid');
     
@@ -952,7 +952,7 @@ function initialize_leaderboard_score_table() {
     table.enableReleaseField();
     table.enableDateField();
     
-    table.setAjaxUrl('/api/players/player/leaderboards/score/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/score/entries'));
     
     table.addRequestParameter('id', 'steamid');
 
@@ -1047,7 +1047,7 @@ function initialize_leaderboard_speed_table() {
     table.enableReleaseField();
     table.enableDateField();
     
-    table.setAjaxUrl('/api/players/player/leaderboards/speed/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/speed/entries'));
     
     table.addRequestParameter('id', 'steamid');
 
@@ -1123,7 +1123,7 @@ function initialize_leaderboard_deathless_table() {
     table.enableReleaseField();
     table.enableDateField();
     
-    table.setAjaxUrl('/api/players/player/leaderboards/deathless/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/deathless/entries'));
     
     table.addRequestParameter('id', 'steamid');
 
@@ -1211,7 +1211,7 @@ function initialize_leaderboard_daily_table() {
     table.enableReleaseField();
     table.enableDateRangeFields();
     
-    table.setAjaxUrl('/api/players/player/leaderboards/daily/entries');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/daily/entries'));
     
     table.addRequestParameter('id', 'steamid');
     

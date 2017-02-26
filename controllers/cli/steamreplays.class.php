@@ -148,6 +148,7 @@ extends Cli {
                     $steam_replay_record->steam_replay_version_id = $replay_version_id;
                     $steam_replay_record->downloaded = 1;
                     $steam_replay_record->invalid = 0;
+                    $steam_replay_record->uploaded_to_s3 = 0;
                     
                     DatabaseReplays::updateBatch(DatabaseReplays::get($ugcid), $steam_replay_record);
                 }

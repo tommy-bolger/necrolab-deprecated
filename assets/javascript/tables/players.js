@@ -36,7 +36,7 @@ $(document).ready(function() {
     table.enableSearchField();
     table.enableSiteField();
     
-    table.setAjaxUrl('/api/players');
+    table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players'));
     
     table.addColumns([
         {

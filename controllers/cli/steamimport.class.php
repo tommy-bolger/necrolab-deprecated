@@ -375,6 +375,8 @@ extends Cli {
         $current_date = clone $start_date;
         
         while($current_date <= $end_date) {            
+            db()->beginTransaction();
+        
             $leaderboard_entries_resulset = Entries::getAllBaseResultset($current_date);
         
             $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
@@ -413,7 +415,7 @@ extends Cli {
                 );
             }
             
-            $transaction->commit();  
+            db()->commit();
             
             $current_date->add(new DateInterval('P1M'));
         }  
