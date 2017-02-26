@@ -411,7 +411,7 @@ extends Cli {
                     $leaderboard_entry['steam_user_id'], 
                     $leaderboard_entry['rank'], 
                     $entry_record,
-                    'fix_record_update'
+                    "fix_record_update_{$current_date->format('Y_m')}"
                 );
             }
             
