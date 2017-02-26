@@ -30,6 +30,7 @@ extends BaseReplays {
             $steam_replay->steam_user_id = $steam_user_id;
             $steam_replay->downloaded = 0;
             $steam_replay->invalid = 0;
+            $steam_replay->uploaded_to_s3 = 0;
         
             $steam_replay_id = db()->insert('steam_replays', $steam_replay->toArray(), 'replay_insert');
             
