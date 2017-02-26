@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
 use \Depotwarehouse\OAuth2\Client\Twitch\Provider\Twitch as TwitchOauthProvider;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Twitch\Database\Twitch as DatabaseTwitchUsers;
 use \Modules\Necrolab\Models\Users\Twitch\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Twitch\Database\RecordModels\TwitchUser as DatabaseTwitchUser;
@@ -13,8 +14,8 @@ extends OAuth2 {
     
     protected function getProvider() {            
         $provider = new TwitchOauthProvider(array(
-            'clientId' => $this->module->configuration->twitch_client_id,
-            'clientSecret' => $this->module->configuration->twitch_client_secret,
+            'clientId' => Encryption::decrypt($this->module->configuration->twitch_client_id),
+            'clientSecret' => Encryption::decrypt($this->module->configuration->twitch_client_secret),
             'redirectUri' => $this->getRedirectUri(),
             'scopes' => array(
                 'user_read',

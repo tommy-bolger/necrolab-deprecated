@@ -5,6 +5,7 @@ use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Api\Steam\ISteamUser;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
@@ -49,7 +50,7 @@ extends Cli {
         
         if(!empty($users_to_update)) {            
             $this->steam_api = new ISteamUser(); 
-            $this->steam_api->setApiKey($this->module->configuration->steam_api_key, 'key');
+            $this->steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
             
             DatabaseSteamUsers::deleteJson($this->date);
         

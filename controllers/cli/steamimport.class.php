@@ -9,6 +9,7 @@ use Aws\S3\S3Client;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Core\Loader;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries;
@@ -204,14 +205,14 @@ extends Cli {
         $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date);
         
         if(!empty($xml_file_groups)) {
-            Loader::load('autoload.php');
+            Loader::load('autoload.php', true, false);
         
             $aws_client = new Aws(array(
                 'version' => $this->module->configuration->aws_s3_version,
                 'region' => $this->module->configuration->aws_s3_region,
                 'credentials' => array(
-                    'key'    => $this->module->configuration->aws_s3_write_key,
-                    'secret' => $this->module->configuration->aws_s3_write_secret
+                    'key'    => Encryption::decrypt($this->module->configuration->aws_s3_write_key),
+                    'secret' => Encryption::decrypt($this->module->configuration->aws_s3_write_secret)
                 )
             ));
 
@@ -257,7 +258,7 @@ extends Cli {
         $this->uploadXmlToS3(new DateTime($date));
     }
     
-    public function actionUploadRankXmlToS3($start_date, $end_date) {    
+    public function actionUploadRangeXmlToS3($start_date, $end_date) {    
         $start_date = new DateTime($start_date);
         $end_date = new DateTime($end_date);
         

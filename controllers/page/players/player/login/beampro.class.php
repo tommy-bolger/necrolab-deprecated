@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
 use \League\OAuth2\Client\Provider\GenericProvider as BeamproOauthProvider;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Beampro\Database\Beampro as DatabaseBeamproUsers;
 use \Modules\Necrolab\Models\Users\Beampro\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Beampro\Database\RecordModels\BeamproUser as DatabaseBeamproUser;
@@ -13,8 +14,8 @@ extends OAuth2 {
     
     protected function getProvider() {            
         $provider = new BeamproOauthProvider(array(
-            'clientId' => $this->module->configuration->beampro_client_id,
-            'clientSecret' => $this->module->configuration->beampro_client_secret,
+            'clientId' => Encryption::decrypt($this->module->configuration->beampro_client_id),
+            'clientSecret' => Encryption::decrypt($this->module->configuration->beampro_client_secret),
             'redirectUri' => $this->getRedirectUri(),
             'urlAuthorize' => 'https://beam.pro/oauth/authorize',
             'urlAccessToken' => 'https://beam.pro/api/v1/oauth/token',

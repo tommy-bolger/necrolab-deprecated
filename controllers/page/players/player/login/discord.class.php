@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
 use \Discord\OAuth\Discord as DiscordOauthProvider;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Discord\Database\Discord as DatabaseDiscordUsers;
 use \Modules\Necrolab\Models\Users\Discord\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Discord\Database\RecordModels\DiscordUser as DatabaseDiscordUser;
@@ -13,8 +14,8 @@ extends OAuth2 {
     
     protected function getProvider() {            
         $provider = new DiscordOauthProvider(array(
-            'clientId' => $this->module->configuration->discord_client_id,
-            'clientSecret' => $this->module->configuration->discord_client_secret,
+            'clientId' => Encryption::decrypt($this->module->configuration->discord_client_id),
+            'clientSecret' => Encryption::decrypt($this->module->configuration->discord_client_secret),
             'redirectUri' => $this->getRedirectUri()
         ));
         

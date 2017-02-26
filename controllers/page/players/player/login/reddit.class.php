@@ -1,8 +1,9 @@
 <?php
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
-use \Framework\Core\Loader;
 use \Rudolf\OAuth2\Client\Provider\Reddit as RedditOauthProvider;
+use \Framework\Core\Loader;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Reddit\Database\Reddit as DatabaseRedditUsers;
 use \Modules\Necrolab\Models\Users\Reddit\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Reddit\Database\RecordModels\RedditUser as DatabaseRedditUser;
@@ -15,13 +16,13 @@ extends OAuth2 {
     protected function getProvider() {
         Loader::load('oauth2-reddit-master/src/Provider/Reddit.php');
     
-        $client_id = $this->module->configuration->reddit_client_id;
+        $client_id = Encryption::decrypt($this->module->configuration->reddit_client_id);
             
         $provider = new RedditOauthProvider([
             'clientId' => $client_id,
-            'clientSecret' => $this->module->configuration->reddit_client_secret,
+            'clientSecret' => Encryption::decrypt($this->module->configuration->reddit_client_secret),
             'redirectUri'  => $this->getRedirectUri(),
-            'userAgent' => "Necrolab:{$client_id}:5.3, (by /u/squega)",
+            'userAgent' => "Necrolab:{$client_id}:{$this->module->configuration->version}, (by /u/squega)",
             'scopes' => array(
                 'identity', 
                 'read'

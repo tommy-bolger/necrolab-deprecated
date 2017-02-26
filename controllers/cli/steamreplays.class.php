@@ -9,6 +9,7 @@ use \Framework\Core\Controllers\Cli;
 use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Api\Steam\ISteamRemoteStorage;
 use \Framework\Core\Loader;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
 use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
 use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
@@ -76,7 +77,7 @@ extends Cli {
         $database = db();
         
         $this->steam_api = new ISteamRemoteStorage(); 
-        $this->steam_api->setApiKey($this->module->configuration->steam_api_key, 'key');
+        $this->steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
         
         while($replay_to_update = $database->getStatementRow($replays_to_update)) {        
             if($replay_to_update['ugcid'] != -1) {
@@ -184,14 +185,14 @@ extends Cli {
         
         $database = db();
         
-        Loader::load('autoload.php');
+        Loader::load('autoload.php', true, false);
         
         $aws_client = new Aws(array(
             'version' => $this->module->configuration->aws_s3_version,
             'region' => $this->module->configuration->aws_s3_region,
             'credentials' => array(
-                'key'    => $this->module->configuration->aws_s3_write_key,
-                'secret' => $this->module->configuration->aws_s3_write_secret
+                'key'    => Encryption::decrypt($this->module->configuration->aws_s3_write_key),
+                'secret' => Encryption::decrypt($this->module->configuration->aws_s3_write_secret)
             )
         ));
 

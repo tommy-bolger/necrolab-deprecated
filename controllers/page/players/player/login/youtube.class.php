@@ -1,8 +1,9 @@
 <?php
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
-use \Framework\Core\Loader;
 use \League\OAuth2\Client\Provider\YouTube as YoutubeOauthProvider;
+use \Framework\Core\Loader;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Youtube\Database\Youtube as DatabaseYoutubeUsers;
 use \Modules\Necrolab\Models\Users\Youtube\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Youtube\Database\RecordModels\YoutubeUser as DatabaseYoutubeUser;
@@ -21,8 +22,8 @@ extends OAuth2 {
     
     protected function getProvider() {            
         $provider = new YoutubeOauthProvider(array(
-            'clientId' => $this->module->configuration->youtube_client_id,
-            'clientSecret' => $this->module->configuration->youtube_client_secret,
+            'clientId' => Encryption::decrypt($this->module->configuration->youtube_client_id),
+            'clientSecret' => Encryption::decrypt($this->module->configuration->youtube_client_secret),
             'redirectUri' => $this->getRedirectUri()
         ));
         

@@ -1,8 +1,9 @@
 <?php
 namespace Modules\Necrolab\Controllers\Page\Players\Player\Login;
 
-use \Framework\Core\Loader;
 use \League\OAuth1\Client\Server\Twitter as TwitterOauthProvider;
+use \Framework\Core\Loader;
+use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Users\Twitter\Database\Twitter as DatabaseTwitterUsers;
 use \Modules\Necrolab\Models\Users\Twitter\Database\UserTokens as DatabaseUserTokens;
 use \Modules\Necrolab\Models\Users\Twitter\Database\RecordModels\TwitterUser as DatabaseTwitterUser;
@@ -14,8 +15,8 @@ extends OAuth1 {
     
     protected function getProvider() {            
         $provider = new TwitterOauthProvider(array(
-            'identifier' => $this->module->configuration->twitter_client_id,
-            'secret' => $this->module->configuration->twitter_client_secret,
+            'identifier' => Encryption::decrypt($this->module->configuration->twitter_client_id),
+            'secret' => Encryption::decrypt($this->module->configuration->twitter_client_secret),
             'callback_uri' => $this->getRedirectUri(),
         ));
         
