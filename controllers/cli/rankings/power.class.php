@@ -92,6 +92,19 @@ extends Cli {
         }
     }
     
+    public function actionGenerateRange($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->actionGenerate($current_date->format('Y-m-d'));
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
     public function actionCreateEntriesParition($date = NULL) {
         $date = new DateTime($date);
     

@@ -7,7 +7,7 @@ use \Modules\Necrolab\Models\Rankings\Database\Entry as DatabaseEntry;
 use \Modules\Necrolab\Models\Rankings\Database\RecordModels\PowerRankingEntry as DatabasePowerRankingEntry;
 
 class Entries {
-    public static function saveChunkToDatabase($entries, $power_ranking_id, $date) {
+    public static function saveChunkToDatabase($entries, $power_ranking_id, DateTime $date) {
         if(!empty($entries)) {
             foreach($entries as $entry) {
                 if(!empty($entry)) {
