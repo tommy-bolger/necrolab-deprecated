@@ -9,7 +9,7 @@ use \Modules\Necrolab\Models\Rankings\Cache\CacheNames;
 class Rankings
 extends BaseRankings {
     public static function generateRanksFromPoints(DateTime $date, $character_name, $cache) {  
-        $total_points_entries = static::getTotalPointsByRank($date, $character_name);
+        $total_points_entries = static::getTotalPointsByRank($date, $character_name, $cache);
         
         $transaction = $cache->transaction();
         
