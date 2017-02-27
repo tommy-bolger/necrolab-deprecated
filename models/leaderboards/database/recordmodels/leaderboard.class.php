@@ -109,6 +109,9 @@ extends RecordModel {
         elseif(strpos($leaderboard_name, 'thief') !== false) {
             $character_name = 'thief';
         }
+        elseif(strpos($leaderboard_name, 'nocturna') !== false) {
+            $character_name = 'nocturna';
+        }
         //If nobody else assume it's Cadence
         else {
             $character_name = 'cadence';
