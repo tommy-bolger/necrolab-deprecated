@@ -27,6 +27,8 @@ extends Cli {
     }
     
     protected function generate() {
+        $this->cache->clear();
+    
         $release_id = $this->release['release_id'];
     
         $day_types = DatabaseDayTypes::getActiveForDate($this->as_of_date);
@@ -72,6 +74,8 @@ extends Cli {
         }
         
         db()->commit();
+        
+        $this->cache->clear();
     }
     
     public function actionGenerate($date = NULL) {        
