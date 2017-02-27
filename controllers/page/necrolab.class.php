@@ -106,9 +106,6 @@ extends PageController {
         header('Cache-Control: post-check=0, pre-check=0', false);
         header('Pragma: no-cache');
         header('Access-Control-Allow-Origin: *', false);
-        //header('Access-Control-Allow-Origin: https://api.necrolab.com/*', false);
-        //header('Access-Control-Allow-Origin: http://dev.necrolab.com/*', false);
-        //header('Access-Control-Allow-Origin: https://www.necrolab.com/*', false);
         
         $this->page->setTemplate('home.php');
     

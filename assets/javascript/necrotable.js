@@ -26,6 +26,7 @@ function NecroTable(dom_object) {
     this.start = 0;
     
     this.enable_history = false;
+    this.state_changed = false;
     
     this.enable_date_field = false;
     this.date_field;
@@ -148,7 +149,11 @@ NecroTable.prototype.enableLengthMenu = function() {
         1000
     ];
     
-    if(this.enable_history) {
+    this.setLimitFromUrl();
+};
+
+NecroTable.prototype.setLimitFromUrl = function() {  
+    if(this.has_length_menu && this.enable_history) {
         var url_limit = this.url.getValue('limit');
         
         if(url_limit != null) {
@@ -186,7 +191,11 @@ NecroTable.prototype.enablePaging = function() {
     this.paging = true;
     this.pagingType = 'full';
     
-    if(this.enable_history) {
+    this.setStartFromUrl();
+};
+
+NecroTable.prototype.setStartFromUrl = function() {  
+    if(this.paging && this.enable_history) {
         var url_start = this.url.getValue('start');
         
         if(url_start != null) {
@@ -199,6 +208,20 @@ NecroTable.prototype.enableSort = function(default_sort_by, default_sort_directi
     this.enable_sort = true;
     this.sort_by = default_sort_by;
     this.sort_direction = default_sort_direction;
+    
+    this.setSortFromUrl();
+};
+
+NecroTable.prototype.setSortFromUrl = function() {  
+    if(this.enable_sort && this.enable_history) {
+        var url_sort_by = this.url.getValue('sort_by');
+        var url_sort_direction = this.url.getValue('sort_direction');
+        
+        if(url_sort_by != null && url_sort_direction != null) {
+            this.sort_by = url_sort_by;
+            this.sort_direction = url_sort_direction;
+        }
+    }
 };
 
 NecroTable.prototype.enableHistory = function() {      
@@ -208,7 +231,11 @@ NecroTable.prototype.enableHistory = function() {
 NecroTable.prototype.enableDateField = function() {      
     this.enable_date_field = true;
     
-    if(this.enable_history) {
+    this.setDateFromUrl();
+};
+
+NecroTable.prototype.setDateFromUrl = function() {  
+    if(this.enable_date_field && this.enable_history) {
         var url_date = this.url.getValue('date');
         
         if(url_date != null) {
@@ -220,7 +247,11 @@ NecroTable.prototype.enableDateField = function() {
 NecroTable.prototype.enableDateRangeFields = function() {      
     this.enable_date_range_fields = true;
     
-    if(this.enable_history) {
+    this.setDateRangeFromUrl();
+};
+
+NecroTable.prototype.setDateRangeFromUrl = function() {  
+    if(this.enable_date_range_fields && this.enable_history) {
         var url_start_date = this.url.getValue('start_date');
         
         if(url_start_date != null) {
@@ -238,7 +269,11 @@ NecroTable.prototype.enableDateRangeFields = function() {
 NecroTable.prototype.enableReleaseField = function() {      
     this.enable_release_field = true;
     
-    if(this.enable_history) {
+    this.setReleaseFromUrl();
+};
+
+NecroTable.prototype.setReleaseFromUrl = function() {  
+    if(this.enable_release_field && this.enable_history) {
         var url_release = this.url.getValue('release');
         
         if(url_release != null) {
@@ -250,7 +285,11 @@ NecroTable.prototype.enableReleaseField = function() {
 NecroTable.prototype.enableSiteField = function() {      
     this.enable_site_field = true;
     
-    if(this.enable_history) {
+    this.setSiteFromUrl();
+};
+
+NecroTable.prototype.setSiteFromUrl = function() {  
+    if(this.enable_site_field && this.enable_history) {
         var url_site = this.url.getValue('site');
         
         if(url_site != null) {
@@ -262,7 +301,11 @@ NecroTable.prototype.enableSiteField = function() {
 NecroTable.prototype.enableCharacterField = function() {      
     this.enable_character_field = true;
     
-    if(this.enable_history) {
+    this.setCharacterFromUrl();
+};
+
+NecroTable.prototype.setCharacterFromUrl = function() {  
+    if(this.enable_character_field && this.enable_history) {
         var url_character = this.url.getValue('character');
         
         if(url_character != null) {
@@ -274,7 +317,11 @@ NecroTable.prototype.enableCharacterField = function() {
 NecroTable.prototype.enableNumberOfDaysField = function() {      
     this.enable_number_of_days_field = true;
     
-    if(this.enable_history) {
+    this.setNumberOfDaysFromUrl();
+};
+
+NecroTable.prototype.setNumberOfDaysFromUrl = function() {  
+    if(this.enable_number_of_days_field && this.enable_history) {
         var url_number_of_days = this.url.getValue('number_of_days');
         
         if(url_number_of_days != null) {
@@ -286,13 +333,43 @@ NecroTable.prototype.enableNumberOfDaysField = function() {
 NecroTable.prototype.enableSearchField = function() {      
     this.enable_search_field = true;
     
-    if(this.enable_history) {
+    this.setSearchFromUrl();
+};
+
+NecroTable.prototype.setSearchFromUrl = function() {  
+    if(this.enable_search_field && this.enable_history) {
         var url_search = this.url.getValue('search');
         
         if(url_search != null) {
             this.search_field_value = url_search;
         }
     }
+};
+
+NecroTable.prototype.resumeFromHistoryState = function() {      
+    this.url = new Url();    
+    
+    this.setLimitFromUrl();
+    
+    this.setStartFromUrl();
+    
+    this.setSortFromUrl();
+    
+    this.setDateFromUrl();
+    
+    this.setDateRangeFromUrl();
+    
+    this.setReleaseFromUrl();
+    
+    this.setSiteFromUrl();
+    
+    this.setCharacterFromUrl();
+    
+    this.setNumberOfDaysFromUrl();
+    
+    this.setSearchFromUrl();
+    
+    this.datatable.ajax.reload();
 };
 
 NecroTable.prototype.setAjaxUrl = function(ajax_url) {      
@@ -766,7 +843,14 @@ NecroTable.prototype.render = function() {
                 }
 
                 if(instance.enable_history) {
-                    window.history.pushState(instance.url.getBaseUrl(), "Table", Url.generateUrl(instance.url.getBaseUrl(), request));
+                    if(!this.state_changed) {
+                        window.history.pushState(instance.url.getBaseUrl(), "NecroLab", Url.generateUrl(instance.url.getBaseUrl(), request));
+                        
+                        this.state_changed = true;
+                    }
+                    else {
+                        window.history.replaceState(instance.url.getBaseUrl(), "NecroLab", Url.generateUrl(instance.url.getBaseUrl(), request));
+                    }
                 }
                 
                 return request;
@@ -837,19 +921,16 @@ NecroTable.prototype.render = function() {
     
     /* ---------- Add a back button event to reload page state ---------- */
     
-    /*if(instance.enable_history) {
-        window.addEventListener("popstate", function(event) {
-            //TODO: get state loading into this
+    if(instance.enable_history) {
+        window.addEventListener("popstate", function(event) {            
             if(event.state == instance.url.getBaseUrl()) {
-                
-                console.log('Page history!');
-                console.log(location.url);
+                instance.resumeFromHistoryState();
             }
             else {
                 window.history.back();
             }
         });
-    }*/
+    }
     
     /* ---------- Prepend any additional header rows ---------- */
     
