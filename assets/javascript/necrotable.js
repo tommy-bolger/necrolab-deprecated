@@ -709,7 +709,7 @@ NecroTable.prototype.render = function() {
         deferRender: true,
         ajax: {
             url: instance.ajax_url,
-            dataType: "jsonp",
+            dataType: "jsonp NecroTable",
             data: function(table_state) { 
                 var request = instance.default_request;
                 
@@ -771,12 +771,13 @@ NecroTable.prototype.render = function() {
                 
                 return request;
             },
-            dataFilter: function(data) {
-                var json = jQuery.parseJSON(data);
-                json.recordsTotal = json.request.record_count;
-                json.recordsFiltered = json.request.record_count;
-    
-                return JSON.stringify(json);
+            converters: {
+                'json NecroTable': function(data) {
+                    data.recordsTotal = data.request.record_count;
+                    data.recordsFiltered = data.request.record_count;
+                    
+                    return data;
+                }
             },
             dataSrc: function(json) {
                 if(instance.data_process_callback != null) {
