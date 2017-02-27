@@ -6,11 +6,7 @@ use \Modules\Necrolab\Models\Necrolab;
 
 class Entry
 extends Necrolab {
-    public static function saveFromLeaderboardEntry(array $leaderboard_entry, $leaderboard_record, $cache = NULL) {
-        if(empty($cache)) {
-            $cache = cache();
-        }
-    
+    public static function saveFromLeaderboardEntry(array $leaderboard_entry, $leaderboard_record, $cache) {
         if(!empty($leaderboard_entry)) {
             $steam_user_id = $leaderboard_entry['steam_user_id'];
         

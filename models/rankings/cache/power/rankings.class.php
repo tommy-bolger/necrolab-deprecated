@@ -8,11 +8,7 @@ use \Modules\Necrolab\Models\Rankings\Cache\CacheNames as RankingCacheNames;
 
 class Rankings
 extends BaseRankings {
-    public static function generateRanksFromPoints(DateTime $date, $cache = NULL) {  
-        if(empty($cache)) {
-            $cache = cache();
-        }
-    
+    public static function generateRanksFromPoints(DateTime $date, $cache) {      
         $total_points_entries = static::getTotalPointsByRank($date);
         
         $transaction = $cache->transaction();
@@ -26,28 +22,7 @@ extends BaseRankings {
         $transaction->commit();
     }
 
-    public static function getTotalPointsByRank(DateTime $date, $cache = NULL) {
-        if(empty($cache)) {
-            $cache = cache();
-        }        
-        
+    public static function getTotalPointsByRank(DateTime $date, $cache) {     
         return $cache->zRevRange(RankingCacheNames::getPowerTotalPointsName(), 0, -1);
-    }
-
-    public static function getLatestRankingsResultset() {
-        $cache = cache('read');
-    
-        $resultset = new Redis(RankingCacheNames::getPowerRankingName(), $cache);
-        
-        $resultset->setEntriesName(RankingCacheNames::getPowerEntriesName());
-        $resultset->setFilterName(RankingCacheNames::getPowerEntriesFilterName());  
-        
-        $resultset->setRowsPerPage(100);
-        
-        $resultset->addProcessorFunction(function($result_data) {
-            return static::processPowerResultset(__NAMESPACE__ . '\RecordModels\PowerRankingEntry', $result_data);
-        });
-        
-        return $resultset;
     }
 }

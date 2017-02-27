@@ -23,11 +23,7 @@ class Entries {
         }
     }
 
-    public static function saveToDatabase($power_ranking_id, DateTime $date, $cache = NULL) {
-        if(empty($cache)) {
-            $cache = cache();
-        }
-    
+    public static function saveToDatabase($power_ranking_id, DateTime $date, $cache) {
         $power_ranking_entries = CachePowerRankings::getTotalPointsByRank($date);
     
         $transaction = $cache->transaction();

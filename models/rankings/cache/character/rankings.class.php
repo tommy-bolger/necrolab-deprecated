@@ -8,11 +8,7 @@ use \Modules\Necrolab\Models\Rankings\Cache\CacheNames;
 
 class Rankings
 extends BaseRankings {
-    public static function generateRanksFromPoints(DateTime $date, $character_name, $cache = NULL) {  
-        if(empty($cache)) {
-            $cache = cache();
-        }  
-    
+    public static function generateRanksFromPoints(DateTime $date, $character_name, $cache) {  
         $total_points_entries = static::getTotalPointsByRank($date, $character_name);
         
         $transaction = $cache->transaction();
@@ -26,28 +22,7 @@ extends BaseRankings {
         $transaction->commit();
     }
 
-    public static function getTotalPointsByRank(DateTime $date, $character_name, $cache = NULL) {
-        if(empty($cache)) {
-            $cache = cache();
-        }        
-        
+    public static function getTotalPointsByRank(DateTime $date, $character_name, $cache) {
         return $cache->zRevRange(CacheNames::getCharacterPointsName($character_name), 0, -1);
-    }
-
-    public static function getLatestRankingsResultset() {
-        $cache = cache('read');
-    
-        $resultset = new Redis(CacheNames::getCharacterRankingName(), $cache);
-        
-        $resultset->setEntriesName(CacheNames::getCharacterEntriesName());
-        $resultset->setFilterName(CacheNames::getCharacterEntriesFilterName());   
-        
-        $resultset->setRowsPerPage(100);
-        
-        $resultset->addProcessorFunction(function($result_data) {
-            return static::processCategoryResultset('character', __NAMESPACE__ . '\RecordModels\CharacterEntry', $result_data);
-        });
-        
-        return $resultset;
     }
 }

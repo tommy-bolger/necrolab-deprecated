@@ -51,19 +51,19 @@ extends Cli {
         
         $transaction->commit();    
         
-        CacheSpeedRankings::generateRanksFromPoints($this->as_of_date);
-        CacheScoreRankings::generateRanksFromPoints($this->as_of_date);
-        CacheDeathlessRankings::generateRanksFromPoints($this->as_of_date);
+        CacheSpeedRankings::generateRanksFromPoints($this->as_of_date, $this->cache);
+        CacheScoreRankings::generateRanksFromPoints($this->as_of_date, $this->cache);
+        CacheDeathlessRankings::generateRanksFromPoints($this->as_of_date, $this->cache);
 
         $characters = DatabaseCharacters::getActive();
         
         if(!empty($characters)) {
             foreach($characters as $character) {
-                CacheCharacterRankings::generateRanksFromPoints($this->as_of_date, $character['name']);
+                CacheCharacterRankings::generateRanksFromPoints($this->as_of_date, $character['name'], $this->cache);
             }
         }
         
-        CachePowerRankings::generateRanksFromPoints($this->as_of_date);
+        CachePowerRankings::generateRanksFromPoints($this->as_of_date, $this->cache);
         
         db()->beginTransaction();
         

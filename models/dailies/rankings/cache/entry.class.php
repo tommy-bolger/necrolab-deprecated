@@ -5,11 +5,7 @@ use \Modules\Necrolab\Models\Necrolab;
 
 class Entry
 extends Necrolab {
-    public static function saveFromLeaderboardEntry(array $leaderboard_entry, $day_type_id, $cache = NULL) {    
-        if(empty($cache)) {
-            $cache = cache();
-        }
-        
+    public static function saveFromLeaderboardEntry(array $leaderboard_entry, $day_type_id, $cache) {            
         $steam_user_id = $leaderboard_entry['steam_user_id'];
         
         $daily_ranking_entry_hash_name = CacheNames::getEntryName($steam_user_id, $day_type_id);

@@ -35,11 +35,7 @@ extends BaseEntries {
         }
     }
 
-    public static function saveToDatabase($daily_ranking_id, $daily_ranking_day_type_id, DateTime $date, $cache = NULL) {
-        if(empty($cache)) {
-            $cache = cache();
-        }
-    
+    public static function saveToDatabase($daily_ranking_id, $daily_ranking_day_type_id, DateTime $date, $cache) {
         $daily_ranking_entries = CacheDailyRankings::getTotalPointsByRank($daily_ranking_day_type_id, $cache);
     
         $transaction = $cache->transaction();
