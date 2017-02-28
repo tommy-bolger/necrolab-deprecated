@@ -61,6 +61,25 @@ extends Necrolab {
         return $seed;
     }
     
+    /*
+        This functionality was borrowed from: https://github.com/necrommunity/replay-parser/blob/master/js/main.js#L5
+        
+        All credit goes to AlexisYJ and Grimy. Thank you!
+    */
+    public static function getDLCSeedFromZ1Seed($zone_1_seed) {
+        $zone_1_seed = (integer)$zone_1_seed;
+        
+        $added_seed += $zone_1_seed + 1073765959;
+        
+        $multiplied_seed = $added_seed * 225371434;
+        
+        $modulus_seed = $multiplied_seed % 2147483647;
+        
+        $seed = $modulus_seed % 1899818559;
+        
+        return $seed;
+    }
+    
     public static function getFileData($url) {    
         $request = curl_init($url);
         curl_setopt($request, CURLOPT_RETURNTRANSFER, true);

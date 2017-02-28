@@ -180,6 +180,61 @@ extends Cli {
         }
     }
     
+    public function actionUpdateFromFiles() {
+        $database = db();
+    
+        $database->beginTransaction();
+    
+        $replays_to_update_resultset = DatabaseReplays::getSavedReplaysResultset();
+        
+        $replays_to_update = $replays_to_update_resultset->prepareExecuteQuery();
+        
+        while($replay_to_update = $database->getStatementRow($replays_to_update)) { 
+            $ugcid = $replay_to_update['ugcid'];
+
+            if($ugcid != -1) {
+                $replay_file_path = DatabaseReplays::getFilePath($ugcid);
+                
+                $steam_replay = new SteamReplay();
+                $steam_replay->setPropertiesFromReplayFile($replay_file_path);
+                
+                //Run result
+                $run_result_id = NULL;
+                
+                if(!empty($steam_replay->run_result)) {
+                    $run_result = new DatabaseRunResult();
+                    
+                    $run_result->name = $steam_replay->run_result;
+                    $run_result->is_win = $steam_replay->is_win;
+                    
+                    $run_result_id = DatabaseRunResults::save($run_result);
+                }
+                
+                //Steam replay version
+                $replay_version_id = NULL;
+                
+                if(!empty($steam_replay->replay_version)) {
+                    $replay_version = new DatabaseReplayVersion();
+                    
+                    $replay_version->name = $steam_replay->replay_version;
+                    
+                    $replay_version_id = DatabaseReplayVersions::save($replay_version);
+                }
+                
+                //Steam replay save
+                $steam_replay_record = new DatabaseSteamReplay();
+                
+                $steam_replay_record->seed = $steam_replay->seed;
+                $steam_replay_record->run_result_id = $run_result_id;
+                $steam_replay_record->steam_replay_version_id = $replay_version_id;
+                
+                DatabaseReplays::update($replay_to_update['steam_replay_id'], $steam_replay_record);
+            }
+        }
+        
+        $database->commit();
+    }
+    
     public function actionUploadFilesToS3() {        
         $replays_to_upload_resultset = DatabaseReplays::getUnuploadedReplaysResultset();
         
