@@ -67,9 +67,9 @@ extends Necrolab {
         All credit goes to AlexisYJ and Grimy. Thank you!
     */
     public static function getDLCSeedFromZ1Seed($zone_1_seed) {
-        $zone_1_seed = (integer)$zone_1_seed;
+        $zone_1_seed = intval($zone_1_seed);
         
-        $added_seed += $zone_1_seed + 1073765959;
+        $added_seed = $zone_1_seed + 1073765959;
         
         $multiplied_seed = $added_seed * 225371434;
         

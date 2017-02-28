@@ -53,7 +53,7 @@ extends BaseReplays {
     
     public static function update($steam_replay_id, SteamReplay $steam_replay) { 
         $array_record = $steam_replay->toArray(false);
-
+        
         if(array_key_exists('ugcid', $array_record)) {
             unset($array_record['ugcid']);
         }
