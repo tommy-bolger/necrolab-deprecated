@@ -224,11 +224,16 @@ extends Cli {
                 //Steam replay save
                 $steam_replay_record = new DatabaseSteamReplay();
                 
-                $steam_replay_record->seed = $steam_replay->seed;
-                $steam_replay_record->run_result_id = $run_result_id;
-                $steam_replay_record->steam_replay_version_id = $replay_version_id;
+                $seed = $steam_replay->seed;
                 
-                DatabaseReplays::update($replay_to_update['steam_replay_id'], $steam_replay_record);
+                if(!empty($seed) && !empty($run_result_id) && !empty($replay_version_id)) {
+                    $steam_replay_record->seed = $steam_replay->seed;
+                    $steam_replay_record->run_result_id = $run_result_id;
+                    $steam_replay_record->steam_replay_version_id = $replay_version_id;
+                    
+                    
+                    DatabaseReplays::update($replay_to_update['steam_replay_id'], $steam_replay_record);
+                }
             }
         }
         
