@@ -74,18 +74,22 @@ extends Necrolab {
         return $leaderboards;
     }
     
-    public static function deleteXml(DateTime $date) {
+    public static function getXmlPath(DateTime $date) {
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/leaderboard_xml/{$date->format('Y-m-d')}";
+    
+        return "{$installation_path}/leaderboard_xml/{$date->format('Y-m-d')}";
+    }
+    
+    public static function deleteXml(DateTime $date) {
+        $snapshot_path = static::getXmlPath($date);
         
         if(is_dir($snapshot_path)) {
-            File::deleteDirectoryRecursive("{$snapshot_path}");
+            File::deleteDirectoryRecursive($snapshot_path);
         }
     }
     
     public static function saveXml(DateTime $date, $xml) {
-        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/leaderboard_xml/{$date->format('Y-m-d')}";
+        $snapshot_path = static::getXmlPath($date);
         
         if(!is_dir($snapshot_path)) {
             mkdir($snapshot_path);
@@ -102,9 +106,15 @@ extends Necrolab {
         return gzdecode(file_get_contents($file_path));
     }
     
-    public static function getXmlFiles(DateTime $date) {  
-        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/leaderboard_xml/{$date->format('Y-m-d')}";
+    public static function getXmlFiles(DateTime $date, $temp_directory = false) {  
+        $snapshot_path = NULL;
+        
+        if(empty($temp_directory)) {
+            $snapshot_path = static::getXmlPath($date);
+        }
+        else {
+            $snapshot_path = static::getXmlTempPath($date);
+        }
         
         $xml_file_groups = array();
         
@@ -149,12 +159,37 @@ extends Necrolab {
         return $xml_file_groups;
     }
     
+    public static function getXmlTempPath(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+    
+        return "{$installation_path}/leaderboard_xml/temp/{$date->format('Y-m-d')}";
+    }
+    
+    public static function copyXmlToTempFolder(DateTime $date) {
+        $xml_path = static::getXmlPath($date);
+        $xml_temp_path = static::getXmlTempPath($date);
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to copy an entire folder.
+            TODO: Implement a method in the File utility to recursively copy a directory.
+        */
+        exec("cp -r {$xml_path} {$xml_temp_path}");
+    }
+    
+    public static function deleteTempXml(DateTime $date) {
+        $snapshot_path = static::getXmlTempPath($date);
+        
+        if(is_dir($snapshot_path)) {
+            File::deleteDirectoryRecursive($snapshot_path);
+        }
+    }
+    
     public static function deleteS3Xml(DateTime $date) {
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
         $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}";
         
         if(is_dir($snapshot_path)) {
-            File::deleteDirectoryRecursive("{$snapshot_path}");
+            File::deleteDirectoryRecursive($snapshot_path);
         }
     }
     

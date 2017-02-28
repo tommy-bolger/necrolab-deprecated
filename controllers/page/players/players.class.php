@@ -43,6 +43,8 @@ extends Necrolab {
     }
     
     public function setup() {
+        $this->title = 'Players';
+    
         parent::setup();
         
         $this->addDataTableFiles();

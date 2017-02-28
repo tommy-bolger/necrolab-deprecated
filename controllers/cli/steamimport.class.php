@@ -107,7 +107,9 @@ extends Cli {
     protected function saveXml(DateTime $date) {
         $this->as_of_date = $date;
         
-        $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date);
+        Leaderboards::copyXmlToTempFolder($this->as_of_date);
+        
+        $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date, true);
         
         $leaderboards_xml = Leaderboards::getXml($xml_file_groups['leaderboards_xml']);
         $parsed_xml = Leaderboards::getParsedXml($leaderboards_xml);
@@ -174,6 +176,8 @@ extends Cli {
             
             db()->commit();
         }
+        
+        Leaderboards::deleteTempXml($this->as_of_date);
     }
     
     public function actionSaveXml($date = NULL) { 
