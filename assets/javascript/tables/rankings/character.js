@@ -66,6 +66,8 @@ $(document).ready(function() {
     table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
+    table.enableHistory();
+    table.enableSort('rank', 'asc');
     table.enableSearchField();
     table.enableCharacterField();
     table.enableReleaseField();
