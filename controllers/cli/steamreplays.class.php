@@ -226,8 +226,8 @@ extends Cli {
                 
                 $seed = $steam_replay->seed;
                 
-                if(!empty($seed) && !empty($run_result_id) && !empty($replay_version_id)) {
-                    $steam_replay_record->seed = $steam_replay->seed;
+                if(!(empty($seed) && empty($run_result_id) && empty($replay_version_id))) {
+                    $steam_replay_record->seed = $seed;
                     $steam_replay_record->run_result_id = $run_result_id;
                     $steam_replay_record->steam_replay_version_id = $replay_version_id;
                     
