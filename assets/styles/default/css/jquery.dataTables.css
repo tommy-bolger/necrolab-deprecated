@@ -295,8 +295,8 @@ table.dataTable td {
 .dataTables_wrapper .top_menu_item input,
 .dataTables_wrapper .dataTables_length select
 {
-    background-color: inherit;
-    color: #FFFFFF;
+    background-color: inherit !important;
+    color: #FFFFFF !important;
 }
 
 .dataTables_wrapper .dataTables_filter {
