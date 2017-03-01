@@ -33,6 +33,7 @@ $(document).ready(function() {
     table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
+    table.enableHistory();
     table.enableSearchField();
     table.enableSiteField();
     

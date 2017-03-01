@@ -139,6 +139,8 @@ extends Cli {
                         
                         Entries::clear($leaderboard_snapshot_id, $this->as_of_date);
                         
+                        $rank = 1;
+                        
                         foreach($xml_file_group as $page => $xml_file) {
                             $entries_xml = Leaderboards::getXml($xml_file);
                             
@@ -152,8 +154,6 @@ extends Cli {
                                 if(!is_array($entries)) {
                                     $entries = array($entries);
                                 }
-                            
-                                $rank = 1;
                             
                                 foreach($entries as $entry) {
                                     $database_entry = new DatabaseLeaderboardEntry();
