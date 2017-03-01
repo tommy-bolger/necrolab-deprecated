@@ -4,6 +4,7 @@ function LeaderboardListing(type) {
     this.table = new NecroTable($('#entries_table'));
 
     this.table.enableReleaseField();
+    this.table.enableHistory();
     
     this.table.setAjaxUrl(Formatting.getNecrolabApiUrl('/leaderboards/' + this.type));
     
