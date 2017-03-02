@@ -46,16 +46,6 @@ extends BaseEntries {
             USING btree
             (daily_ranking_id);
 
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_rank_asc
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree
-            (rank);
-
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_rank_desc
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree
-            (rank DESC);
-
             CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_steam_user_id
             ON daily_ranking_entries_{$date_formatted}
             USING btree

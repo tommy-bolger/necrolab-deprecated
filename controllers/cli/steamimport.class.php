@@ -421,7 +421,7 @@ extends Cli {
             
             db()->commit();
             
-            $current_date->add(new DateInterval('P1M'));
+            $current_date->add(new DateInterval('P1D'));
         }  
     }
 }

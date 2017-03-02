@@ -177,35 +177,10 @@ extends BaseEntries {
                 OIDS=FALSE
             );
 
-            CREATE INDEX idx_power_ranking_entries_{$date_formatted}_deathless_rank_desc
-            ON power_ranking_entries_{$date_formatted}
-            USING btree
-            (deathless_rank DESC);
-
             CREATE INDEX idx_power_ranking_entries_{$date_formatted}_power_ranking_id
             ON power_ranking_entries_{$date_formatted}
             USING btree
             (power_ranking_id);
-
-            CREATE INDEX idx_power_ranking_entries_{$date_formatted}_rank_asc
-            ON power_ranking_entries_{$date_formatted}
-            USING btree
-            (rank);
-
-            CREATE INDEX idx_power_ranking_entries_{$date_formatted}_rank_desc
-            ON power_ranking_entries_{$date_formatted}
-            USING btree
-            (rank DESC);
-
-            CREATE INDEX idx_power_ranking_entries_{$date_formatted}_score_rank_desc
-            ON power_ranking_entries_{$date_formatted}
-            USING btree
-            (score_rank DESC);
-
-            CREATE INDEX idx_power_ranking_entries_{$date_formatted}_speed_rank_asc
-            ON power_ranking_entries_{$date_formatted}
-            USING btree
-            (speed_rank);
 
             CREATE INDEX idx_power_ranking_entries_{$date_formatted}_steam_user_id
             ON power_ranking_entries_{$date_formatted}

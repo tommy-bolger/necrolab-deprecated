@@ -91,10 +91,10 @@ extends PageController {
         $this->page->addCssFiles(array(
             'reset.css',
             'bootstrap.css',
+            'main.css',
             '/jquery.dataTables.css',
             '/bootstrap-datepicker3.min.css',
-            '/datepicker.css',
-            'main.css'
+            '/datepicker.css'
         ));
         
         header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');

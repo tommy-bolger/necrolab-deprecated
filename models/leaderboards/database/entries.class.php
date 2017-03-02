@@ -68,21 +68,6 @@ extends BaseEntries {
             ON leaderboard_entries_{$date_formatted}
             USING btree
             (leaderboard_entry_details_id);
-
-            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_rank
-            ON leaderboard_entries_{$date_formatted}
-            USING btree
-            (rank);
-
-            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_score
-            ON leaderboard_entries_{$date_formatted}
-            USING btree
-            (score);
-
-            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_time
-            ON leaderboard_entries_{$date_formatted}
-            USING btree
-            (\"time\");
         ");
     }
     
