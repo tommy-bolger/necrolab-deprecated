@@ -36,7 +36,7 @@ extends Necrolab {
             elseif($leaderboard_record['is_deathless'] == 1) {
                 $rank_column_name = "{$character_column_prefix}_deathless_rank"; 
                 $rank_points_column_name = "{$character_column_prefix}_deathless_rank_points";
-                $total_column_name = 'deathless_total_wins';
+                $total_column_name = 'deathless_total_win_count';
                 $total_points_column_name = 'deathless_rank_points_total';
                 
                 $entry_score = $leaderboard_entry['win_count'];

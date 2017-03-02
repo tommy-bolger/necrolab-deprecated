@@ -70,13 +70,7 @@ extends PageController {
         }
     }
     
-    protected function addDataTableFiles() {
-        $this->page->addCssFiles(array(
-            '/jquery.dataTables.css',
-            '/bootstrap-datepicker3.min.css',
-            '/datepicker.css'
-        ));
-        
+    protected function addDataTableFiles() {        
         $this->page->addJavascriptFiles(array(
             'jquery.min.js',
             'datatables.min.js',
@@ -97,6 +91,9 @@ extends PageController {
         $this->page->addCssFiles(array(
             'reset.css',
             'bootstrap.css',
+            '/jquery.dataTables.css',
+            '/bootstrap-datepicker3.min.css',
+            '/datepicker.css',
             'main.css'
         ));
         

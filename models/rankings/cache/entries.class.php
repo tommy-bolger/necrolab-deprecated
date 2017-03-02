@@ -14,7 +14,7 @@ class Entries {
                     $power_ranking_entry = new DatabasePowerRankingEntry();
                     
                     $power_ranking_entry->setPropertiesFromArray($entry);
-                    
+
                     $power_ranking_entry->power_ranking_id = $power_ranking_id;
                     
                     DatabaseEntry::save($date, $power_ranking_entry);
