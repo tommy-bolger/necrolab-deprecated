@@ -295,7 +295,9 @@ table.dataTable td {
 .dataTables_wrapper .top_menu_item input,
 .dataTables_wrapper .dataTables_length select
 {
-    background-color: inherit !important;
+    font-family: NecroSans !important;
+    src: url(/assets/files/modules/necrolab/fonts/NecroSans.ttf) !important;
+    background-color: rgb(51, 51, 51);
     color: #FFFFFF !important;
 }
 
