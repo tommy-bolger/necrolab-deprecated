@@ -292,8 +292,10 @@ table.dataTable td {
 }
 
 .dataTables_wrapper .top_menu_item select,
+.dataTables_wrapper .top_menu_item select option,
 .dataTables_wrapper .top_menu_item input,
-.dataTables_wrapper .dataTables_length select
+.dataTables_wrapper .dataTables_length select,
+.dataTables_wrapper .dataTables_length select option,
 {
     font-family: NecroSans !important;
     src: url(/assets/files/modules/necrolab/fonts/NecroSans.ttf) !important;
