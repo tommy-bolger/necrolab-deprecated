@@ -35,7 +35,7 @@ extends Player {
             $redirect_uri = "http://dev.necrolab.com/players/player/login/{$this->oauth_name}";
         }
     
-        return ;
+        return $redirect_uri;
     }
     
     protected function getProvider() {
