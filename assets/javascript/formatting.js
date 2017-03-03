@@ -173,7 +173,7 @@ Formatting.getTwitchFancyLink = function(twitch_username) {
 };
 
 Formatting.getTwitchLoginLink = function() {    
-    return link_html = '<a href="/players/player/login/twitch" target="_blank"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithTwitch.png" /></a>';
+    return link_html = '<a href="/players/player/login/twitch"><img src="/assets/images/modules/necrolab/styles/default/connections/ConnectWithTwitch.png" /></a>';
 };
 
 /* ---------- Twitter ---------- */
