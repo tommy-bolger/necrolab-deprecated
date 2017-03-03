@@ -29,7 +29,7 @@ extends Player {
         $redirect_uri = '';
         
         if($this->framework->configuration->environment == 'production') {
-            $redirect_uri = "https://api.necrolab.com/players/player/login/{$this->oauth_name}";
+            $redirect_uri = "https://www.necrolab.com/players/player/login/{$this->oauth_name}";
         }
         else {
             $redirect_uri = "http://dev.necrolab.com/players/player/login/{$this->oauth_name}";
