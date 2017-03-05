@@ -472,8 +472,8 @@ Formatting.getSocialMedia = function(steamid, social_media) {
         social_media_html += Formatting.getTwitchLogoLink(social_media.twitch);
     }
     
-    if(social_media['twitter']['name'] != null) {
-        social_media_html += Formatting.getTwitterLogoLink(social_media.twitter.name);
+    if(social_media['twitter']['nickname'] != null) {
+        social_media_html += Formatting.getTwitterLogoLink(social_media.twitter.nickname);
     }
     
     /*if(social_media['nico_nico_url'] != null) {
