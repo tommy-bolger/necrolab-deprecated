@@ -17,7 +17,7 @@ function process_player_data(data, table) {
                     Formatting.getDiscordFancyLink(row_data.linked.discord.username, row_data.linked.discord.discriminator),
                     Formatting.getRedditFancyLink(row_data.linked.reddit),
                     Formatting.getTwitchFancyLink(row_data.linked.twitch),
-                    Formatting.getTwitterFancyLink(row_data.linked.twitter.name),
+                    Formatting.getTwitterFancyLink(row_data.linked.twitter.nickname),
                     Formatting.getYoutubeFancyLink(row_data.linked.youtube)
                 ]);
             }

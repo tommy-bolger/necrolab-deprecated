@@ -7,7 +7,7 @@ function process_info_data(data, table) {
         var discord_info = Formatting.getDiscordFancyLink(data.linked.discord.username, data.linked.discord.discriminator);
         var reddit_info = Formatting.getRedditFancyLink(data.linked.reddit);
         var twitch_info = Formatting.getTwitchFancyLink(data.linked.twitch);
-        var twitter_info = Formatting.getTwitterFancyLink(data.linked.twitter.name);
+        var twitter_info = Formatting.getTwitterFancyLink(data.linked.twitter.nickname);
         var youtube_info = Formatting.getYoutubeFancyLink(data.linked.youtube);
         
         if(NecroTable.user_api_key != null) {
