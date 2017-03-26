@@ -23,6 +23,10 @@ class Pbs {
     public static function getId($leaderboard_id, $steam_user_id, $score) {
         static::loadIds();
         
+        $leaderboard_id = (int)$leaderboard_id;
+        $steam_user_id = (int)$steam_user_id;
+        $score = (int)$score;
+        
         $steam_user_pb_id = NULL;
         
         if(isset(static::$pb_ids[$leaderboard_id][$steam_user_id][$score])) {
