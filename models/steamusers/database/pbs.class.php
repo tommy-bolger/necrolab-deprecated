@@ -31,7 +31,9 @@ extends BasePbs {
     
     public static function loadIds() {
         if(empty(static::$pb_ids)) {
-            $pb_ids = db()->getAll("
+            $database = db();
+        
+            $pb_ids = $database->prepareExecuteQuery("
                 SELECT
                     steam_user_pb_id,
                     leaderboard_id,
@@ -40,10 +42,8 @@ extends BasePbs {
                 FROM steam_user_pbs
             ");
             
-            if(!empty($pb_ids)) {
-                foreach($pb_ids as $pb_id) {
-                    static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
-                }
+            while($pb_id = $database->getStatementRow($pb_ids)) {
+                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id'])
             }
         }
     }

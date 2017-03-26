@@ -21,17 +21,18 @@ extends Cli {
         $leaderboard_entries = $leaderboard_entries_resultset->prepareExecuteQuery();
         
         while($leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {
-            $leaderboard_snapshot_id = $leaderboard_entry['leaderboard_snapshot_id'];
-            $steam_user_id = $leaderboard_entry['steam_user_id'];
-            $score = $leaderboard_entry['score'];
-            $rank = $leaderboard_entry['rank'];
+            $leaderboard_id = (int)$leaderboard_entry['leaderboard_id'];
+            $leaderboard_snapshot_id = (int)$leaderboard_entry['leaderboard_snapshot_id'];
+            $steam_user_id = (int)$leaderboard_entry['steam_user_id'];
+            $score = (int)$leaderboard_entry['score'];
+            $rank = (int)$leaderboard_entry['rank'];
         
-            $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_entry['leaderboard_id'], $steam_user_id, $score);
+            $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
             
             if(empty($steam_user_pb_id)) {
                 $steam_user_pb_record = new DatabaseSteamUserPb();
 
-                $steam_user_pb_record->leaderboard_id = $leaderboard_entry['leaderboard_id'];
+                $steam_user_pb_record->leaderboard_id = $leaderboard_id;
                 $steam_user_pb_record->steam_user_id = $steam_user_id;
                 $steam_user_pb_record->score = $score;
                 $steam_user_pb_record->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;

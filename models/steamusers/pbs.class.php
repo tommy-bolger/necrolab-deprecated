@@ -33,6 +33,11 @@ class Pbs {
     }
     
     public static function addId($leaderboard_id, $steam_user_id, $score, $steam_user_pb_id) {
+        $leaderboard_id = (int)$leaderboard_id;
+        $steam_user_id = (int)$steam_user_id;
+        $score = (int)$score;
+        $steam_user_pb_id = (int)$steam_user_pb_id;
+    
         static::$pb_ids[$leaderboard_id][$steam_user_id][$score] = $steam_user_pb_id;
     }
     
