@@ -21,4 +21,8 @@ extends Necrolab {
         
         return $run_result_id;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return $data_row['run_result'];
+    }
 }

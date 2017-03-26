@@ -13,25 +13,31 @@ function process_character_data(data, table) {
                 var character_rankings = row_data[character_name];
                 
                 var rank_row = [
+                    null,
                     row_data.rank,
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
                     Formatting.getNecrolabUserLink(row_data.player.steamid, row_data.player.personaname),
+                    'Ranks',
                     character_rankings.score.rank,
                     character_rankings.speed.rank,
                 ];
                 
                 var points_row = [
+                    '&nbsp;',
                     null,
                     null,
                     null,
+                    'Points',
                     Formatting.roundNumber(character_rankings.score.rank_points),
                     Formatting.roundNumber(character_rankings.speed.rank_points)
                 ];
                 
                 var score_row = [
+                    '&nbsp;',
                     null,
                     null,
                     null,
+                    'Score/Time/Wins',
                     character_rankings.score.score,
                     Formatting.convertSecondsToTime(character_rankings.speed.time)
                 ];
@@ -71,8 +77,10 @@ $(document).ready(function() {
     table.enableSearchField();
     table.enableCharacterField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/character/entries'));
     
@@ -92,6 +100,12 @@ $(document).ready(function() {
             name: 'personaname',
             title: 'Player',
             type: 'string'
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
         },
         {
             name: 'score_rank',

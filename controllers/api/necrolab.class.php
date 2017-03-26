@@ -36,6 +36,7 @@ use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Web as WebController;
 use \Modules\Necrolab\Models\Releases\Database\Releases as ReleasesModel;
+use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
 use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as ExternalSitesModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DayTypesModel;
@@ -45,6 +46,8 @@ extends WebController {
     protected $request = array();
 
     protected $release_name;
+    
+    protected $mode;
 
     protected $date;
     
@@ -86,6 +89,24 @@ extends WebController {
         }
         
         $this->request['release'] = $this->release_name;
+    }
+    
+    protected function setModeFromRequest() {
+        $mode = request()->get->mode;
+
+        if(strlen($mode) == 0) {
+            $this->framework->outputManualError(400, "Required property 'mode' was not found in the request.");
+        }
+    
+        $this->mode = $mode;
+        
+        $mode_record = ModesModel::getByName($this->mode);
+        
+        if(empty($mode_record)) {
+            $this->framework->outputManualError(400, "Specified property 'mode' is not a valid mode. Please refer to /api/modes for a list of valid values.");
+        }
+        
+        $this->request['mode'] = $this->mode;
     }
     
     protected function setDateFromRequest() {    
@@ -298,11 +319,10 @@ extends WebController {
         ));
         
         $resultset->process();
-        
-        $this->request['record_count'] = $resultset->getTotalNumberOfRecords();
 
         return array(
             'request' => $this->request,
+            'record_count' => $resultset->getTotalNumberOfRecords(),
             'data' => $resultset->getData()
         );
     }

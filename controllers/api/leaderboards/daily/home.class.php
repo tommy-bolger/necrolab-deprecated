@@ -38,6 +38,6 @@ use \Modules\Necrolab\Controllers\Api\Leaderboards\Leaderboards;
 class Home
 extends Leaderboards {
     protected function getResultSet() {
-        return LeaderboardsModel::getAllDailyResultset($this->release_name);
+        return LeaderboardsModel::getAllDailyResultset($this->release_name, $this->mode);
     }
 }

@@ -36,6 +36,10 @@ function NecroTable(dom_object) {
     this.release_field;
     this.release_field_value = 'amplified_dlc_early_access';
     
+    this.enable_mode_field = false;
+    this.mode_field;
+    this.mode_field_value = 'normal';
+    
     this.enable_site_field = false;
     this.site_field;
     this.site_field_value = '';
@@ -60,9 +64,14 @@ function NecroTable(dom_object) {
     this.enable_sort = false;
     this.sort_by;
     this.sort_direction = 'asc';
+    
+    this.enable_collapsible_rows = false;
+    this.number_of_collapsible_rows = 1;
 };
 
 NecroTable.user_api_key;
+
+NecroTable.current_date;
 
 NecroTable.release_field_values = [];
 
@@ -84,6 +93,28 @@ NecroTable.prototype.getReleaseRecord = function() {
     }
     
     return release_record;
+};
+
+NecroTable.mode_field_values = [];
+
+NecroTable.prototype.getModeRecord = function() {      
+    var mode_values_length = NecroTable.mode_field_values.length;
+    
+    var mode_record = [];
+    
+    if(mode_values_length > 0)  {
+        for(var index = 0; index < mode_values_length; index++) {
+            var mode_value = NecroTable.mode_field_values[index];
+            
+            if(mode_value.name == this.mode_field_value) {
+                mode_record = mode_value;
+                
+                break;
+            }
+        }
+    }
+    
+    return mode_record;
 };
 
 NecroTable.site_field_values = [];
@@ -282,6 +313,22 @@ NecroTable.prototype.setReleaseFromUrl = function() {
     }
 };
 
+NecroTable.prototype.enableModeField = function() {      
+    this.enable_mode_field = true;
+    
+    this.setModeFromUrl();
+};
+
+NecroTable.prototype.setModeFromUrl = function() {  
+    if(this.enable_mode_field && this.enable_history) {
+        var url_mode = this.url.getValue('mode');
+        
+        if(url_mode != null) {
+            this.mode_field_value = url_mode;
+        }
+    }
+};
+
 NecroTable.prototype.enableSiteField = function() {      
     this.enable_site_field = true;
     
@@ -346,6 +393,22 @@ NecroTable.prototype.setSearchFromUrl = function() {
     }
 };
 
+NecroTable.prototype.enableCollapsibleRows = function(number_of_collapsible_rows) {      
+    this.enable_collapsible_rows = true;
+    
+    this.number_of_collapsible_rows = number_of_collapsible_rows;
+    
+    this.prependColumn({
+        name: 'row_collapse_toggle',
+        title: '&nbsp;',
+        type: 'string',
+        className: 'expand_control',
+        orderable: false,
+        data: 0,
+        defaultContent: '<a class="expandable_row closed" href="#">&#x25B6;</a>'
+    });
+};
+
 NecroTable.prototype.resumeFromHistoryState = function() {      
     this.url = new Url();    
     
@@ -361,6 +424,8 @@ NecroTable.prototype.resumeFromHistoryState = function() {
     
     this.setReleaseFromUrl();
     
+    this.setModeFromUrl();
+    
     this.setSiteFromUrl();
     
     this.setCharacterFromUrl();
@@ -374,6 +439,11 @@ NecroTable.prototype.resumeFromHistoryState = function() {
 
 NecroTable.prototype.setAjaxUrl = function(ajax_url) {      
     this.ajax_url = ajax_url;
+};
+
+NecroTable.prototype.prependColumn = function(column) {      
+    this.columns.unshift(column);
+    this.column_names.unshift(column.name);
 };
 
 NecroTable.prototype.addColumn = function(column) {      
@@ -420,6 +490,14 @@ NecroTable.prototype.releaseRequestCallback = function(request, response) {
     this.render();
 };
 
+NecroTable.prototype.modeRequestCallback = function(request, response) {      
+    NecroTable.mode_field_values = response.data;
+
+    this.removeInitRequest('modes');
+    
+    this.render();
+};
+
 NecroTable.prototype.siteRequestCallback = function(request, response) {      
     NecroTable.site_field_values = response.data;
     
@@ -437,6 +515,14 @@ NecroTable.prototype.characterRequestCallback = function(request, response) {
     NecroTable.character_field_values = response.data;
     
     this.removeInitRequest('characters');
+    
+    this.render();
+};
+
+NecroTable.prototype.currentDateRequestCallback = function(request, response) {      
+    NecroTable.current_date = response.data;
+
+    this.removeInitRequest('current_date');
     
     this.render();
 };
@@ -467,6 +553,15 @@ NecroTable.prototype.initialize = function() {
         }, true);
     }
     
+    if(this.enable_mode_field && NecroTable.mode_field_values.length == 0) {
+        this.init_requests.push('modes');
+        
+        Request.get(Formatting.getNecrolabApiUrl('/modes'), {}, {
+            context: this,
+            method: 'modeRequestCallback'
+        }, true);
+    }
+    
     if(this.enable_site_field && NecroTable.site_field_values.length == 0) {
         this.init_requests.push('sites');
         
@@ -485,6 +580,15 @@ NecroTable.prototype.initialize = function() {
         }, true);
     }
     
+    if((this.enable_date_field || this.enable_date_range_fields) && NecroTable.current_date == null) {
+        this.init_requests.push('current_date');
+        
+        Request.get(Formatting.getNecrolabApiUrl('/current_date'), {}, {
+            context: this,
+            method: 'currentDateRequestCallback'
+        }, true);
+    }
+    
     if(this.enable_number_of_days_field && NecroTable.number_of_days_field_values.length == 0) {
         this.init_requests.push('number_of_days');
         
@@ -496,7 +600,7 @@ NecroTable.prototype.initialize = function() {
 };
 
 NecroTable.prototype.getDatepickerOptions = function() {
-    var latest_date = moment();
+    var latest_date = moment(NecroTable.current_date, 'YYYY-MM-DD');
     var datepicker_options = {
         autoclose: true,
         todayHighlight: true,
@@ -540,11 +644,11 @@ NecroTable.prototype.initializeDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.date_field_value != null) {
-        var date_field_value = moment(this.date_field_value);
+        var date_field_value = moment(this.date_field_value, 'YYYY-MM-DD');
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startdate);
-            var end_date = moment(datepicker_options.endDate);
+            var start_date = moment(datepicker_options.startDate, 'YYYY-MM-DD');
+            var end_date = moment(datepicker_options.endDate, 'YYYY-MM-DD');
             
             if(!date_field_value.isBetween(start_date, end_date)) {
                 date_field_value = moment(datepicker_options.defaultViewDate);
@@ -700,6 +804,10 @@ NecroTable.prototype.render = function() {
         custom_fields += "<'col' <'#" + instance.table_id + "_release.top_menu_item'>>";
     }
     
+    if(instance.enable_mode_field) {
+        custom_fields += "<'col' <'#" + instance.table_id + "_mode.top_menu_item'>>";
+    }
+    
     if(instance.enable_site_field) {
         custom_fields += "<'col' <'#" + instance.table_id + "_site.top_menu_item'>>";
     }
@@ -763,6 +871,48 @@ NecroTable.prototype.render = function() {
         ]];
     }
     
+    var row_callback; 
+    var draw_callback;
+    
+    if(instance.enable_collapsible_rows) {
+        row_callback = function(row, data, index) {
+            if(index % (instance.number_of_collapsible_rows + 1) != 0) {
+                $(row).hide();
+            }
+        }
+        
+        draw_callback = function(settings) {
+            $('.expandable_row').click(function(event) {                    
+                event.preventDefault();
+                
+                var table_rows = $('tr', instance.dom_object);
+                
+                var link_element = $(this);
+                
+                var current_row_index = link_element.parent().parent().index();
+                var start_hidden_row_index = current_row_index + 2;
+                var end_hidden_row_index = start_hidden_row_index + (instance.number_of_collapsible_rows - 1);
+                
+                for(var current_hidden_row_index = start_hidden_row_index; current_hidden_row_index <= end_hidden_row_index; current_hidden_row_index++) {
+                    var table_row = table_rows.eq(current_hidden_row_index).toggle();
+                }
+                
+                if(link_element.hasClass('closed')) {
+                    link_element.removeClass('closed');
+                    link_element.addClass('open');
+                    
+                    link_element.html('&#x25BC;');
+                }
+                else {
+                    link_element.removeClass('open');
+                    link_element.addClass('closed');
+                    
+                    link_element.html('&#x25B6;');
+                }
+            });
+        };
+    }    
+    
     /* ---------- Render the actual datatable ---------- */
 
     instance.datatable = instance.dom_object.DataTable({
@@ -817,6 +967,10 @@ NecroTable.prototype.render = function() {
                     request.release = instance.release_field_value;
                 }
                 
+                if(instance.enable_mode_field) {
+                    request.mode = instance.mode_field_value;
+                }
+                
                 if(instance.enable_site_field) {
                     request.site = instance.site_field_value;
                 }
@@ -857,8 +1011,8 @@ NecroTable.prototype.render = function() {
             },
             converters: {
                 'json NecroTable': function(data) {
-                    data.recordsTotal = data.request.record_count;
-                    data.recordsFiltered = data.request.record_count;
+                    data.recordsTotal = data.record_count;
+                    data.recordsFiltered = data.record_count;
                     
                     return data;
                 }
@@ -880,6 +1034,8 @@ NecroTable.prototype.render = function() {
             }
         },
         order: default_order,
+        rowCallback: row_callback,
+        drawCallback: draw_callback,
         initComplete: function(settings, json) {
             var table_id = $(this).attr('id');
             
@@ -983,6 +1139,44 @@ NecroTable.prototype.render = function() {
                 instance.initializeEndDateFieldPicker(true);
             }
             
+            instance.datatable.ajax.reload();
+        });
+    }
+    
+    /* ---------- Render the mode field if it's enabled ---------- */
+    
+    if(instance.enable_mode_field) {
+        var mode_field_container = $('#' + instance.table_id + '_mode');
+        
+        var mode_field_html = '<select class="form-control input-sm mode">';
+        
+        var mode_values_length = NecroTable.mode_field_values.length;
+        
+        for(var index = 0; index < mode_values_length; index++) {
+            var mode_value = NecroTable.mode_field_values[index];
+            
+            mode_field_html += '<option value="' + mode_value.name + '"';
+            
+            if(mode_value.name == instance.mode_field_value) {
+                mode_field_html += ' selected="selected"';
+            }
+            
+            mode_field_html += '>' + mode_value.display_name + '</option>';
+        }
+        
+        mode_field_html += '</select>';
+        
+        mode_field_container.html('\
+            <label> \
+            ' + mode_field_html + ' \
+            </label> \
+        ');
+        
+        instance.mode_field = mode_field_container.children("label").children('select');
+
+        instance.mode_field.bind('change', function(event) {
+            instance.mode_field_value = $(this).val();
+
             instance.datatable.ajax.reload();
         });
     }

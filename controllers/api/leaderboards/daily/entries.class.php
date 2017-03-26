@@ -40,6 +40,8 @@ extends BaseEntries {
     public function init() {       
         $this->setReleaseFromRequest();
         
+        $this->setModeFromRequest();
+        
         $this->setSiteFromRequest();
     
         $this->setDateFromRequest();
@@ -48,6 +50,6 @@ extends BaseEntries {
     }
 
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiAllDailyResultset($this->release_name, $this->date);
+        return LeaderboardEntriesModel::getApiAllDailyResultset($this->release_name, $this->mode, $this->date);
     }
 }

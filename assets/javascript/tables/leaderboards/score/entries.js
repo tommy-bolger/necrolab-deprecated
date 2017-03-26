@@ -1,6 +1,6 @@
-function set_table_title(request, response) {    
-    if(response.data[0] != null) {
-        $('#table_title').html(Formatting.getLeaderboardEntriesTitle(response.data[0]));
+function set_table_title(request, response) {  
+    if(response['data'] != null) {
+        $('#table_title').html(Formatting.getLeaderboardEntriesTitle(response.data));
     }
 }
 
@@ -22,9 +22,9 @@ function process_data(data, table) {
                     row_data.zone,
                     row_data.level,
                     row_data.win,
-                    null,
-                    row_data.seed,
-                    Formatting.getReplayFileHtml(row_data.replay_file)
+                    row_data.replay.run_result,
+                    row_data.replay.seed,
+                    Formatting.getReplayFileHtml(row_data.replay.replay_file)
                 ];
                 
                 processed_data.push(processed_row);
@@ -108,12 +108,12 @@ $(document).ready(function() {
     
     table.setDataProcessCallback(window, 'process_data');
     
-    Request.get('/api/leaderboards/leaderboard', {
+    Request.get(Formatting.getNecrolabApiUrl('/leaderboards/leaderboard'), {
         lbid: table.getUrl().getValue('lbid')
     }, {
         context: window,
         method: 'set_table_title'
-    });
+    }, true);
     
     table.render();
 });

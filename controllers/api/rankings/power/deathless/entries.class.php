@@ -38,6 +38,6 @@ use \Modules\Necrolab\Models\Rankings\Database\Entries as PowerRankingEntriesMod
 class Entries
 extends BaseEntries {
     protected function getResultSet() {
-        return PowerRankingEntriesModel::getAllDeathlessResultset($this->release_name, $this->date);
+        return PowerRankingEntriesModel::getAllDeathlessResultset($this->release_name, $this->mode, $this->date);
     }
 }

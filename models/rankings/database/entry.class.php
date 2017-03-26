@@ -32,17 +32,19 @@ extends BaseEntry {
             foreach($active_characters as $active_character) {
                 $character_name = $active_character['name'];
             
+                $score_pb_name = "{$character_name}_score_pb";
+                $speed_pb_name = "{$character_name}_speed_pb";
+            
+                $resultset->addLeftJoinCriteria("steam_user_pbs {$score_pb_name} ON {$score_pb_name}.steam_user_pb_id = pre.{$score_pb_name}_id");
+                $resultset->addLeftJoinCriteria("steam_user_pbs {$speed_pb_name} ON {$speed_pb_name}.steam_user_pb_id = pre.{$speed_pb_name}_id");
+            
                 $resultset->addSelectFields(array(
                     array(
                         'field' => "pre.{$character_name}_score_rank",
                         'alias' => "{$character_name}_score_rank",
                     ),
                     array(
-                        'field' => "pre.{$character_name}_score_rank_points",
-                        'alias' => "{$character_name}_score_rank_points",
-                    ),
-                    array(
-                        'field' => "pre.{$character_name}_score",
+                        'field' => "{$score_pb_name}.score",
                         'alias' => "{$character_name}_score",
                     ),
                     array(
@@ -50,35 +52,27 @@ extends BaseEntry {
                         'alias' => "{$character_name}_speed_rank",
                     ),
                     array(
-                        'field' => "pre.{$character_name}_speed_rank_points",
-                        'alias' => "{$character_name}_speed_rank_points",
-                    ),
-                    array(
-                        'field' => "pre.cadence_speed_time",
+                        'field' => "{$speed_pb_name}.time",
                         'alias' => "{$character_name}_speed_time",
                     ),
                     array(
                         'field' => "pre.{$character_name}_rank",
                         'alias' => "{$character_name}_rank",
-                    ),
-                    array(
-                        'field' => "pre.{$character_name}_rank_points",
-                        'alias' => "{$character_name}_rank_points",
                     )
                 ));
                 
                 if($character_name != 'all' && $character_name != 'story') {
+                    $deathless_pb_name = "{$character_name}_deathless_pb";
+                    
+                    $resultset->addLeftJoinCriteria("steam_user_pbs {$deathless_pb_name} ON {$deathless_pb_name}.steam_user_pb_id = pre.{$deathless_pb_name}_id");
+                
                     $resultset->addSelectFields(array(
                         array(
                             'field' => "pre.{$character_name}_deathless_rank",
                             'alias' => "{$character_name}_deathless_rank",
                         ),
                         array(
-                            'field' => "pre.{$character_name}_deathless_rank_points",
-                            'alias' => "{$character_name}_deathless_rank_points",
-                        ),
-                        array(
-                            'field' => "pre.{$character_name}_deathless_win_count",
+                            'field' => "{$deathless_pb_name}.win_count",
                             'alias' => "{$character_name}_deathless_win_count",
                         ),
                     ));
@@ -88,48 +82,20 @@ extends BaseEntry {
         
         $resultset->addSelectFields(array(
             array(
-                'field' => 'pre.score_total',
-                'alias' => 'score_total',
-            ),
-            array(
                 'field' => 'pre.score_rank',
                 'alias' => 'score_rank',
-            ),
-            array(
-                'field' => 'pre.score_rank_points_total',
-                'alias' => 'score_rank_points_total',
-            ),
-            array(
-                'field' => 'pre.deathless_total_win_count',
-                'alias' => 'deathless_total_win_count',
             ),
             array(
                 'field' => 'pre.deathless_rank',
                 'alias' => 'deathless_rank',
             ),
             array(
-                'field' => 'pre.deathless_rank_points_total',
-                'alias' => 'deathless_rank_points_total',
-            ),
-            array(
-                'field' => 'pre.speed_total_time',
-                'alias' => 'speed_total_time',
-            ),
-            array(
                 'field' => 'pre.speed_rank',
                 'alias' => 'speed_rank',
             ),
             array(
-                'field' => 'pre.speed_rank_points_total',
-                'alias' => 'speed_rank_points_total',
-            ),
-            array(
                 'field' => 'pre.rank',
                 'alias' => 'rank',
-            ),
-            array(
-                'field' => 'pre.total_points',
-                'alias' => 'total_points',
             )
         ));
     }

@@ -39,6 +39,8 @@ class Entries
 extends Daily {    
     public function init() {
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->setDateFromRequest();
         
@@ -50,7 +52,7 @@ extends Daily {
     }
 
     protected function getResultSet() {
-        return DailyRankingEntriesModel::getAllBaseResultset($this->release_name, $this->date, $this->number_of_days);
+        return DailyRankingEntriesModel::getAllBaseResultset($this->release_name, $this->mode, $this->date, $this->number_of_days);
     }
     
     public function formatResponse($data) {        

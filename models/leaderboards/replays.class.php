@@ -8,6 +8,8 @@ use \RegexIterator;
 use \RecursiveRegexIterator;
 use \Framework\Modules\Module;
 use \Framework\Utilities\File;
+use \Modules\Necrolab\Models\Leaderboards\ReplayVersions;
+use \Modules\Necrolab\Models\Leaderboards\RunResults;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Replays
@@ -226,5 +228,26 @@ extends Necrolab {
         static::deleteS3QueueFile($ugcid);
         
         return static::getS3QueueZippedFilePath($ugcid);
+    }
+    
+    public static function getFormattedApiRecord($data_row) {
+        $processed_row = array();
+        
+        $ugcid = $data_row['ugcid'];
+        
+        $processed_row['ugcid'] = $ugcid;
+        $processed_row['version'] = ReplayVersions::getFormattedApiRecord($data_row);
+        $processed_row['seed'] = $data_row['seed'];
+        $processed_row['run_result'] = RunResults::getFormattedApiRecord($data_row);
+        
+        $replay_url = NULL;
+        
+        if(!empty($ugcid) && !empty($data_row['uploaded_to_s3'])) {
+            $replay_url = "https://necrolab.s3.amazonaws.com/replays/{$ugcid}.zip";
+        }
+        
+        $processed_row['file_url'] = $replay_url;
+
+        return $processed_row;
     }
 }

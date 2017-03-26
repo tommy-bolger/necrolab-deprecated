@@ -166,7 +166,7 @@ Formatting.getTwitchFancyLink = function(twitch_username) {
     var link_html = null;
     
     if(twitch_username != null) {
-        link_html = '<a href="' + Formatting.getTwitchUrl(twitch_username) + '">' + Formatting.getTwitchLogo() + '&nbsp;' + twitch_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getTwitchUrl(twitch_username) + '">' + Formatting.getTwitchLogo() + '&nbsp;' + twitch_username + '</a></span>';
     }
     
     return link_html;
@@ -210,7 +210,7 @@ Formatting.getTwitterFancyLink = function(twitter_username) {
     var link_html = null;
     
     if(twitter_username != null) {
-        link_html = '<a href="' + Formatting.getTwitterUrl(twitter_username) + '" target="_blank">' + Formatting.getTwitterLogo() + '&nbsp;' + twitter_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getTwitterUrl(twitter_username) + '" target="_blank">' + Formatting.getTwitterLogo() + '&nbsp;' + twitter_username + '</a></span>';
     }
     
     return link_html;
@@ -254,7 +254,7 @@ Formatting.getHitboxFancyLink = function(hitbox_username) {
     var link_html = null;
     
     if(hitbox_username != null) {
-        link_html = '<a href="' + Formatting.getHitboxUrl(hitbox_username) + '" target="_blank">' + Formatting.getHitboxLogo() + '&nbsp;' + hitbox_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getHitboxUrl(hitbox_username) + '" target="_blank">' + Formatting.getHitboxLogo() + '&nbsp;' + hitbox_username + '</a></span>';
     }
     
     return link_html;
@@ -298,7 +298,7 @@ Formatting.getBeamproFancyLink = function(beampro_username) {
     var link_html = null;
     
     if(beampro_username != null) {
-        link_html = '<a href="' + Formatting.getBeamproUrl(beampro_username) + '" target="_blank">' + Formatting.getBeamproLogo() + '&nbsp;' + beampro_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getBeamproUrl(beampro_username) + '" target="_blank">' + Formatting.getBeamproLogo() + '&nbsp;' + beampro_username + '</a></span>';
     }
     
     return link_html;
@@ -364,7 +364,7 @@ Formatting.getYoutubeFancyLink = function(youtube_username) {
     var link_html = null;
     
     if(youtube_username != null) {
-        link_html = '<a href="' + Formatting.getYoutubeUrl(youtube_username) + '" target="_blank">' + Formatting.getYoutubeLogo() + '&nbsp;' + youtube_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getYoutubeUrl(youtube_username) + '" target="_blank">' + Formatting.getYoutubeLogo() + '&nbsp;' + youtube_username + '</a></span>';
     }
     
     return link_html;
@@ -408,7 +408,7 @@ Formatting.getRedditFancyLink = function(reddit_username) {
     var link_html = null;
     
     if(reddit_username != null) {
-        link_html = '<a href="' + Formatting.getRedditUrl(reddit_username) + '" target="_blank">' + Formatting.getRedditLogo() + '&nbsp;' + reddit_username + '</a>';
+        link_html = '<span class="no_wrap"><a href="' + Formatting.getRedditUrl(reddit_username) + '" target="_blank">' + Formatting.getRedditLogo() + '&nbsp;' + reddit_username + '</a></span>';
     }
     
     return link_html;
@@ -428,7 +428,7 @@ Formatting.getNicoNicoFancyLink = function(nico_nico_url) {
     var link_html = null;
     
     if(nico_nico_url != null) {
-        link_html = '<a href="' + nico_nico_url + '" target="_blank">' + Formatting.getNicoNicoLogo() + '" /></a>';
+        link_html = '<span class="no_wrap"><a href="' + nico_nico_url + '" target="_blank">' + Formatting.getNicoNicoLogo() + '" /></a></span>';
     }
     
     return link_html;
@@ -495,17 +495,21 @@ Formatting.getSocialMedia = function(steamid, social_media) {
 
 /* ---------- Table Titles ---------- */
 
-Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {
+Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {    
     var table_title = '';
 
-    if(leaderboard_record.character_name == 'all') {
-        table_title = 'All Chars';
+    if(leaderboard_record.character == 'all') {
+        table_title += 'All Chars';
     }
-    else if(leaderboard_record.character_name == 'story') {
-        table_title = 'Story';
+    else if(leaderboard_record.character == 'story') {
+        table_title += 'Story';
     }
     else {
-        table_title = Formatting.getCharacterImageHtml(leaderboard_record.character_name);
+        table_title += Formatting.getCharacterImageHtml(leaderboard_record.character);
+    }
+    
+    if(leaderboard_record['mode'] != null) {
+        table_title += ' ' + leaderboard_record.mode.display_name + ' Mode ';
     }
     
     table_title += ' ';

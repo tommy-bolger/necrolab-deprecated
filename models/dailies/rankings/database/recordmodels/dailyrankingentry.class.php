@@ -24,15 +24,13 @@ extends RecordModel {
     
     protected $total_points;
     
-    protected $points_per_day;
-    
     protected $total_dailies;
     
     protected $total_wins = 0;
     
-    protected $average_rank;
-    
     protected $sum_of_ranks;
+    
+    protected $total_score;
     
     protected $rank;
 }

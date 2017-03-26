@@ -36,13 +36,18 @@ use \Exception;
 use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\Rankings\Database\Entries as PowerRankingEntriesModel;
 use \Modules\Necrolab\Models\Rankings\Database\Entry as PowerRankingEntryModel;
+use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
 
 class Entries
 extends Power {    
     public function init() {
-        parent::init();
+        $this->setSteamidFromRequest();
+    
+        $this->setReleaseFromRequest();
         
         $this->setDateRangeFromRequest();
+    
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
@@ -59,6 +64,8 @@ extends Power {
                 $processed_row = array();
                 
                 $processed_row['date'] = $row['date'];
+                
+                $processed_row['mode'] = ModesModel::getFormattedApiRecord($row);
                 
                 $processed_row['steamid'] = $row['steamid'];
             

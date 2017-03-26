@@ -38,12 +38,4 @@ use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
 class Rankings
 extends Player {
     protected $limit = 30;
-    
-    public function init() {
-        $this->setSteamidFromRequest();
-    
-        $this->setReleaseFromRequest();
-    
-        $this->getResultsetStateFromRequest();
-    }
 }

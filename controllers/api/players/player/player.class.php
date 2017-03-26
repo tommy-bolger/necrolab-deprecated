@@ -46,11 +46,13 @@ extends Players {
             $this->framework->outputManualError(400, "Required property 'steamid' was not found in the request.");
         }
     
-        $this->steamid = request()->get->getVariable('steamid', 'integer');
+        $steamid = request()->get->getVariable('steamid', 'integer');
         
-        if(empty($this->steamid)) {
+        if(empty($steamid)) {
             $this->framework->outputManualError(400, "Required property 'steamid' is not a valid 64-bit integer.");
         }
+        
+        $this->steamid = request()->get->steamid;
         
         $this->request['steamid'] = $this->steamid;
     }

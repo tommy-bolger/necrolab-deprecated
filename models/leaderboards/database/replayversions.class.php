@@ -35,4 +35,13 @@ extends BaseReplayVersions {
             'replay_version_id' => $replay_version_id
         ), '', 'replay_version_update');
     }
+    
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'srv.name',
+                'alias' => 'replay_version'
+            )
+        ));
+    }
 }

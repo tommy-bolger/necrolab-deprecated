@@ -18,6 +18,7 @@ function process_daily_data(data, table) {
                     row_data.top_20_ranks,
                     row_data.top_50_ranks,
                     row_data.top_100_ranks,
+                    row_data.total_score,
                     Formatting.roundNumber(row_data.total_points),
                     Formatting.roundNumber(row_data.points_per_day),
                     row_data.total_dailies,
@@ -41,6 +42,7 @@ $(document).ready(function() {
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableNumberOfDaysField();
     
@@ -94,13 +96,18 @@ $(document).ready(function() {
             type: 'num-fmt'
         },
         {
+            name: 'total_score',
+            title: 'Total<br />Score',
+            type: 'num-fmt'
+        },
+        {
             name: 'total_points',
             title: 'Points',
             type: 'num-fmt'
         },
         {
             name: 'points_per_day',
-            title: 'Points/Day',
+            title: 'Points<br />Per<br />Day',
             type: 'num-fmt'
         },
         {

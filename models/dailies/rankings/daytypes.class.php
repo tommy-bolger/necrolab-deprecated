@@ -59,7 +59,7 @@ extends Necrolab {
                 
                 $active_day_type['start_date'] = $day_type_start_date;
             
-                $active_day_types[] = $active_day_type;
+                $active_day_types[$active_day_type['daily_ranking_day_type_id']] = $active_day_type;
             }
         }
         

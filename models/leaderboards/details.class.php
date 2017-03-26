@@ -20,4 +20,8 @@ extends Necrolab {
         
         return $leaderboard_entry_details_id;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return $data_row['details'];
+    }
 }

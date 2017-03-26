@@ -40,13 +40,19 @@ extends Rankings {
     protected $number_of_days;
 
     public function init() {    
-        parent::init();
+        $this->setSteamidFromRequest();
+    
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
+    
+        $this->getResultsetStateFromRequest();
     
         $this->setNumberOfDaysFromRequest();
     }
 
     protected function getResultSet() {
-        return DailyRankingsModel::getSteamUserBaseResultset($this->release_name, $this->steamid, $this->number_of_days);
+        return DailyRankingsModel::getSteamUserBaseResultset($this->steamid, $this->release_name, $this->mode, $this->number_of_days);
     }
     
     public function formatResponse($data) {        

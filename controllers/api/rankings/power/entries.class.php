@@ -41,12 +41,14 @@ class Entries
 extends Necrolab {
     public function init() {
         parent::init();
+        
+        $this->setModeFromRequest();
     
         $this->setSiteFromRequest();
     }
 
     protected function getResultSet() {
-        return PowerRankingEntriesModel::getAllBaseResultset($this->release_name, $this->date);
+        return PowerRankingEntriesModel::getAllBaseResultset($this->release_name, $this->mode, $this->date);
     }
     
     public function formatResponse($data) {        

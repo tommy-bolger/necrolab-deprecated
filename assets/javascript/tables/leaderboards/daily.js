@@ -16,9 +16,9 @@ function process_data(data, table) {
                     row_data.zone,
                     row_data.level,
                     row_data.win,
-                    null,
-                    row_data.seed,
-                    null
+                    row_data.replay.run_result,
+                    row_data.replay.seed,
+                    Formatting.getReplayFileHtml(row_data.replay.replay_file)
                 ];
                 
                 processed_data.push(processed_row);
@@ -39,6 +39,7 @@ $(document).ready(function() {
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
     

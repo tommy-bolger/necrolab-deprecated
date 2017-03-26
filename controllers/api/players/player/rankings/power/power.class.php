@@ -37,8 +37,18 @@ use \Modules\Necrolab\Models\Rankings\Database\Rankings as PowerRankingsModel;
 
 class Power
 extends Rankings {
+    public function init() {
+        $this->setSteamidFromRequest();
+    
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
+    
+        $this->getResultsetStateFromRequest();
+    }
+
     protected function getResultSet() {
-        return PowerRankingsModel::getSteamUserBaseResultset($this->release_name, $this->steamid);
+        return PowerRankingsModel::getSteamUserBaseResultset($this->release_name, $this->mode, $this->steamid);
     }
     
     public function formatResponse($data) {        

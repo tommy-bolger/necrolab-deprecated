@@ -39,12 +39,14 @@ class Power
 extends Necrolab {
     public function init() {
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return PowerRankingsModel::getAllBaseResultset($this->release_name);
+        return PowerRankingsModel::getAllBaseResultset($this->release_name, $this->mode);
     }
     
     public function formatResponse($data) {        

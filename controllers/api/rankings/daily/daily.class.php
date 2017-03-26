@@ -39,12 +39,14 @@ class Daily
 extends Necrolab {
     public function init() {
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->setNumberOfDaysFromRequest();
     }
 
     protected function getResultSet() {
-        return DailyRankingsModel::getAllBaseResultset($this->release_name, $this->number_of_days);
+        return DailyRankingsModel::getAllBaseResultset($this->release_name, $this->mode, $this->number_of_days);
     }
     
     public function formatResponse($data) {        

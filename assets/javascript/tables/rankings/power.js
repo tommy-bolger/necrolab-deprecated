@@ -11,27 +11,33 @@ function process_power_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     row_data.rank,
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
                     Formatting.getNecrolabUserLink(row_data.player.steamid, row_data.player.personaname),
+                    'Ranks',
                     row_data.score.rank,
                     row_data.speed.rank,
                     row_data.deathless.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
                     null,
+                    'Points',
                     Formatting.roundNumber(row_data.score.rank_points),
                     Formatting.roundNumber(row_data.speed.rank_points),
                     Formatting.roundNumber(row_data.deathless.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
                     null,
+                    'Score/Time/Wins',
                     row_data.score.total_score,
                     Formatting.convertSecondsToTime(row_data.speed.total_time),
                     row_data.deathless.total_win_count
@@ -53,8 +59,10 @@ $(document).ready(function() {
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/entries'));
     
@@ -74,6 +82,12 @@ $(document).ready(function() {
             name: 'personaname',
             title: 'Player',
             type: 'string'
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
         },
         {
             name: 'score_rank',

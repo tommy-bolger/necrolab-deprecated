@@ -11,8 +11,10 @@ function process_speed_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     Formatting.getNecrolabUserLink(row_data.player.steamid, row_data.player.personaname),
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
+                    'Ranks',
                     row_data.speed.rank,
                     row_data.cadence.speed.rank,
                     row_data.bard.speed.rank,
@@ -25,13 +27,16 @@ function process_speed_data(data, table) {
                     row_data.dorian.speed.rank,
                     row_data.coda.speed.rank,
                     row_data.nocturna.speed.rank,
+                    row_data.diamond.speed.rank,
                     row_data.all.speed.rank,
                     row_data.story.speed.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
+                    'Points',
                     Formatting.roundNumber(row_data.speed.rank_points),
                     Formatting.roundNumber(row_data.cadence.speed.rank_points),
                     Formatting.roundNumber(row_data.bard.speed.rank_points),
@@ -44,13 +49,16 @@ function process_speed_data(data, table) {
                     Formatting.roundNumber(row_data.dorian.speed.rank_points),
                     Formatting.roundNumber(row_data.coda.speed.rank_points),
                     Formatting.roundNumber(row_data.nocturna.speed.rank_points),
+                    Formatting.roundNumber(row_data.diamond.speed.rank_points),
                     Formatting.roundNumber(row_data.all.speed.rank_points),
                     Formatting.roundNumber(row_data.story.speed.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
+                    'Times',
                     Formatting.convertSecondsToTime(row_data.speed.total_time),
                     Formatting.convertSecondsToTime(row_data.cadence.speed.time),
                     Formatting.convertSecondsToTime(row_data.bard.speed.time),
@@ -63,6 +71,7 @@ function process_speed_data(data, table) {
                     Formatting.convertSecondsToTime(row_data.dorian.speed.time),
                     Formatting.convertSecondsToTime(row_data.coda.speed.time),
                     Formatting.convertSecondsToTime(row_data.nocturna.speed.time),
+                    Formatting.convertSecondsToTime(row_data.diamond.speed.time),
                     Formatting.convertSecondsToTime(row_data.all.speed.time),
                     Formatting.convertSecondsToTime(row_data.story.speed.time)
                 ]);
@@ -82,8 +91,10 @@ $(document).ready(function() {
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/speed/entries'));
     
@@ -95,6 +106,12 @@ $(document).ready(function() {
         },
         {
             name: 'social_media',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
             title: '&nbsp;',
             type: 'string',
             orderable: false
@@ -157,6 +174,11 @@ $(document).ready(function() {
         {
             name: 'nocturna_speed_rank',
             title: Formatting.getCharacterImageHtml('nocturna'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'diamond_speed_rank',
+            title: Formatting.getCharacterImageHtml('diamond'),
             type: 'num-fmt'
         },
         {

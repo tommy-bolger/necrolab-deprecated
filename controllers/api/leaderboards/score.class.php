@@ -37,6 +37,6 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 class Score
 extends Leaderboards {
     protected function getResultSet() {
-        return LeaderboardsModel::getAllScoreResultset($this->release_name);
+        return LeaderboardsModel::getAllScoreResultset($this->release_name, $this->mode);
     }
 }

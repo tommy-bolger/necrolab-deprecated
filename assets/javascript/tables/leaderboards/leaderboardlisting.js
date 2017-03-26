@@ -4,6 +4,7 @@ function LeaderboardListing(type) {
     this.table = new NecroTable($('#entries_table'));
 
     this.table.enableReleaseField();
+    this.table.enableModeField();
     this.table.enableHistory();
     
     this.table.setAjaxUrl(Formatting.getNecrolabApiUrl('/leaderboards/' + this.type));
@@ -68,6 +69,11 @@ function LeaderboardListing(type) {
             name: 'nocturna',
             title: '&nbsp;',
             type: 'string'
+        },
+        {
+            name: 'diamond',
+            title: '&nbsp;',
+            type: 'string'
         }
     ];
     
@@ -100,6 +106,7 @@ LeaderboardListing.prototype.process_data = function(data, players_table) {
         
         if(data_length > 0) {
             var blank_row = [
+                null,
                 null,
                 null,
                 null,

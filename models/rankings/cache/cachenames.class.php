@@ -8,6 +8,8 @@ class CacheNames
 extends BaseCacheNames {            
     const POWER_RANKING = 'p';
     
+    const MODES = 'mo';
+    
     const TOTAL_POINTS = 'tp';
     
     const SCORE_POINTS = 'scp';
@@ -18,123 +20,41 @@ extends BaseCacheNames {
     
     const CHARACTER_POINTS = 'cp';
     
-    const SCORE = 'sc';
-    
-    const SPEED = 's';
-    
-    const DEATHLESS = 'd';
-    
     const CHARACTER = 'c';
     
-    const RANKING = 'r';
-    
-    /* ---------- Power Rankings ---------- */
-    
-    public static function getPowerRankingName() {
-        return self::POWER_RANKING;
+    public static function getPowerRankingModesName($release_id) {
+        return self::POWER_RANKING . ":{$release_id}:" . self::MODES;
     }
     
-    public static function getPowerEntriesName() {
-        return self::POWER_RANKING . ':' . BaseCacheNames::ENTRIES;
+    public static function getPowerRankingName($release_id, $mode_id) {
+        return self::POWER_RANKING . ":{$release_id}:{$mode_id}";
     }
     
-    public static function getPowerEntriesWildcardName() {
-        return self::POWER_RANKING . ':' . BaseCacheNames::ENTRIES . ':*';
+    public static function getPowerEntriesName($release_id, $mode_id) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . BaseCacheNames::ENTRIES;
     }
     
-    public static function getPowerRankingEntryName($steamid) {
-        return self::getPowerEntriesName() . ":{$steamid}";
+    public static function getPowerRankingEntryName($release_id, $mode_id, $steam_user_id) {
+        return self::getPowerEntriesName($release_id, $mode_id) . ":{$steam_user_id}";
     }
     
-    public static function getPowerEntriesFilterName() {
-        return self::getPowerEntriesName() . ':' . BaseCacheNames::FILTER;
+    public static function getPowerTotalPointsName($release_id, $mode_id) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . self::TOTAL_POINTS;
     }
     
-    public static function getPowerTotalPointsName() {
-        return self::POWER_RANKING . ':' . self::TOTAL_POINTS;
+    public static function getScorePointsName($release_id, $mode_id) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . self::SCORE_POINTS;
     }
     
-    /* ---------- Score Rankings ---------- */
-    
-    public static function getScoreName() {
-        return self::POWER_RANKING . ':' . self::SCORE;
+    public static function getSpeedPointsName($release_id, $mode_id) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . self::SPEED_POINTS;
     }
     
-    public static function getScoreRankingName() {
-        return self::getScoreName() . ':' . self::RANKING;
+    public static function getDeathlessPointsName($release_id, $mode_id) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . self::DEATHLESS_POINTS;
     }
     
-    public static function getScoreEntriesName() {
-        return self::getScoreName() . ':' . BaseCacheNames::ENTRIES;
-    }
-    
-    public static function getScoreEntryName($steamid) {
-        return self::getScoreEntriesName() . ":{$steamid}";
-    }
-    
-    public static function getScoreEntriesFilterName() {
-        return self::getScoreEntriesName() . ':' . BaseCacheNames::FILTER;
-    }
-    
-    public static function getScorePointsName() {
-        return self::getScoreName() . ':' . self::SCORE_POINTS;
-    }
-    
-    /* ---------- Speed Rankings ---------- */
-    
-    public static function getSpeedName() {
-        return self::POWER_RANKING . ':' . self::SPEED;
-    }
-    
-    public static function getSpeedRankingName() {
-        return self::getSpeedName() . ':' . self::RANKING;
-    }
-    
-    public static function getSpeedEntriesName() {
-        return self::getSpeedName() . ':' . BaseCacheNames::ENTRIES;
-    }
-    
-    public static function getSpeedEntryName($steamid) {
-        return self::getSpeedEntriesName() . ":{$steamid}";
-    }
-    
-    public static function getSpeedEntriesFilterName() {
-        return self::getSpeedEntriesName() . ':' . BaseCacheNames::FILTER;
-    }
-    
-    public static function getSpeedPointsName() {
-        return self::getSpeedName() . ':' . self::SPEED_POINTS;
-    }
-    
-    /* ---------- Deathless Rankings ---------- */
-    
-    public static function getDeathlessName() {
-        return self::POWER_RANKING . ':' . self::DEATHLESS;
-    }
-    
-    public static function getDeathlessRankingName() {
-        return self::getDeathlessName() . ':' . self::RANKING;
-    }
-    
-    public static function getDeathlessEntriesName() {
-        return self::getDeathlessName() . ':' . BaseCacheNames::ENTRIES;
-    }
-    
-    public static function getDeathlessEntryName($steamid) {
-        return self::getDeathlessEntriesName() . ":{$steamid}";
-    }
-    
-    public static function getDeathlessEntriesFilterName() {
-        return self::getDeathlessEntriesName() . ':' . BaseCacheNames::FILTER;
-    }
-    
-    public static function getDeathlessPointsName() {
-        return self::getDeathlessName() . ':' . self::DEATHLESS_POINTS;
-    }
-    
-    /* ---------- Character Rankings ---------- */
-    
-    public static function getCharacterPointsName($character_name) {
-        return self::POWER_RANKING . ':' . self::CHARACTER . ":{$character_name}:" . self::CHARACTER_POINTS;
+    public static function getCharacterPointsName($release_id, $mode_id, $character_name) {
+        return self::getPowerRankingName($release_id, $mode_id) . ':' . self::CHARACTER . ":{$character_name}:" . self::CHARACTER_POINTS;
     }
 }

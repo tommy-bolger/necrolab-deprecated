@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Models\Leaderboards;
 
 use \DateTime;
+use \DateInterval;
 use \Exception;
 use \SimpleXMLElement;
 use \RecursiveDirectoryIterator;
@@ -11,6 +12,7 @@ use \RecursiveRegexIterator;
 use \Framework\Data\XMLWrite;
 use \Framework\Utilities\File;
 use \Framework\Modules\Module;
+use \Modules\Necrolab\Models\Modes\Modes;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Leaderboards
@@ -231,6 +233,23 @@ extends Necrolab {
         unlink($snapshot_path);
     }
     
+    public static function getXmlUrls() {
+        $start_date = new DateTime('2017-01-01');
+        $end_date = new DateTime(date('Y-m-d'));
+        
+        $current_date = clone $start_date;
+        
+        $xml_urls = array();
+        
+        while($current_date <= $end_date) {
+            $xml_urls[] = "https://necrolab.s3.amazonaws.com/leaderboard_xml/{$current_date->format('Y-m-d')}.zip";
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return $xml_urls;
+    }
+    
     public static function getFormattedApiRecord($data_row) {
         return array(
             'lbid' => (int)$data_row['lbid'],
@@ -248,7 +267,8 @@ extends Necrolab {
             'is_co_op' => (int)$data_row['is_co_op'],
             'is_custom' => (int)$data_row['is_custom'],
             'is_power_ranking' => (int)$data_row['is_power_ranking'],
-            'is_daily_ranking' => (int)$data_row['is_daily_ranking']
+            'is_daily_ranking' => (int)$data_row['is_daily_ranking'],
+            'mode' => Modes::getFormattedApiRecord($data_row)
         );
     }
 }

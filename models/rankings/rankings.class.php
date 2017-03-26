@@ -9,17 +9,17 @@ class Rankings
 extends Necrolab {
     protected static $rankings = array();
 
-    protected static function load($release_id, DateTime $date) {}
+    protected static function load($release_id, $mode_id, DateTime $date) {}
 
-    public static function get($release_id, DateTime $date) {
-        static::load($release_id, $date);
+    public static function get($release_id, $mode_id, DateTime $date) {
+        static::load($release_id, $mode_id, $date);
         
         $date_formatted = $date->format('Y-m-d');
         
         $ranking = array();
         
-        if(isset(static::$rankings[$release_id][$date_formatted])) {
-            $ranking = static::$rankings[$release_id][$date_formatted];
+        if(isset(static::$rankings[$release_id][$mode_id][$date_formatted])) {
+            $ranking = static::$rankings[$release_id][$mode_id][$date_formatted];
         }
         
         return $ranking;

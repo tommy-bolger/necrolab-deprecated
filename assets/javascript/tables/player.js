@@ -120,7 +120,10 @@ function process_power_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     row_data.date,
+                    row_data.mode.display_name,
+                    'Ranks',
                     row_data.rank,
                     row_data.score.rank,
                     row_data.speed.rank,
@@ -128,15 +131,21 @@ function process_power_data(data, table) {
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
+                    'Points',
+                    Formatting.roundNumber(row_data.total_points),
                     Formatting.roundNumber(row_data.score.rank_points),
                     Formatting.roundNumber(row_data.speed.rank_points),
                     Formatting.roundNumber(row_data.deathless.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Score/Time/Wins',
                     null,
                     row_data.score.total_score,
                     Formatting.convertSecondsToTime(row_data.speed.total_time),
@@ -158,7 +167,7 @@ function initialize_power_table() {
     table.enableSort('date', 'desc');
     table.enableReleaseField();
     table.enableDateRangeFields();
-    
+    table.enableCollapsibleRows(2);    
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/entries'));
     
@@ -171,8 +180,20 @@ function initialize_power_table() {
             type: 'string'
         },
         {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
+        },
+        {
             name: 'rank',
-            title: 'Rank',
+            title: 'Overall',
             type: 'num-fmt'
         },
         {
@@ -208,7 +229,10 @@ function process_score_ranking_data(data, table) {
                 var row_data = data[index];
                 
                 processed_data.push([
+                    null,
                     row_data.date,
+                    row_data.mode.display_name,
+                    'Ranks',
                     row_data.score.rank,
                     row_data.cadence.score.rank,
                     row_data.bard.score.rank,
@@ -221,12 +245,16 @@ function process_score_ranking_data(data, table) {
                     row_data.dorian.score.rank,
                     row_data.coda.score.rank,
                     row_data.nocturna.score.rank,
+                    row_data.diamond.score.rank,
                     row_data.all.score.rank,
                     row_data.story.score.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Points',
                     Formatting.roundNumber(row_data.score.rank_points),
                     Formatting.roundNumber(row_data.cadence.score.rank_points),
                     Formatting.roundNumber(row_data.bard.score.rank_points),
@@ -239,12 +267,16 @@ function process_score_ranking_data(data, table) {
                     Formatting.roundNumber(row_data.dorian.score.rank_points),
                     Formatting.roundNumber(row_data.coda.score.rank_points),
                     Formatting.roundNumber(row_data.nocturna.score.rank_points),
+                    Formatting.roundNumber(row_data.diamond.score.rank_points),
                     Formatting.roundNumber(row_data.all.score.rank_points),
                     Formatting.roundNumber(row_data.story.score.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Scores',
                     row_data.score.total_score,
                     row_data.cadence.score.score,
                     row_data.bard.score.score,
@@ -257,6 +289,7 @@ function process_score_ranking_data(data, table) {
                     row_data.dorian.score.score,
                     row_data.coda.score.score,
                     row_data.nocturna.score.score,
+                    row_data.diamond.score.score,
                     row_data.all.score.score,
                     row_data.story.score.score
                 ]);
@@ -275,6 +308,7 @@ function initialize_ranking_score_table() {
     table.setDefaultLimit(30);
     table.enableReleaseField();
     table.enableDateRangeFields();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/score/entries'));
     
@@ -285,6 +319,23 @@ function initialize_ranking_score_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
+        },
+        {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'score_rank',
+            title: 'Overall',
+            type: 'num-fmt'
         },
         {
             name: 'cadence_score_rank',
@@ -342,6 +393,11 @@ function initialize_ranking_score_table() {
             type: 'num-fmt'
         },
         {
+            name: 'diamond_score_rank',
+            title: Formatting.getCharacterImageHtml('diamond'),
+            type: 'num-fmt'
+        },
+        {
             name: 'all_score_rank',
             title: 'All',
             type: 'num-fmt'
@@ -373,7 +429,10 @@ function process_ranking_speed_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     row_data.date,
+                    row_data.mode.display_name,
+                    'Ranks',
                     row_data.speed.rank,
                     row_data.cadence.speed.rank,
                     row_data.bard.speed.rank,
@@ -386,12 +445,16 @@ function process_ranking_speed_data(data, table) {
                     row_data.dorian.speed.rank,
                     row_data.coda.speed.rank,
                     row_data.nocturna.speed.rank,
+                    row_data.diamond.speed.rank,
                     row_data.all.speed.rank,
                     row_data.story.speed.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Points',
                     Formatting.roundNumber(row_data.speed.rank_points),
                     Formatting.roundNumber(row_data.cadence.speed.rank_points),
                     Formatting.roundNumber(row_data.bard.speed.rank_points),
@@ -404,12 +467,16 @@ function process_ranking_speed_data(data, table) {
                     Formatting.roundNumber(row_data.dorian.speed.rank_points),
                     Formatting.roundNumber(row_data.coda.speed.rank_points),
                     Formatting.roundNumber(row_data.nocturna.speed.rank_points),
+                    Formatting.roundNumber(row_data.diamond.speed.rank_points),
                     Formatting.roundNumber(row_data.all.speed.rank_points),
                     Formatting.roundNumber(row_data.story.speed.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Times',
                     Formatting.convertSecondsToTime(row_data.speed.total_time),
                     Formatting.convertSecondsToTime(row_data.cadence.speed.time),
                     Formatting.convertSecondsToTime(row_data.bard.speed.time),
@@ -422,6 +489,7 @@ function process_ranking_speed_data(data, table) {
                     Formatting.convertSecondsToTime(row_data.dorian.speed.time),
                     Formatting.convertSecondsToTime(row_data.coda.speed.time),
                     Formatting.convertSecondsToTime(row_data.nocturna.speed.time),
+                    Formatting.convertSecondsToTime(row_data.diamond.speed.time),
                     Formatting.convertSecondsToTime(row_data.all.speed.time),
                     Formatting.convertSecondsToTime(row_data.story.speed.time)
                 ]);
@@ -440,6 +508,7 @@ function initialize_ranking_speed_table() {
     table.setDefaultLimit(30);
     table.enableReleaseField();
     table.enableDateRangeFields();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/speed/entries'));
     
@@ -450,6 +519,18 @@ function initialize_ranking_speed_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
+        },
+        {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
         },
         {
             name: 'speed_rank',
@@ -512,6 +593,11 @@ function initialize_ranking_speed_table() {
             type: 'num-fmt'
         },
         {
+            name: 'diamond_speed_rank',
+            title: Formatting.getCharacterImageHtml('diamond'),
+            type: 'num-fmt'
+        },
+        {
             name: 'all_speed_rank',
             title: 'All',
             type: 'num-fmt'
@@ -543,7 +629,10 @@ function process_ranking_deathless_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     row_data.date,
+                    row_data.mode.display_name,
+                    'Ranks',
                     row_data.deathless.rank,
                     row_data.cadence.deathless.rank,
                     row_data.bard.deathless.rank,
@@ -555,11 +644,15 @@ function process_ranking_deathless_data(data, table) {
                     row_data.melody.deathless.rank,
                     row_data.dorian.deathless.rank,
                     row_data.coda.deathless.rank,
-                    row_data.nocturna.deathless.rank
+                    row_data.nocturna.deathless.rank,
+                    row_data.diamond.deathless.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Points',
                     Formatting.roundNumber(row_data.deathless.rank_points),
                     Formatting.roundNumber(row_data.cadence.deathless.rank_points),
                     Formatting.roundNumber(row_data.bard.deathless.rank_points),
@@ -571,11 +664,15 @@ function process_ranking_deathless_data(data, table) {
                     Formatting.roundNumber(row_data.melody.deathless.rank_points),
                     Formatting.roundNumber(row_data.dorian.deathless.rank_points),
                     Formatting.roundNumber(row_data.coda.deathless.rank_points),
-                    Formatting.roundNumber(row_data.nocturna.deathless.rank_points)
+                    Formatting.roundNumber(row_data.nocturna.deathless.rank_points),
+                    Formatting.roundNumber(row_data.diamond.deathless.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
+                    null,
+                    'Wins',
                     row_data.deathless.total_win_count,
                     row_data.cadence.deathless.win_count,
                     row_data.bard.deathless.win_count,
@@ -587,7 +684,8 @@ function process_ranking_deathless_data(data, table) {
                     row_data.melody.deathless.win_count,
                     row_data.dorian.deathless.win_count,
                     row_data.coda.deathless.win_count,
-                    row_data.nocturna.deathless.win_count
+                    row_data.nocturna.deathless.win_count,
+                    row_data.diamond.deathless.win_count
                 ]);
             }
         }
@@ -604,6 +702,7 @@ function initialize_ranking_deathless_table() {
     table.setDefaultLimit(30);
     table.enableReleaseField();
     table.enableDateRangeFields();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/deathless/entries'));
     
@@ -614,6 +713,18 @@ function initialize_ranking_deathless_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
+        },
+        {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
         },
         {
             name: 'deathless_rank',
@@ -674,6 +785,11 @@ function initialize_ranking_deathless_table() {
             name: 'nocturna_deathless_rank',
             title: Formatting.getCharacterImageHtml('nocturna'),
             type: 'num-fmt'
+        },
+        {
+            name: 'diamond_deathless_rank',
+            title: Formatting.getCharacterImageHtml('diamond'),
+            type: 'num-fmt'
         }
     ]);
     
@@ -699,21 +815,30 @@ function process_ranking_character_data(data, table) {
                 var character_rankings = row_data[character_name];
                 
                 var rank_row = [
+                    null,
                     row_data.date,
+                    row_data.mode.display_name,
+                    'Ranks',
                     row_data.rank,
                     character_rankings.score.rank,
                     character_rankings.speed.rank,
                 ];
                 
                 var points_row = [
+                    '&nbsp;',
                     null,
                     null,
+                    'Points',
+                    Formatting.roundNumber(character_rankings.rank_points),
                     Formatting.roundNumber(character_rankings.score.rank_points),
                     Formatting.roundNumber(character_rankings.speed.rank_points)
                 ];
                 
                 var score_row = [
+                    '&nbsp;',
                     null,
+                    null,
+                    'Score/Time/Wins',
                     null,
                     character_rankings.score.score,
                     Formatting.convertSecondsToTime(character_rankings.speed.time)
@@ -752,6 +877,7 @@ function initialize_ranking_character_table() {
     table.enableCharacterField();
     table.enableReleaseField();
     table.enableDateRangeFields();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/rankings/power/character/entries'));
     
@@ -764,8 +890,20 @@ function initialize_ranking_character_table() {
             type: 'string'
         },
         {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
+        },
+        {
             name: 'rank',
-            title: 'Rank',
+            title: 'Overall',
             type: 'num-fmt'
         },
         {
@@ -802,6 +940,7 @@ function process_ranking_daily_data(data, table) {
                 
                 processed_data.push([
                     row_data.date,
+                    row_data.mode.display_name,
                     row_data.rank,
                     row_data.first_place_ranks,
                     row_data.top_5_ranks,
@@ -809,6 +948,7 @@ function process_ranking_daily_data(data, table) {
                     row_data.top_20_ranks,
                     row_data.top_50_ranks,
                     row_data.top_100_ranks,
+                    row_data.total_score,
                     Formatting.roundNumber(row_data.total_points),
                     Formatting.roundNumber(row_data.points_per_day),
                     row_data.total_dailies,
@@ -842,6 +982,12 @@ function initialize_ranking_daily_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
+        },
+        {
+            name: 'mode',
+            title: 'Mode',
+            type: 'string',
+            orderable: false
         },
         {
             name: 'rank',
@@ -879,13 +1025,18 @@ function initialize_ranking_daily_table() {
             type: 'num-fmt'
         },
         {
+            name: 'total_score',
+            title: 'Total<br />Score',
+            type: 'num-fmt'
+        },
+        {
             name: 'total_points',
             title: 'Points',
             type: 'num-fmt'
         },
         {
             name: 'points_per_day',
-            title: 'Points/Day',
+            title: 'Points<br />Per<br />Day',
             type: 'num-fmt'
         },
         {
@@ -929,9 +1080,9 @@ function process_leaderboard_score_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    null,
-                    row_data.entry.seed,
-                    null
+                    row_data.entry.replay.run_result,
+                    row_data.entry.replay.seed,
+                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
                 ];
                 
                 processed_data.push(processed_row);
@@ -986,7 +1137,7 @@ function initialize_leaderboard_score_table() {
             name: 'win',
             title: 'Win',
             type: 'string',
-            sortable: false
+            orderable: false
         },
         {
             name: 'run_result',
@@ -1002,7 +1153,7 @@ function initialize_leaderboard_score_table() {
             name: 'replay',
             title: 'Replay',
             type: 'string',
-            sortable: false
+            orderable: false
         }
     ]);
     
@@ -1025,8 +1176,8 @@ function process_leaderboard_speed_data(data, table) {
                     Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
                     row_data.entry.rank,
                     Formatting.convertSecondsToTime(row_data.entry.time),
-                    row_data.entry.seed,
-                    null
+                    row_data.entry.replay.seed,
+                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
                 ];
                 
                 processed_data.push(processed_row);
@@ -1076,7 +1227,7 @@ function initialize_leaderboard_speed_table() {
             name: 'replay',
             title: 'Replay',
             type: 'string',
-            sortable: false
+            orderable: false
         }
     ]);
     
@@ -1102,7 +1253,7 @@ function process_leaderboard_deathless_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    null
+                    row_data.entry.replay.run_result
                 ];
                 
                 processed_data.push(processed_row);
@@ -1157,7 +1308,7 @@ function initialize_leaderboard_deathless_table() {
             name: 'win',
             title: 'Win',
             type: 'string',
-            sortable: false
+            orderable: false
         },
         {
             name: 'run_result',
@@ -1188,9 +1339,9 @@ function process_leaderboard_daily_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    null,
-                    row_data.entry.seed,
-                    null
+                    row_data.entry.replay.run_result,
+                    row_data.entry.replay.seed,
+                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
                 ];
                 
                 processed_data.push(processed_row);
@@ -1245,7 +1396,7 @@ function initialize_leaderboard_daily_table() {
             name: 'win',
             title: 'Win',
             type: 'string',
-            sortable: false
+            orderable: false
         },
         {
             name: 'run_result',
@@ -1261,7 +1412,7 @@ function initialize_leaderboard_daily_table() {
             name: 'replay',
             title: 'Replay',
             type: 'string',
-            sortable: false
+            orderable: false
         }
     ]);
     

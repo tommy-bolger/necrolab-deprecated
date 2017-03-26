@@ -34,12 +34,19 @@ namespace Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Daily;
 
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entries as DailyRankingEntriesModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DailyRankingEntryModel;
+use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
 use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Entries
 extends Daily {   
     public function init() {
-        parent::init();
+        $this->setSteamidFromRequest();
+    
+        $this->setReleaseFromRequest();
+    
+        $this->getResultsetStateFromRequest();
+    
+        $this->setNumberOfDaysFromRequest();
         
         $this->setDateRangeFromRequest();
     }
@@ -58,6 +65,8 @@ extends Daily {
                 $processed_row['date'] = $row['date'];
                 
                 $processed_row['steamid'] = $row['steamid'];
+            
+                $processed_row['mode'] = ModesModel::getFormattedApiRecord($row);
             
                 $processed_row = array_merge($processed_row, DailyRankingEntryModel::getFormattedApiRecord($row));
                 

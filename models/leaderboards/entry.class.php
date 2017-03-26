@@ -1,6 +1,8 @@
 <?php
 namespace Modules\Necrolab\Models\Leaderboards;
 
+use \Modules\Necrolab\Models\Leaderboards\Replays;
+use \Modules\Necrolab\Models\Leaderboards\Details;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Entry
@@ -52,9 +54,7 @@ extends Necrolab {
         $ugcid = $data_row['ugcid'];
         
         $processed_row['rank'] = $data_row['rank'];
-        $processed_row['seed'] = $data_row['seed'];
-        $processed_row['ugcid'] = $ugcid;
-        $processed_row['details'] = $data_row['details'];
+        $processed_row['details'] = Details::getFormattedApiRecord($data_row);
         $processed_row['zone'] = $data_row['zone'];
         $processed_row['level'] = $data_row['level'];
         $processed_row['win'] = $data_row['is_win'];
@@ -69,13 +69,7 @@ extends Necrolab {
             }
         }
         
-        $replay_url = NULL;
-        
-        if(!empty($ugcid) && !empty($data_row['uploaded_to_s3'])) {
-            $replay_url = "https://necrolab.s3.amazonaws.com/replays/{$ugcid}.zip";
-        }
-        
-        $processed_row['replay_file'] = $replay_url;
+        $processed_row['replay'] = Replays::getFormattedApiRecord($data_row);
         
         return $processed_row;
     }

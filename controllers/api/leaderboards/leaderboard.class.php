@@ -47,8 +47,10 @@ extends Leaderboards {
     public function formatResponse($data) {        
         $processed_data = array();
         
-        if(!empty($data)) {        
-            $processed_data = $data;
+        if(!empty($data) && !empty($data[0])) {
+            $row = $data[0];
+        
+            $processed_data = LeaderboardsModel::getFormattedApiRecord($row);
         }
         
         return $processed_data;

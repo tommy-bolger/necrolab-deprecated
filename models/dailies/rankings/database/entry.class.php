@@ -48,12 +48,8 @@ extends BaseEntry {
                 'alias' => 'total_points',
             ),
             array(
-                'field' => 'dre.points_per_day',
-                'alias' => 'points_per_day',
-            ),
-            array(
-                'field' => 'dre.points_per_day',
-                'alias' => 'points_per_day',
+                'field' => 'dre.total_score',
+                'alias' => 'total_score',
             ),
             array(
                 'field' => 'dre.total_dailies',
@@ -62,10 +58,6 @@ extends BaseEntry {
             array(
                 'field' => 'dre.total_wins',
                 'alias' => 'total_wins',
-            ),
-            array(
-                'field' => 'dre.average_rank',
-                'alias' => 'average_rank',
             ),
             array(
                 'field' => 'dre.sum_of_ranks',

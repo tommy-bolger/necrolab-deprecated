@@ -11,8 +11,10 @@ function process_deathless_data(data, table) {
                 var processed_row = [];
                 
                 processed_data.push([
+                    null,
                     Formatting.getNecrolabUserLink(row_data.player.steamid, row_data.player.personaname),
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
+                    'Ranks',
                     row_data.deathless.rank,
                     row_data.cadence.deathless.rank,
                     row_data.bard.deathless.rank,
@@ -24,12 +26,15 @@ function process_deathless_data(data, table) {
                     row_data.melody.deathless.rank,
                     row_data.dorian.deathless.rank,
                     row_data.coda.deathless.rank,
-                    row_data.nocturna.deathless.rank
+                    row_data.nocturna.deathless.rank,
+                    row_data.diamond.deathless.rank
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
+                    'Points',
                     Formatting.roundNumber(row_data.deathless.rank_points),
                     Formatting.roundNumber(row_data.cadence.deathless.rank_points),
                     Formatting.roundNumber(row_data.bard.deathless.rank_points),
@@ -41,12 +46,15 @@ function process_deathless_data(data, table) {
                     Formatting.roundNumber(row_data.melody.deathless.rank_points),
                     Formatting.roundNumber(row_data.dorian.deathless.rank_points),
                     Formatting.roundNumber(row_data.coda.deathless.rank_points),
-                    Formatting.roundNumber(row_data.nocturna.deathless.rank_points)
+                    Formatting.roundNumber(row_data.nocturna.deathless.rank_points),
+                    Formatting.roundNumber(row_data.diamond.deathless.rank_points)
                 ]);
                 
                 processed_data.push([
+                    '&nbsp;',
                     null,
                     null,
+                    'Wins',
                     row_data.deathless.total_win_count,
                     row_data.cadence.deathless.win_count,
                     row_data.bard.deathless.win_count,
@@ -58,7 +66,8 @@ function process_deathless_data(data, table) {
                     row_data.melody.deathless.win_count,
                     row_data.dorian.deathless.win_count,
                     row_data.coda.deathless.win_count,
-                    row_data.nocturna.deathless.win_count
+                    row_data.nocturna.deathless.win_count,
+                    row_data.diamond.deathless.win_count
                 ]);
             }
         }
@@ -76,8 +85,10 @@ $(document).ready(function() {
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
+    table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/deathless/entries'));
     
@@ -89,6 +100,12 @@ $(document).ready(function() {
         },
         {
             name: 'social_media',
+            title: '&nbsp;',
+            type: 'string',
+            orderable: false
+        },
+        {
+            name: 'type',
             title: '&nbsp;',
             type: 'string',
             orderable: false
@@ -151,6 +168,11 @@ $(document).ready(function() {
         {
             name: 'nocturna_deathless_rank',
             title: Formatting.getCharacterImageHtml('nocturna'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'diamond_deathless_rank',
+            title: Formatting.getCharacterImageHtml('diamond'),
             type: 'num-fmt'
         }
     ]);

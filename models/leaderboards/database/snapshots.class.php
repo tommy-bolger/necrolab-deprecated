@@ -89,7 +89,9 @@ extends BaseSnapshots {
         $resultset = new SQL('leaderboard_snapshots');
         
         $resultset->setBaseQuery("
-            SELECT ls.*
+            SELECT 
+                ls.*,
+                ls.date AS snapshot_date
             FROM leaderboards l
             JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
             {{WHERE_CRITERIA}}
@@ -108,15 +110,18 @@ extends BaseSnapshots {
         $resultset = new SQL('leaderboard_snapshots');
         
         $resultset->setBaseQuery("
-            SELECT ls.*
+            SELECT 
+                ls.*,
+                ls.date AS snapshot_date
             FROM leaderboards l
             JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
             JOIN {{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-            JOIN steam_users su ON su.steam_user_id = le.steam_user_id
+            JOIN steam_user_pbs sup ON sup.steam_user_pb_id = le.steam_user_pb_id
+            JOIN steam_users su ON su.steam_user_id = sup.steam_user_id
             {{WHERE_CRITERIA}}
             GROUP BY ls.leaderboard_snapshot_id
         ");
-        
+
         $parition_table_names = static::getPartitionTableNames('leaderboard_entries', new DateTime('2015-04-01'), new DateTime());
         
         foreach($parition_table_names as $parition_table_name) {

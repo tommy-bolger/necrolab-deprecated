@@ -1,0 +1,39 @@
+a.underline {
+    text-decoration: underline;
+}
+
+table.documentation tr th,
+table.documentation tr td {
+    padding: 10px;
+}
+
+table.documentation tr td {
+    border-top: 1px solid #FFFFFF;
+}
+
+table.documentation tr td.last {
+    border-bottom: 1px solid #FFFFFF;
+}
+
+.indented_list {
+    list-style-type: none;
+}
+
+.plain_list {
+    list-style-type: none;
+    padding: 0px;
+    margin: 0px;
+} 
+
+p a span, a > .menu_smaller {
+    color: #FFFFFF;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.table_of_contents_items li {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}

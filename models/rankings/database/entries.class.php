@@ -6,6 +6,7 @@ use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
 use \Modules\Necrolab\Models\Rankings\Database\Entry as DatabaseEntry;
 use \Modules\Necrolab\Models\Rankings\Entries as BaseEntries;
+use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
 
 class Entries
 extends BaseEntries {
@@ -17,154 +18,104 @@ extends BaseEntries {
             (
                 power_ranking_id integer NOT NULL,
                 steam_user_id integer NOT NULL,
+                cadence_score_pb_id integer,
                 cadence_score_rank integer,
-                cadence_score_rank_points double precision,
-                cadence_score integer,
+                cadence_deathless_pb_id integer,
                 cadence_deathless_rank integer,
-                cadence_deathless_rank_points double precision,
-                cadence_deathless_win_count smallint,
+                cadence_speed_pb_id integer,
                 cadence_speed_rank integer,
-                cadence_speed_rank_points double precision,
-                cadence_speed_time double precision,
                 cadence_rank integer,
-                cadence_rank_points double precision,
+                bard_score_pb_id integer,
                 bard_score_rank integer,
-                bard_score_rank_points double precision,
-                bard_score integer,
+                bard_deathless_pb_id integer,
                 bard_deathless_rank integer,
-                bard_deathless_rank_points double precision,
-                bard_deathless_win_count smallint,
+                bard_speed_pb_id integer,
                 bard_speed_rank integer,
-                bard_speed_rank_points double precision,
-                bard_speed_time double precision,
                 bard_rank integer,
-                bard_rank_points double precision,
+                monk_score_pb_id integer,
                 monk_score_rank integer,
-                monk_score_rank_points double precision,
-                monk_score integer,
+                monk_deathless_pb_id integer,
                 monk_deathless_rank integer,
-                monk_deathless_rank_points double precision,
-                monk_deathless_win_count smallint,
+                monk_speed_pb_id integer,
                 monk_speed_rank integer,
-                monk_speed_rank_points double precision,
-                monk_speed_time double precision,
                 monk_rank integer,
-                monk_rank_points double precision,
+                aria_score_pb_id integer,
                 aria_score_rank integer,
-                aria_score_rank_points double precision,
-                aria_score integer,
+                aria_deathless_pb_id integer,
                 aria_deathless_rank integer,
-                aria_deathless_rank_points double precision,
-                aria_deathless_win_count smallint,
+                aria_speed_pb_id integer,
                 aria_speed_rank integer,
-                aria_speed_rank_points double precision,
-                aria_speed_time double precision,
                 aria_rank integer,
-                aria_rank_points double precision,
+                bolt_score_pb_id integer,
                 bolt_score_rank integer,
-                bolt_score_rank_points double precision,
-                bolt_score integer,
+                bolt_deathless_pb_id integer,
                 bolt_deathless_rank integer,
-                bolt_deathless_rank_points double precision,
-                bolt_deathless_win_count smallint,
+                bolt_speed_pb_id integer,
                 bolt_speed_rank integer,
-                bolt_speed_rank_points double precision,
-                bolt_speed_time double precision,
                 bolt_rank integer,
-                bolt_rank_points double precision,
+                dove_score_pb_id integer,
                 dove_score_rank integer,
-                dove_score_rank_points double precision,
-                dove_score integer,
+                dove_deathless_pb_id integer,
                 dove_deathless_rank integer,
-                dove_deathless_rank_points double precision,
-                dove_deathless_win_count smallint,
+                dove_speed_pb_id integer,
                 dove_speed_rank integer,
-                dove_speed_rank_points double precision,
-                dove_speed_time double precision,
                 dove_rank integer,
-                dove_rank_points double precision,
+                eli_score_pb_id integer,
                 eli_score_rank integer,
-                eli_score_rank_points double precision,
-                eli_score integer,
+                eli_deathless_pb_id integer,
                 eli_deathless_rank integer,
-                eli_deathless_rank_points double precision,
-                eli_deathless_win_count smallint,
+                eli_speed_pb_id integer,
                 eli_speed_rank integer,
-                eli_speed_rank_points double precision,
-                eli_speed_time double precision,
                 eli_rank integer,
-                eli_rank_points double precision,
+                melody_score_pb_id integer,
                 melody_score_rank integer,
-                melody_score_rank_points double precision,
-                melody_score integer,
+                melody_deathless_pb_id integer,
                 melody_deathless_rank integer,
-                melody_deathless_rank_points double precision,
-                melody_deathless_win_count smallint,
+                melody_speed_pb_id integer,
                 melody_speed_rank integer,
-                melody_speed_rank_points double precision,
-                melody_speed_time double precision,
                 melody_rank integer,
-                melody_rank_points double precision,
+                dorian_score_pb_id integer,
                 dorian_score_rank integer,
-                dorian_score_rank_points double precision,
-                dorian_score integer,
+                dorian_deathless_pb_id integer,
                 dorian_deathless_rank integer,
-                dorian_deathless_rank_points double precision,
-                dorian_deathless_win_count smallint,
+                dorian_speed_pb_id integer,
                 dorian_speed_rank integer,
-                dorian_speed_rank_points double precision,
-                dorian_speed_time double precision,
                 dorian_rank integer,
-                dorian_rank_points double precision,
+                coda_score_pb_id integer,
                 coda_score_rank integer,
-                coda_score_rank_points double precision,
-                coda_score integer,
+                coda_deathless_pb_id integer,
                 coda_deathless_rank integer,
-                coda_deathless_rank_points double precision,
-                coda_deathless_win_count smallint,
+                coda_speed_pb_id integer,
                 coda_speed_rank integer,
-                coda_speed_rank_points double precision,
-                coda_speed_time double precision,
                 coda_rank integer,
-                coda_rank_points double precision,
+                nocturna_score_pb_id integer,
                 nocturna_score_rank integer,
-                nocturna_score_rank_points double precision,
-                nocturna_score integer,
+                nocturna_deathless_pb_id integer,
                 nocturna_deathless_rank integer,
-                nocturna_deathless_rank_points double precision,
-                nocturna_deathless_win_count smallint,
+                nocturna_speed_pb_id integer,
                 nocturna_speed_rank integer,
-                nocturna_speed_rank_points double precision,
-                nocturna_speed_time double precision,
                 nocturna_rank integer,
-                nocturna_rank_points double precision,
+                diamond_score_pb_id integer,
+                diamond_score_rank integer,
+                diamond_deathless_pb_id integer,
+                diamond_deathless_rank integer,
+                diamond_speed_pb_id integer,
+                diamond_speed_rank integer,
+                diamond_rank integer,
+                all_score_pb_id integer,
                 all_score_rank integer,
-                all_score_rank_points double precision,
-                all_score integer,
+                all_speed_pb_id integer,
                 all_speed_rank integer,
-                all_speed_rank_points double precision,
-                all_speed_time double precision,
                 all_rank integer,
-                all_rank_points double precision,
+                story_score_pb_id integer,
                 story_score_rank integer,
-                story_score_rank_points double precision,
-                story_score integer,
+                story_speed_pb_id integer,
                 story_speed_rank integer,
-                story_speed_rank_points double precision,
-                story_speed_time double precision,
                 story_rank integer,
-                story_rank_points double precision,
-                score_total integer,
                 score_rank integer,
-                score_rank_points_total double precision,
-                deathless_total_win_count smallint,
                 deathless_rank integer,
-                deathless_rank_points_total double precision,
-                speed_total_time double precision,
                 speed_rank integer,
-                speed_rank_points_total double precision,
                 rank integer NOT NULL,
-                total_points double precision,
                 CONSTRAINT pk_power_ranking_entries_{$date_formatted}_power_ranking_entry_id PRIMARY KEY (power_ranking_id, steam_user_id),
                 CONSTRAINT fk_power_ranking_entries_{$date_formatted}_power_ranking_id FOREIGN KEY (power_ranking_id)
                     REFERENCES power_rankings (power_ranking_id) MATCH SIMPLE
@@ -176,11 +127,15 @@ extends BaseEntries {
             WITH (
                 OIDS=FALSE
             );
+            
+            DROP INDEX IF EXISTS idx_power_ranking_entries_{$date_formatted}_power_ranking_id;
 
             CREATE INDEX idx_power_ranking_entries_{$date_formatted}_power_ranking_id
             ON power_ranking_entries_{$date_formatted}
             USING btree
             (power_ranking_id);
+            
+            DROP INDEX IF EXISTS idx_power_ranking_entries_{$date_formatted}_steam_user_id;
 
             CREATE INDEX idx_power_ranking_entries_{$date_formatted}_steam_user_id
             ON power_ranking_entries_{$date_formatted}
@@ -197,7 +152,7 @@ extends BaseEntries {
         ));
     }
     
-    public static function getAllBaseResultset($release_name, DateTime $date) {    
+    public static function getAllBaseResultset($release_name, $mode_name, DateTime $date) {    
         $resultset = new SQL('power_ranking_entries');
         
         $resultset->addSelectFields(array(
@@ -216,6 +171,7 @@ extends BaseEntries {
         $resultset->setFromTable('power_rankings pr');
         
         $resultset->addJoinCriteria('releases r ON r.release_id = pr.release_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = pr.mode_id');
         $resultset->addJoinCriteria("power_ranking_entries_{$date->format('Y_m')} pre ON pre.power_ranking_id = pr.power_ranking_id");
         $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
         
@@ -227,6 +183,10 @@ extends BaseEntries {
             ':release_name' => $release_name
         ));
         
+        $resultset->addFilterCriteria('mo.name = :mode_name', array(
+            ':mode_name' => $mode_name
+        ));
+        
         $resultset->setSortCriteria('pre.rank', 'ASC');
         
         DatabaseExternalSites::addSiteUserLeftJoins($resultset);
@@ -234,8 +194,8 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getAllScoreResultset($release_name, DateTime $date) { 
-        $resultset = static::getAllBaseResultset($release_name, $date);
+    public static function getAllScoreResultset($release_name, $mode_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $mode_name, $date);
         
         $resultset->addFilterCriteria('pre.score_rank IS NOT NULL');
         $resultset->setSortCriteria('pre.score_rank', 'ASC');
@@ -243,8 +203,8 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getAllSpeedResultset($release_name, DateTime $date) { 
-        $resultset = static::getAllBaseResultset($release_name, $date);
+    public static function getAllSpeedResultset($release_name, $mode_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $mode_name, $date);
         
         $resultset->addFilterCriteria('pre.speed_rank IS NOT NULL');
         $resultset->setSortCriteria('pre.speed_rank', 'ASC');
@@ -252,8 +212,8 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getAllDeathlessResultset($release_name, DateTime $date) { 
-        $resultset = static::getAllBaseResultset($release_name, $date);
+    public static function getAllDeathlessResultset($release_name, $mode_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $mode_name, $date);
         
         $resultset->addFilterCriteria('pre.deathless_rank IS NOT NULL');
         $resultset->setSortCriteria('pre.deathless_rank', 'ASC');
@@ -261,8 +221,8 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getAllCharacterResultset($character_name, $release_name, DateTime $date) { 
-        $resultset = static::getAllBaseResultset($release_name, $date);
+    public static function getAllCharacterResultset($character_name, $release_name, $mode_name, DateTime $date) { 
+        $resultset = static::getAllBaseResultset($release_name, $mode_name, $date);
         
         $resultset->addFilterCriteria("pre.{$character_name}_rank IS NOT NULL");
         $resultset->setSortCriteria("pre.{$character_name}_rank", 'ASC');
@@ -281,14 +241,20 @@ extends BaseEntries {
             array(
                 'field' => 'su.steamid',
                 'alias' => 'steamid'
+            ),
+            array(
+                'field' => 'mo.sort_order',
+                'alias' => 'mode_sort_order'
             )
         ));
         
         DatabaseEntry::setSelectFields($resultset);
+        DatabaseModes::setSelectFields($resultset);
         
         $resultset->setFromTable('power_rankings pr');
         
         $resultset->addJoinCriteria('releases r ON r.release_id = pr.release_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = pr.mode_id');
         $resultset->addJoinCriteria('{{PARTITION_TABLE}} pre ON pre.power_ranking_id = pr.power_ranking_id');
         $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
         
@@ -312,6 +278,7 @@ extends BaseEntries {
         ));
 
         $resultset->setSortCriteria('date', 'DESC');
+        $resultset->addSortCriteria('mode_sort_order', 'ASC');
         
         return $resultset;
     }

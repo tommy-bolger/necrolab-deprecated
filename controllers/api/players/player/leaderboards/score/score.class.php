@@ -38,6 +38,6 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 class Score
 extends Leaderboards {
     protected function getResultSet() {
-        return LeaderboardsModel::getSteamUserScoreResultset($this->steamid, $this->release_name);
+        return LeaderboardsModel::getSteamUserScoreResultset($this->steamid, $this->release_name, $this->mode);
     }
 }

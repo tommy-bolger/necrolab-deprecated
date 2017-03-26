@@ -38,6 +38,6 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 class Daily
 extends Leaderboards {
     protected function getResultSet() {
-        return LeaderboardsModel::getSteamUserDailyResultset($this->steamid, $this->release_name);
+        return LeaderboardsModel::getSteamUserDailyResultset($this->steamid, $this->release_name, $this->mode);
     }
 }

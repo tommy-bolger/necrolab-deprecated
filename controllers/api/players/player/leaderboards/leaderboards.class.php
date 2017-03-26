@@ -57,12 +57,14 @@ extends Player {
         $this->setSteamidFromRequest();
     
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = LeaderboardsModel::getSteamUserBaseResultset($this->steamid, $this->release_name);
+        $resultset = LeaderboardsModel::getSteamUserResultset($this->steamid, $this->release_name, $this->mode);
         
         return $resultset;
     }

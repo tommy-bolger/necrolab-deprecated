@@ -57,12 +57,14 @@ extends Necrolab {
 
     public function init() {
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = LeaderboardsModel::getAllBaseResultset($this->release_name);
+        $resultset = LeaderboardsModel::getAllResultset($this->release_name, $this->mode);
         
         return $resultset;
     }
@@ -72,7 +74,9 @@ extends Necrolab {
         
         if(!empty($data)) {        
             foreach($data as $row) {
-                $processed_data[] = LeaderboardsModel::getFormattedApiRecord($row);
+                $processed_row = LeaderboardsModel::getFormattedApiRecord($row);
+            
+                $processed_data[] = $processed_row;
             }
         }
         

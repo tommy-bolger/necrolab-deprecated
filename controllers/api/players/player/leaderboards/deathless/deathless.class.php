@@ -38,6 +38,6 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 class Deathless
 extends Leaderboards {
     protected function getResultSet() {
-        return LeaderboardsModel::getSteamUserDeathlessResultset($this->steamid, $this->release_name);
+        return LeaderboardsModel::getSteamUserDeathlessResultset($this->steamid, $this->release_name, $this->mode);
     }
 }

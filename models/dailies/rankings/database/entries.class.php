@@ -3,6 +3,7 @@ namespace Modules\Necrolab\Models\Dailies\Rankings\Database;
 
 use \DateTime;
 use \Framework\Data\ResultSet\SQL;
+use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DatabaseEntry;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
 use \Modules\Necrolab\Models\Dailies\Rankings\Entries as BaseEntries;
@@ -14,7 +15,7 @@ extends BaseEntries {
     
         db()->exec("
             CREATE TABLE daily_ranking_entries_{$date_formatted} (
-                daily_ranking_id smallint NOT NULL,
+                daily_ranking_id integer NOT NULL,
                 steam_user_id integer NOT NULL,
                 first_place_ranks smallint NOT NULL,
                 top_5_ranks smallint NOT NULL,
@@ -23,11 +24,10 @@ extends BaseEntries {
                 top_50_ranks smallint NOT NULL,
                 top_100_ranks smallint NOT NULL,
                 total_points double precision NOT NULL,
-                points_per_day double precision NOT NULL,
                 total_dailies smallint NOT NULL,
                 total_wins smallint NOT NULL,
-                average_rank double precision NOT NULL,
                 sum_of_ranks integer NOT NULL,
+                total_score integer NOT NULL,
                 rank integer NOT NULL,
             CONSTRAINT pk_daily_ranking_entries_{$date_formatted}_daily_ranking_entry_id PRIMARY KEY (daily_ranking_id, steam_user_id),
             CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_daily_ranking_id FOREIGN KEY (daily_ranking_id)
@@ -61,7 +61,7 @@ extends BaseEntries {
         ));
     }
 
-    public static function getAllBaseResultset($release_name, DateTime $date, $number_of_days = NULL) {
+    public static function getAllBaseResultset($release_name, $mode_name, DateTime $date, $number_of_days = NULL) {
         if(empty($number_of_days)) {
             $number_of_days = 0;
         }
@@ -101,6 +101,7 @@ extends BaseEntries {
         
         $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
         $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = dr.mode_id');
         $resultset->addJoinCriteria("daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
         $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
         
@@ -111,6 +112,10 @@ extends BaseEntries {
         
         $resultset->addFilterCriteria('r.name = :release_name', array(
             ':release_name' => $release_name
+        ));
+        
+        $resultset->addFilterCriteria('mo.name = :mode_name', array(
+            ':mode_name' => $mode_name
         ));
         
         $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
@@ -157,11 +162,13 @@ extends BaseEntries {
         ));
         
         DatabaseEntry::setSelectFields($resultset);
+        DatabaseModes::setSelectFields($resultset);
         
         $resultset->setFromTable('daily_rankings dr');
         
-        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
         $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = dr.mode_id');
+        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
         $resultset->addJoinCriteria("{{PARTITION_TABLE}} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
         $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
         

@@ -67,10 +67,6 @@ extends Leaderboards {
             
                 $processed_row['leaderboard'] = LeaderboardsModel::getFormattedApiRecord($row);
                 
-                if(!empty($row['character_name'])) {
-                    $processed_row['leaderboard']['character_name'] = $row['character_name'];
-                }
-                
                 $processed_row['entry'] = LeaderboardEntryModel::getFormattedApiRecord($row);
                 
                 $processed_data[] = $processed_row;

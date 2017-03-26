@@ -9,29 +9,31 @@ use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers;
 
 class Rankings
 extends BaseRankings {
-    protected static function load($release_id, DateTime $date) {
+    protected static function load($release_id, $mode_id, DateTime $date) {
         $date_formatted = $date->format('Y-m-d');
         
-        if(empty(static::$rankings[$release_id][$date_formatted])) {
+        if(empty(static::$rankings[$release_id][$mode_id][$date_formatted])) {
             $ranking = db()->getRow("
                 SELECT *
                 FROM power_rankings
-                WHERE release_id = :release_id
-                    AND date = :date
+                WHERE date = :date
+                    AND release_id = :release_id
+                    AND mode_id = :mode_id
             ", array(
+                ':date' => $date_formatted,
                 ':release_id' => $release_id,
-                ':date' => $date_formatted
+                ':mode_id' => $mode_id
             ));
             
             if(!empty($ranking)) {
-                static::$rankings[$release_id][$date_formatted] = $ranking;
+                static::$rankings[$release_id][$mode_id][$date_formatted] = $ranking;
             }
         }
     }
 
-    public static function save($release_id, DateTime $date) {
+    public static function save($release_id, $mode_id, DateTime $date) {
         $date_formatted = $date->format('Y-m-d');
-        $power_ranking = static::get($release_id, $date);
+        $power_ranking = static::get($release_id, $mode_id, $date);
         
         $current_time = date('Y-m-d H:i:s');
         
@@ -40,6 +42,7 @@ extends BaseRankings {
         if(empty($power_ranking)) {
             $record = array(
                 'release_id' => $release_id,
+                'mode_id' => $mode_id,
                 'created' => $current_time,
                 'date' => $date_formatted
             );
@@ -48,7 +51,7 @@ extends BaseRankings {
             
             $record['power_ranking_id'] = $power_ranking_id;
             
-            static::$rankings[$release_id][$date_formatted] = $record;
+            static::$rankings[$release_id][$mode_id][$date_formatted] = $record;
         }
         else {      
             $power_ranking_id = $power_ranking['power_ranking_id'];
@@ -59,7 +62,7 @@ extends BaseRankings {
                 'power_ranking_id' => $power_ranking_id
             ));
             
-            static::$rankings[$release_id][$date_formatted]['updated'] = $current_time;
+            static::$rankings[$release_id][$mode_id][$date_formatted]['updated'] = $current_time;
         }
         
         return $power_ranking_id;
@@ -69,13 +72,14 @@ extends BaseRankings {
         return NULL;
     }
     
-    public static function getAllBaseResultset($release_name) {
+    public static function getAllBaseResultset($release_name, $mode_name) {
         $resultset = new SQL('power_rankings');
     
         $resultset->setBaseQuery("
             SELECT pr.*
             FROM power_rankings pr
             JOIN releases r ON r.release_id = pr.release_id
+            JOIN modes mo ON mo.mode_id = pr.mode_id
             {{WHERE_CRITERIA}}
         ");
         
@@ -83,19 +87,23 @@ extends BaseRankings {
             ':release_name' => $release_name
         ));
         
+        $resultset->addFilterCriteria('mo.name = :mode_name', array(
+            ':mode_name' => $mode_name
+        ));
+        
         $resultset->setSortCriteria('pr.date', 'ASC'); 
         
         return $resultset;
     }
     
-    public static function getSteamUserBaseResultset($release_name, $steamid) {
+    public static function getSteamUserBaseResultset($release_name, $mode_name, $steamid) {
         $resultset = new SQL('steam_user_power_ranking_entries');
     
         $resultset->setBaseQuery("
-            SELECT 
-                pr.*
+            SELECT pr.*
             FROM power_rankings pr
             JOIN releases r ON r.release_id = pr.release_id
+            JOIN modes mo ON mo.mode_id = pr.mode_id
             JOIN {{PARTITION_TABLE}} pre ON pre.power_ranking_id = pr.power_ranking_id
             JOIN steam_users su ON su.steam_user_id = pre.steam_user_id
             {{WHERE_CRITERIA}}
@@ -115,6 +123,10 @@ extends BaseRankings {
         
         $resultset->addFilterCriteria('r.name = ?', array(
             $release_name
+        ));
+        
+        $resultset->addFilterCriteria('mo.name = ?', array(
+            $mode_name
         ));
         
         $resultset->setSortCriteria('date', 'ASC');

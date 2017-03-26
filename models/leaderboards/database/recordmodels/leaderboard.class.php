@@ -8,6 +8,7 @@ use \Framework\Core\RecordModel;
 use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
 use \Modules\Necrolab\Models\Releases\Database\Releases;
+use \Modules\Necrolab\Models\Modes\Database\Modes;
 use \Modules\Necrolab\Models\Characters\Database\Characters;
 
 class Leaderboard
@@ -47,6 +48,10 @@ extends RecordModel {
     protected $is_deathless;
     
     protected $is_story_mode;
+    
+    protected $is_hard_mode;
+    
+    protected $is_no_return;
 
     protected $is_dev;
     
@@ -59,6 +64,8 @@ extends RecordModel {
     protected $is_daily_ranking; 
     
     protected $release_id;
+    
+    protected $mode_id;
     
     protected function getPropertyValue($property_name, $property_value) {         
         return $property_value;
@@ -112,6 +119,9 @@ extends RecordModel {
         elseif(strpos($leaderboard_name, 'nocturna') !== false) {
             $character_name = 'nocturna';
         }
+        elseif(strpos($leaderboard_name, 'diamond') !== false) {
+            $character_name = 'diamond';
+        }
         //If nobody else assume it's Cadence
         else {
             $character_name = 'cadence';
@@ -129,6 +139,9 @@ extends RecordModel {
         $is_dev = 0;
         $is_prod = 0;
         $is_dlc = 0;
+        $is_hard_mode = 0;
+        $is_no_return = 0;
+        $mode = Modes::getByName('normal');
         
         if(strpos($leaderboard_name, 'speedrun') !== false) {
             $is_speedrun = 1;
@@ -177,6 +190,20 @@ extends RecordModel {
         if(strpos($leaderboard_name, 'dlc') !== false) {
             $is_dlc = 1;
         }
+        
+        if(strpos($leaderboard_name, 'hard mode') !== false) {
+            $is_hard_mode = 1;
+            
+            $mode = Modes::getByName('hard');
+        }
+        
+        if(strpos($leaderboard_name, 'no return') !== false) {
+            $is_no_return = 1;
+            
+            $mode = Modes::getByName('no_return');
+        }
+        
+        $mode_id = $mode['mode_id'];
         
         $character_record = Characters::getActiveByName($character_name);
         
@@ -287,8 +314,11 @@ extends RecordModel {
         $this->is_prod = $is_prod;
         $this->is_power_ranking = $is_power_ranking;
         $this->is_daily_ranking = $is_daily_ranking;    
-        $this->is_dlc = $is_prod;
+        $this->is_dlc = $is_dlc;
+        $this->is_hard_mode = $is_hard_mode;
+        $this->is_no_return = $is_no_return;
         $this->release_id = $release_id;
+        $this->mode_id = $mode_id;
     }
     
     public function isValid(DateTime $date) {

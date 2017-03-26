@@ -69,6 +69,12 @@
     background-position: -535px 0px;
 }
 
+.diamond_header {
+    width: 43px;
+    height: 53px;
+    background-position: -589px 0px;
+}
+
 .sorting_asc .character_header,
 .sorting_desc .character_header {
     background-position-y: -53px;

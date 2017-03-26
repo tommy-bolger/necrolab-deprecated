@@ -5,6 +5,11 @@ use \DateTime;
 use \Exception;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\Leaderboards\Replays as BaseReplays;
+use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
+use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
+use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
+use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
+use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as DatabaseSteamUserPbs;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\SteamReplay;
 
 class Replays
@@ -124,6 +129,73 @@ extends BaseReplays {
         $resultset->addFilterCriteria('uploaded_to_s3 = 0');
         
         $resultset->addSortCriteria('ugcid', 'ASC');
+        
+        return $resultset;
+    }
+    
+    public static function getAllResultset() {
+        $resultset = new SQL('replays:entries');
+        
+        static::setSelectFields($resultset);
+        DatabaseRunResults::setSelectFields($resultset);
+        DatabaseReplayVersions::setSelectFields($resultset);
+        DatabaseSteamUserPbs::setSelectFields($resultset);
+        Leaderboards::setSelectFields($resultset);
+        DatabaseCharacters::setSelectFields($resultset);
+        DatabaseModes::setSelectFields($resultset);
+        Snapshots::setSelectFields($resultset);
+        Details::setSelectFields($resultset);
+        
+        $resultset->addSelectField('su.steamid', 'steamid');
+        
+        $resultset->setFromTable('steam_replays sr');
+        
+        $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_replay_id = sr.steam_replay_id');
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sr.steam_user_id');
+        $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = l.mode_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
+        $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = sup.leaderboard_entry_details_id');
+        
+        $resultset->addLeftJoinCriteria('run_results rr ON rr.run_result_id = sr.run_result_id');
+        $resultset->addLeftJoinCriteria('steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id');
+        
+        return $resultset;
+    }
+    
+    public static function getApiAllResultset($release_name) {
+        $resultset = static::getAllResultset();
+        
+        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        
+        $resultset->addFilterCriteria("r.name = :release_name", array(
+            ':release_name' => $release_name
+        ));
+        
+        return $resultset;
+    }
+    
+    public static function getOneResultset($ugcid) {
+        $resultset = static::getAllResultset();
+        
+        $resultset->setName("replays:entries:{$ugcid}");
+        
+        $resultset->addFilterCriteria("sr.ugcid = :ugcid", array(
+            ':ugcid' => $ugcid
+        ));
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserResultset($release_name, $steamid) {
+        $resultset = static::getApiAllResultset($release_name);
+        
+        $resultset->setName("steam_users:{$steamid}:replays:entries");
+        
+        $resultset->addFilterCriteria("su.steamid = :steamid", array(
+            ':steamid' => $steamid
+        ));
         
         return $resultset;
     }

@@ -1,8 +1,6 @@
 <?php
 namespace Modules\Necrolab\Models\Leaderboards\Database;
 
-use \DateTime;
-use \Exception;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\Leaderboards\Details as BaseDetails;
 

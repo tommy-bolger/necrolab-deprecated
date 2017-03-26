@@ -40,9 +40,9 @@ extends BaseEntries {
     public function init() {
         $this->setSteamidFromRequest();
         
-        $this->setDateRangeFromRequest();
-        
         $this->setReleaseFromRequest();
+        
+        $this->setDateRangeFromRequest();
         
         $this->getResultsetStateFromRequest();
     }

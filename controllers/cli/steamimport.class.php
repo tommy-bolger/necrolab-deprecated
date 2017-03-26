@@ -20,6 +20,10 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Details;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\LeaderboardEntry;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\LeaderboardEntry as DatabaseLeaderboardEntry;
+use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
+use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
+use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as DatabaseSteamUserPbs;
+use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as DatabaseSteamUserPb;
 
 class SteamImport
 extends Cli {
@@ -155,16 +159,41 @@ extends Cli {
                                     $entries = array($entries);
                                 }
                             
-                                foreach($entries as $entry) {
-                                    $database_entry = new DatabaseLeaderboardEntry();
+                                foreach($entries as $entry) {                                    
+                                    $steam_user_id = DatabaseSteamUsers::getId($entry->steamid);
                                     
-                                    $database_entry->setPropertiesFromSteamObject($entry, $database_leaderboard, $rank, $this->as_of_date);
-                                    
-                                    if($database_entry->isValid($database_leaderboard)) {
-                                        $database_entry->leaderboard_snapshot_id = $leaderboard_snapshot_id;
+                                    if(empty($steam_user_id)) {                                    
+                                        $database_steam_user = new DatabaseSteamUser();
                                         
-                                        Entry::save($this->as_of_date, $database_entry);                                        
+                                        $database_steam_user->steamid = $entry->steamid;
                                     
+                                        $steam_user_id = DatabaseSteamUsers::save($database_steam_user, 'steam_import');
+                                    }
+                                    
+                                    $score = $entry->score;
+                                    
+                                    $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
+                                    
+                                    if(empty($steam_user_pb_id)) {
+                                        $database_steam_user_pb = new DatabaseSteamUserPb();
+                                        
+                                        $database_steam_user_pb->setPropertiesFromSteamObject($entry, $database_leaderboard, $rank, $this->as_of_date);
+                                        
+                                        if($database_steam_user_pb->isValid($database_leaderboard)) {
+                                            $database_steam_user_pb->leaderboard_id = $leaderboard_id;
+                                            $database_steam_user_pb->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;
+                                        
+                                            $steam_user_pb_id = DatabaseSteamUserPbs::save($database_steam_user_pb, 'steam_user_pb_xml_save');
+                                        }
+                                    }
+                                    
+                                    if(!empty($steam_user_pb_id)) {                                        
+                                        Entry::save($this->as_of_date, array(
+                                            'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
+                                            'steam_user_pb_id' => $steam_user_pb_id,
+                                            'rank' => $rank
+                                        ), "save_steam_xml_{$this->as_of_date->format('Y_m')}");
+                                        
                                         $rank += 1;
                                     }
                                 }
@@ -370,58 +399,5 @@ extends Cli {
         
             $current_date->add(new DateInterval('P1M'));
         }
-    }  
-    
-    public function actionFixEntryRecords($start_date, $end_date) {
-        $start_date = new DateTime($start_date);
-        $end_date = new DateTime($end_date);
-        
-        $current_date = clone $start_date;
-        
-        while($current_date <= $end_date) {            
-            db()->beginTransaction();
-        
-            $leaderboard_entries_resulset = Entries::getAllBaseResultset($current_date);
-        
-            $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
-            
-            while($leaderboard_entry = db()->getStatementRow($leaderboard_entries)) {
-                $entry_record = new DatabaseLeaderboardEntry();
-                
-                $score = $leaderboard_entry['score'];
-                
-                $entry_record->score = $score;
-                
-                if(!empty($leaderboard_entry['is_speedrun'])) {
-                    $entry_record->time = Entry::getTime($score);
-                    $entry_record->is_win = 1;
-                }
-                else {
-                    $zone_level = Entry::getHighestZoneLevel($leaderboard_entry['details']);
-                
-                    $entry_record->zone = $zone_level['highest_zone'];
-                    $entry_record->level = $zone_level['highest_level'];
-                    
-                    $entry_record->is_win = Entry::getIfWin($current_date, $leaderboard_entry['release_id'], $entry_record->zone, $entry_record->level);
-                
-                    if(!empty($leaderboard_entry['is_deathless'])) {
-                        $entry_record->win_count = Entry::getWinCount($score);
-                    }
-                }
-                
-                Entry::update(
-                    $current_date, 
-                    $leaderboard_entry['leaderboard_snapshot_id'], 
-                    $leaderboard_entry['steam_user_id'], 
-                    $leaderboard_entry['rank'], 
-                    $entry_record,
-                    "fix_record_update_{$current_date->format('Y_m')}"
-                );
-            }
-            
-            db()->commit();
-            
-            $current_date->add(new DateInterval('P1D'));
-        }  
     }
 }

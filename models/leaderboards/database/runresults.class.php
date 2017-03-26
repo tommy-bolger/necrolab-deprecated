@@ -37,4 +37,13 @@ extends BaseRunResults {
             'run_result_id' => $run_result_id
         ), '', 'run_result_update');
     }
+    
+    public static function setSelectFields($resultset) {
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'rr.name',
+                'alias' => 'run_result'
+            )
+        ));
+    }
 }

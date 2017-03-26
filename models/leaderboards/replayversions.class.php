@@ -21,4 +21,8 @@ extends Necrolab {
         
         return $replay_version_id;
     }
+    
+    public static function getFormattedApiRecord($data_row) {
+        return $data_row['replay_version'];
+    }
 }
