@@ -43,7 +43,7 @@ extends BasePbs {
             ");
             
             while($pb_id = $database->getStatementRow($pb_ids)) {
-                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id'])
+                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
             }
         }
     }
