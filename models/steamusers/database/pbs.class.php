@@ -29,20 +29,9 @@ extends BasePbs {
         }
     }
     
-    public static function loadIds() {        
+    public static function loadIds() {
         if(empty(static::$pb_ids)) {
-            $database = db();
-            
-            /*
-                This utilizes cursors in Postgres to simulate unbuffered queries from MySQL
-                so that it doesn't run into memory limits while trying to fetch.
-                
-                Source: https://codepoets.co.uk/2014/postgresql-unbuffered-queries/
-                
-                This function must always be inside of a transaction for it to work.
-            */
-            $cursor_query = $database->prepareExecuteQuery("
-                DECLARE pb_ids CURSOR FOR
+            $pb_ids = db()->getAll("
                 SELECT
                     steam_user_pb_id,
                     leaderboard_id,
@@ -50,14 +39,11 @@ extends BasePbs {
                     score
                 FROM steam_user_pbs
             ");
-        
-            $pb_ids = $database->prepare("
-                FETCH 1
-                FROM pb_ids
-            ");
             
-            while($pb_ids->execute() && $pb_id = $database->getStatementRow($pb_ids)) {
-                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
+            if(!empty($pb_ids)) {
+                foreach($pb_ids as $pb_id) {
+                    static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
+                }
             }
         }
     }
