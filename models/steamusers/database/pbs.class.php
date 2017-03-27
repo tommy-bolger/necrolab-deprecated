@@ -29,13 +29,20 @@ extends BasePbs {
         }
     }
     
-    public static function loadIds() {
-        $cache = cache();
-        
-        if(!$cache->exists('pb_ids')) {
+    public static function loadIds() {        
+        if(empty(static::$pb_ids)) {
             $database = db();
-        
-            $pb_ids = $database->prepareExecuteQuery("
+            
+            /*
+                This utilizes cursors in Postgres to simulate unbuffered queries from MySQL
+                so that it doesn't run into memory limits while trying to fetch.
+                
+                Source: https://codepoets.co.uk/2014/postgresql-unbuffered-queries/
+                
+                This function must always be inside of a transaction for it to work.
+            */
+            $cursor_query = $database->prepareExecuteQuery("
+                DECLARE pb_ids CURSOR FOR
                 SELECT
                     steam_user_pb_id,
                     leaderboard_id,
@@ -43,18 +50,19 @@ extends BasePbs {
                     score
                 FROM steam_user_pbs
             ");
+        
+            $pb_ids = $database->prepare("
+                FETCH 1
+                FROM pb_ids
+            ");
             
-            $transaction = $cache->transaction();
-            
-            while($pb_id = $database->getStatementRow($pb_ids)) {
-                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id'], $transaction);
+            while($pb_ids->execute() && $pb_id = $database->getStatementRow($pb_ids)) {
+                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
             }
-            
-            $transaction->commit();
         }
     }
     
-    public static function save(DatabaseSteamUserPb $steam_user_pb, $cache, $cache_query_name = NULL) {
+    public static function save(DatabaseSteamUserPb $steam_user_pb, $cache_query_name = NULL) {
         $steam_user_pb_id = static::getId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score);
         
         $pb_record = array();
@@ -70,7 +78,7 @@ extends BasePbs {
     
         $steam_user_pb_id = db()->insert('steam_user_pbs', $pb_record, $cache_query_name);
         
-        static::addId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score, $steam_user_pb_id, $cache);
+        static::addId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score, $steam_user_pb_id);
         
         return $steam_user_pb_id;
     }

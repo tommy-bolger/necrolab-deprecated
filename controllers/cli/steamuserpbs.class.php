@@ -11,29 +11,21 @@ use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as Dat
 
 class SteamUserPbs
 extends Cli { 
-    protected $cache;
-    
-    public function init() {
-        $this->cache = cache();
-    }
-
     protected function populateFromEntries(DateTime $date) {    
         $database = db();
 
         $database->beginTransaction();
     
-        $leaderboard_entries_resultset = DatabaseLeaderboardEntries::getSteamPbResultset($date);
+        $leaderboard_entries = DatabaseLeaderboardEntries::getArchivedLeaderboardCursor($date);
         
-        $leaderboard_entries = $leaderboard_entries_resultset->prepareExecuteQuery();
-        
-        while($leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {
+        while($leaderboard_entries->execute() && $leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {
             $leaderboard_id = (int)$leaderboard_entry['leaderboard_id'];
             $leaderboard_snapshot_id = (int)$leaderboard_entry['leaderboard_snapshot_id'];
             $steam_user_id = (int)$leaderboard_entry['steam_user_id'];
             $score = (int)$leaderboard_entry['score'];
             $rank = (int)$leaderboard_entry['rank'];
         
-            $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score, $this->cache);
+            $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
             
             if(empty($steam_user_pb_id)) {
                 $steam_user_pb_record = new DatabaseSteamUserPb();
@@ -51,15 +43,17 @@ extends Cli {
                 $steam_user_pb_record->leaderboard_entry_details_id = $leaderboard_entry['leaderboard_entry_details_id'];
                 $steam_user_pb_record->steam_replay_id = $leaderboard_entry['steam_replay_id'];
             
-                $steam_user_pb_id = DatabaseSteamUserPbs::save($steam_user_pb_record, $this->cache, 'populate');
+                $steam_user_pb_id = DatabaseSteamUserPbs::save($steam_user_pb_record, 'populate');
             }
             
             DatabaseEntry::save($date, array(
                 'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
                 'steam_user_pb_id' => $steam_user_pb_id,
                 'rank' => $rank
-            ), "populate_entries_{$date->format('Y-m')}");
+            ), "populate_entries_{$date->format('Y-m-01')}");
         }
+        
+        DatabaseLeaderboardEntries::closeArchivedLeaderboardCursor($date);
         
         $database->commit();
     }

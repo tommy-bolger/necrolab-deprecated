@@ -27,13 +27,7 @@ use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as Dat
 
 class SteamImport
 extends Cli {
-    protected $cache;
-
     protected $as_of_date; 
-    
-    public function init() {
-        $this->cache = cache();
-    }
     
     public function importXmlChildProcess($leaderboard) { 
         $lbid = $leaderboard->lbid;
@@ -178,7 +172,7 @@ extends Cli {
                                     
                                     $score = $entry->score;
                                     
-                                    $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score, $this->cache);
+                                    $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
                                     
                                     if(empty($steam_user_pb_id)) {
                                         $database_steam_user_pb = new DatabaseSteamUserPb();
@@ -189,7 +183,7 @@ extends Cli {
                                             $database_steam_user_pb->leaderboard_id = $leaderboard_id;
                                             $database_steam_user_pb->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;
                                         
-                                            $steam_user_pb_id = DatabaseSteamUserPbs::save($database_steam_user_pb, $this->cache, 'steam_user_pb_xml_save');
+                                            $steam_user_pb_id = DatabaseSteamUserPbs::save($database_steam_user_pb, 'steam_user_pb_xml_save');
                                         }
                                     }
                                     
