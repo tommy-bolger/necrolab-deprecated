@@ -132,6 +132,10 @@ extends BaseEntries {
             ':end_date' => $date->format('Y-m-t'),
         ));
         
+        $resultset->addSortCriteria('ls.date', ASC);
+        $resultset->addSortCriteria('l.leaderboard_id', ASC);
+        $resultset->addSortCriteria('le.rank', ASC);
+        
         return $resultset;
     }
     

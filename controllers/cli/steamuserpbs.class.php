@@ -24,7 +24,7 @@ extends Cli {
         
          do {
             $leaderboard_entries = $database->getAll("
-                FETCH 100000
+                FETCH 1000000
                 FROM archived_leaderboard_data_{$date->format('Y_m')}
             ");
          
