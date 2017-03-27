@@ -94,4 +94,8 @@ extends BaseUserTokens {
         
         return $beampro_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE beampro_user_tokens;");
+    }
 }

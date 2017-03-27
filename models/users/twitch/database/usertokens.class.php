@@ -84,4 +84,8 @@ extends BaseUserTokens {
         
         return $twitch_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE twitch_user_tokens;");
+    }
 }

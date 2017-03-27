@@ -8,5 +8,7 @@ class Ranks
 extends Cli {        
     public function actionGenerate($limit = 1000000) {
         DatabaseRanks::populateTable($limit);
+        
+        DatabaseRanks::vacuum();
     }
 }

@@ -20,6 +20,10 @@ extends BaseBlacklist {
         }
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE leaderboards_blacklist;");
+    }
+    
     public static function getAll() {
         return db()->getColumn("
             SELECT

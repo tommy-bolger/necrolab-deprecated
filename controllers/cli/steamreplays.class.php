@@ -178,6 +178,10 @@ extends Cli {
             
             db()->commit();
         }
+        
+        DatabaseReplays::vacuum();
+        DatabaseRunResults::vacuum();
+        DatabaseReplayVersions::vacuum();
     }
     
     public function actionUpdateFromFiles() {
@@ -238,6 +242,10 @@ extends Cli {
         }
         
         $database->commit();
+        
+        DatabaseReplays::vacuum();
+        DatabaseRunResults::vacuum();
+        DatabaseReplayVersions::vacuum();
     }
     
     public function actionUploadFilesToS3() {        

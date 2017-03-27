@@ -70,6 +70,10 @@ extends BaseReddit {
         return $reddit_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE reddit_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("reddit_users site_user ON site_user.reddit_user_id = su.reddit_user_id");
         

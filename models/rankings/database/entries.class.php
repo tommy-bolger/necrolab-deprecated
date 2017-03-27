@@ -152,6 +152,12 @@ extends BaseEntries {
         ));
     }
     
+    public static function vacuum(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("VACUUM ANALYZE power_ranking_entries_{$date_formatted};");
+    }
+    
     public static function getAllBaseResultset($release_name, $mode_name, DateTime $date) {    
         $resultset = new SQL('power_ranking_entries');
         

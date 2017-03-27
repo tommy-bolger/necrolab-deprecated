@@ -84,4 +84,8 @@ extends BaseUserTokens {
         
         return $youtube_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE youtube_user_tokens;");
+    }
 }

@@ -91,6 +91,9 @@ extends Cli {
         }
         
         $this->cache->clear();
+        
+        DatabaseRankings::vacuum();
+        DatabaseEntries::vacuum($this->as_of_date);
     }
     
     public function actionGenerate($date = NULL) {

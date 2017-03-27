@@ -20,6 +20,10 @@ extends BaseReleases {
         }
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE releases;");
+    }
+    
     public static function getAllBaseResultset() {    
         $resultset = new SQL("releases");
         

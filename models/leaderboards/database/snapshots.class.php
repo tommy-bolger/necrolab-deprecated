@@ -72,6 +72,10 @@ extends BaseSnapshots {
         return $leaderboard_snapshot_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE leaderboard_snapshots;");
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(

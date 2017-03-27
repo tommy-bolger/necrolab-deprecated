@@ -84,4 +84,8 @@ extends BaseUserTokens {
         
         return $reddit_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE reddit_user_tokens;");
+    }
 }

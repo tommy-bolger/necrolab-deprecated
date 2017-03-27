@@ -44,6 +44,10 @@ extends BaseRanks {
         return $points;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE leaderboard_ranks;");
+    }
+    
     public static function populateTable($max_rank) {
         db()->beginTransaction();
     

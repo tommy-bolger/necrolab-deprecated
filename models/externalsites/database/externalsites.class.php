@@ -27,6 +27,10 @@ extends BaseExternalSites {
         }
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE external_sites;");
+    }
+    
     public static function getAllBaseResultset() {    
         $resultset = new SQL("external_sites");
         

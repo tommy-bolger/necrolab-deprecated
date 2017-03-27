@@ -60,6 +60,12 @@ extends BaseEntries {
             'daily_ranking_id' => $daily_ranking_id
         ));
     }
+    
+    public static function vacuum(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("VACUUM ANALYZE daily_ranking_entries_{$date_formatted};");
+    }
 
     public static function getAllBaseResultset($release_name, $mode_name, DateTime $date, $number_of_days = NULL) {
         if(empty($number_of_days)) {

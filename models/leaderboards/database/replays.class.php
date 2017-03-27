@@ -45,6 +45,10 @@ extends BaseReplays {
         return $steam_replay_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE steam_replays;");
+    }
+    
     public static function updateBatch($steam_replay_id, SteamReplay $steam_replay) { 
         $array_record = $steam_replay->toArray();
         

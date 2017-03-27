@@ -87,6 +87,9 @@ extends Cli {
         }
         
         $this->cache->clear();
+        
+        DatabaseDailyRankings::vacuum();
+        DatabaseDailyRankingEntries::vacuum($this->as_of_date);
     }
     
     public function actionGenerate($date = NULL) {        

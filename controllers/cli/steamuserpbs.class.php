@@ -70,6 +70,9 @@ extends Cli {
         DatabaseLeaderboardEntries::closeSteamPbPopulateResultset($date);
         
         $database->commit();
+        
+        DatabaseLeaderboardEntries::vacuum($date);
+        DatabaseSteamUserPbs::vacuum();
     }
     
     public function actionPopulateFromEntries($start_date, $end_date) {

@@ -80,6 +80,10 @@ extends BaseBeampro {
         return $beampro_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE beampro_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("beampro_users site_user ON site_user.beampro_user_id = su.beampro_user_id");
         

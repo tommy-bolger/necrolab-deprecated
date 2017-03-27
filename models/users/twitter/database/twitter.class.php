@@ -70,6 +70,10 @@ extends BaseTwitter {
         return $twitter_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE twitter_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("twitter_users site_user ON site_user.twitter_user_id = su.twitter_user_id");
         

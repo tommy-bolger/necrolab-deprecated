@@ -70,6 +70,10 @@ extends BaseRankings {
         return $daily_ranking_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE daily_rankings;");
+    }
+    
     public static function getAllBaseResultset($release_name, $mode_name, $number_of_days = NULL) {
         if(empty($number_of_days)) {
             $number_of_days = 0;

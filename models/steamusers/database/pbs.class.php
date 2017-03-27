@@ -96,6 +96,10 @@ extends BasePbs {
         ), array(), $cache_query_name);
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE steam_user_pbs;");
+    }
+    
     public static function getRecordModel(array $properties) {
         $record_model = new DatabaseSteamUserPb();
         

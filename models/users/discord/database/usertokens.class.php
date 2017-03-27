@@ -84,4 +84,8 @@ extends BaseUserTokens {
         
         return $discord_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE discord_user_tokens;");
+    }
 }

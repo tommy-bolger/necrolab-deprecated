@@ -61,6 +61,12 @@ extends BaseEntries {
         ), array(), "leaderboard_entries_{$date_formatted}_delete");
     }
     
+    public static function vacuum(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("VACUUM ANALYZE leaderboard_entries_{$date_formatted};");
+    }
+    
     public static function getSteamPbPopulateResultset(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     

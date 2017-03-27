@@ -85,4 +85,8 @@ extends BaseUserTokens {
         
         return $twitter_user_token_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE twitter_user_tokens;");
+    }
 }

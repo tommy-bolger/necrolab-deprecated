@@ -204,6 +204,12 @@ extends Cli {
             }
             
             db()->commit();
+            
+            Leaderboards::vacuum();
+            Snapshots::vacuum();
+            Entries::vacuum($this->as_of_date);
+            DatabaseSteamUserPbs::vacuum();
+            Details::vacuum();
         }
         
         Leaderboards::deleteTempXml($this->as_of_date);
@@ -334,6 +340,12 @@ extends Cli {
         }
         
         db()->commit();
+        
+        Leaderboards::vacuum();
+        Snapshots::vacuum();
+        Entries::vacuum($date);
+        DatabaseSteamUserPbs::vacuum();
+        Details::vacuum();
     }
     
     protected function recompressXml(DateTime $date) {

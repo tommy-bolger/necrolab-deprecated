@@ -68,6 +68,10 @@ extends BaseRankings {
         return $power_ranking_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE power_rankings;");
+    }
+    
     public static function getLastRefreshed() {
         return NULL;
     }

@@ -38,6 +38,10 @@ extends BaseRunResults {
         ), '', 'run_result_update');
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE run_results;");
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(

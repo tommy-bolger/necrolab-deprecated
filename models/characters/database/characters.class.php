@@ -22,6 +22,10 @@ extends BaseCharacters {
         }
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE characters;");
+    }
+    
     public static function getAllBaseResultset() {    
         $resultset = new SQL("characters");
         

@@ -36,6 +36,10 @@ extends BaseReplayVersions {
         ), '', 'replay_version_update');
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE steam_replay_versions;");
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(

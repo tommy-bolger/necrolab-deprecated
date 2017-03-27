@@ -180,4 +180,8 @@ extends BaseSteamUsers {
         
         return $steam_user_id;
     }
+    
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE steam_users;");
+    }
 }

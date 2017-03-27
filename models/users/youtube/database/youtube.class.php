@@ -70,6 +70,10 @@ extends BaseYoutube {
         return $youtube_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE youtube_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("youtube_users site_user ON site_user.youtube_user_id = su.youtube_user_id");
         

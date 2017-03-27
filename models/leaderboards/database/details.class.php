@@ -43,6 +43,10 @@ extends BaseDetails {
         return $leaderboard_entry_details_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE leaderboard_entry_details;");
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(

@@ -70,6 +70,10 @@ extends BaseDiscord {
         return $discord_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE discord_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("discord_users site_user ON site_user.discord_user_id = su.discord_user_id");
         

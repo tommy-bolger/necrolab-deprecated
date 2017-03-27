@@ -68,6 +68,10 @@ extends BaseTwitch {
         return $twitch_user_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE twitch_users;");
+    }
+    
     public static function addSiteUserJoin($resultset) {    
         $resultset->addJoinCriteria("twitch_users site_user ON site_user.twitch_user_id = su.twitch_user_id");
         

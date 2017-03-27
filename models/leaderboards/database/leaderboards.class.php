@@ -58,6 +58,10 @@ extends BaseLeaderboards {
         return $leaderboard_id;
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE leaderboards;");
+    }
+    
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(

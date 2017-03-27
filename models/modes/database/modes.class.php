@@ -21,6 +21,10 @@ extends BaseModes {
         }
     }
     
+    public static function vacuum() {
+        db()->exec("VACUUM ANALYZE modes;");
+    }
+    
     public static function getBaseResultset() {    
         $resultset = new SQL("modes");
         
