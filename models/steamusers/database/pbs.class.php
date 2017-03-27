@@ -30,7 +30,9 @@ extends BasePbs {
     }
     
     public static function loadIds() {
-        if(empty(static::$pb_ids)) {
+        $cache = cache();
+        
+        if(!$cache->exists('pb_ids')) {
             $database = db();
         
             $pb_ids = $database->prepareExecuteQuery("
@@ -42,13 +44,17 @@ extends BasePbs {
                 FROM steam_user_pbs
             ");
             
+            $transaction = $cache->transaction();
+            
             while($pb_id = $database->getStatementRow($pb_ids)) {
-                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id']);
+                static::addId($pb_id['leaderboard_id'], $pb_id['steam_user_id'], $pb_id['score'], $pb_id['steam_user_pb_id'], $transaction);
             }
+            
+            $transaction->commit();
         }
     }
     
-    public static function save(DatabaseSteamUserPb $steam_user_pb, $cache_query_name = NULL) {
+    public static function save(DatabaseSteamUserPb $steam_user_pb, $cache, $cache_query_name = NULL) {
         $steam_user_pb_id = static::getId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score);
         
         $pb_record = array();
@@ -64,7 +70,7 @@ extends BasePbs {
     
         $steam_user_pb_id = db()->insert('steam_user_pbs', $pb_record, $cache_query_name);
         
-        static::addId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score, $steam_user_pb_id);
+        static::addId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score, $steam_user_pb_id, $cache);
         
         return $steam_user_pb_id;
     }

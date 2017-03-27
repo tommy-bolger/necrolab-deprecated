@@ -8,8 +8,6 @@ use \Modules\Necrolab\Models\Leaderboards\Snapshots;
 class Pbs {
     protected static $pbs = array();
     
-    protected static $pb_ids = array();
-    
     protected static function load($steam_user_pb_id) {}
     
     public static function loadIds() {}
@@ -20,29 +18,16 @@ class Pbs {
         return static::$pbs[$steam_user_pb_id];
     }
     
-    public static function getId($leaderboard_id, $steam_user_id, $score) {
+    public static function getId($leaderboard_id, $steam_user_id, $score, $cache) {    
         static::loadIds();
         
-        $leaderboard_id = (int)$leaderboard_id;
-        $steam_user_id = (int)$steam_user_id;
-        $score = (int)$score;
-        
-        $steam_user_pb_id = NULL;
-        
-        if(isset(static::$pb_ids[$leaderboard_id][$steam_user_id][$score])) {
-            $steam_user_pb_id = static::$pb_ids[$leaderboard_id][$steam_user_id][$score];
-        }
-        
-        return $steam_user_pb_id;
+        return $cache->hGet('pb_ids', "{$leaderboard_id}:{$steam_user_id}:{$score}");
     }
     
-    public static function addId($leaderboard_id, $steam_user_id, $score, $steam_user_pb_id) {
-        $leaderboard_id = (int)$leaderboard_id;
-        $steam_user_id = (int)$steam_user_id;
-        $score = (int)$score;
+    public static function addId($leaderboard_id, $steam_user_id, $score, $steam_user_pb_id, $cache) {    
         $steam_user_pb_id = (int)$steam_user_pb_id;
-    
-        static::$pb_ids[$leaderboard_id][$steam_user_id][$score] = $steam_user_pb_id;
+        
+        $cache->hSetNx('pb_ids', "{$leaderboard_id}:{$steam_user_id}:{$score}", $steam_user_pb_id);
     }
     
     public static function getFormattedApiRecord($data_row) {
