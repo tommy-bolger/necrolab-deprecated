@@ -61,7 +61,7 @@ extends BaseEntries {
         ), array(), "leaderboard_entries_{$date_formatted}_delete");
     }
     
-    public static function getArchivedLeaderboardCursor(DateTime $date) {
+    public static function getSteamPbPopulateResultset(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         $resultset = new SQL("steam_pb_leaderboard_entries_{$date_formatted}");
@@ -132,17 +132,10 @@ extends BaseEntries {
             ':end_date' => $date->format('Y-m-t'),
         ));
         
-        $resultset->prepareExecuteQuery();
-        
-        $populate_data = db()->prepare("
-            FETCH 1
-            FROM archived_leaderboard_data_{$date_formatted}
-        ");
-        
-        return $populate_data;
+        return $resultset;
     }
     
-    public static function closeArchivedLeaderboardCursor(DateTime $date) {
+    public static function closeSteamPbPopulateResultset(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         db()->exec("CLOSE archived_leaderboard_data_{$date_formatted};");

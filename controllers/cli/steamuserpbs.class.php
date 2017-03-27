@@ -16,44 +16,58 @@ extends Cli {
 
         $database->beginTransaction();
     
-        $leaderboard_entries = DatabaseLeaderboardEntries::getArchivedLeaderboardCursor($date);
+        $leaderboard_entries_resultset = DatabaseLeaderboardEntries::getSteamPbPopulateResultset($date);
         
-        while($leaderboard_entries->execute() && $leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {
-            $leaderboard_id = (int)$leaderboard_entry['leaderboard_id'];
-            $leaderboard_snapshot_id = (int)$leaderboard_entry['leaderboard_snapshot_id'];
-            $steam_user_id = (int)$leaderboard_entry['steam_user_id'];
-            $score = (int)$leaderboard_entry['score'];
-            $rank = (int)$leaderboard_entry['rank'];
+        $leaderboard_entries_resultset->prepareExecuteQuery();
         
-            $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
-            
-            if(empty($steam_user_pb_id)) {
-                $steam_user_pb_record = new DatabaseSteamUserPb();
+        $leaderboard_entries = array();
+        
+         do {
+            $leaderboard_entries = $database->getAll("
+                FETCH 100000
+                FROM archived_leaderboard_data_{$date->format('Y_m')}
+            ");
+         
+            if(!empty($leaderboard_entries)) {
+                foreach($leaderboard_entries as $leaderboard_entry) {
+                    $leaderboard_id = (int)$leaderboard_entry['leaderboard_id'];
+                    $leaderboard_snapshot_id = (int)$leaderboard_entry['leaderboard_snapshot_id'];
+                    $steam_user_id = (int)$leaderboard_entry['steam_user_id'];
+                    $score = (int)$leaderboard_entry['score'];
+                    $rank = (int)$leaderboard_entry['rank'];
+                
+                    $steam_user_pb_id = DatabaseSteamUserPbs::getId($leaderboard_id, $steam_user_id, $score);
+                    
+                    if(empty($steam_user_pb_id)) {
+                        $steam_user_pb_record = new DatabaseSteamUserPb();
 
-                $steam_user_pb_record->leaderboard_id = $leaderboard_id;
-                $steam_user_pb_record->steam_user_id = $steam_user_id;
-                $steam_user_pb_record->score = $score;
-                $steam_user_pb_record->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;
-                $steam_user_pb_record->first_rank = $rank;
-                $steam_user_pb_record->time = $leaderboard_entry['time'];
-                $steam_user_pb_record->win_count = $leaderboard_entry['win_count'];
-                $steam_user_pb_record->zone = $leaderboard_entry['zone'];
-                $steam_user_pb_record->level = $leaderboard_entry['level'];
-                $steam_user_pb_record->is_win = $leaderboard_entry['is_win'];
-                $steam_user_pb_record->leaderboard_entry_details_id = $leaderboard_entry['leaderboard_entry_details_id'];
-                $steam_user_pb_record->steam_replay_id = $leaderboard_entry['steam_replay_id'];
-            
-                $steam_user_pb_id = DatabaseSteamUserPbs::save($steam_user_pb_record, 'populate');
+                        $steam_user_pb_record->leaderboard_id = $leaderboard_id;
+                        $steam_user_pb_record->steam_user_id = $steam_user_id;
+                        $steam_user_pb_record->score = $score;
+                        $steam_user_pb_record->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;
+                        $steam_user_pb_record->first_rank = $rank;
+                        $steam_user_pb_record->time = $leaderboard_entry['time'];
+                        $steam_user_pb_record->win_count = $leaderboard_entry['win_count'];
+                        $steam_user_pb_record->zone = $leaderboard_entry['zone'];
+                        $steam_user_pb_record->level = $leaderboard_entry['level'];
+                        $steam_user_pb_record->is_win = $leaderboard_entry['is_win'];
+                        $steam_user_pb_record->leaderboard_entry_details_id = $leaderboard_entry['leaderboard_entry_details_id'];
+                        $steam_user_pb_record->steam_replay_id = $leaderboard_entry['steam_replay_id'];
+                    
+                        $steam_user_pb_id = DatabaseSteamUserPbs::save($steam_user_pb_record, 'populate');
+                    }
+                    
+                    DatabaseEntry::save($date, array(
+                        'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
+                        'steam_user_pb_id' => $steam_user_pb_id,
+                        'rank' => $rank
+                    ), "populate_entries_{$date->format('Y-m-01')}");
+                }
             }
-            
-            DatabaseEntry::save($date, array(
-                'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
-                'steam_user_pb_id' => $steam_user_pb_id,
-                'rank' => $rank
-            ), "populate_entries_{$date->format('Y-m-01')}");
         }
+        while(!empty($leaderboard_entries));
         
-        DatabaseLeaderboardEntries::closeArchivedLeaderboardCursor($date);
+        DatabaseLeaderboardEntries::closeSteamPbPopulateResultset($date);
         
         $database->commit();
     }
