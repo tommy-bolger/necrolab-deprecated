@@ -39,6 +39,8 @@ extends About {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Overview', '/about/overview');
+        
         $this->active_page = 'overview';
         
         $this->title = "Overview";

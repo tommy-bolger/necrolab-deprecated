@@ -37,6 +37,8 @@ use \Modules\Necrolab\Controllers\Page\Necrolab;
 class Rankings
 extends Necrolab {
     public function init() {
+        $this->addBreadCrumb('Rankings', '/rankings/power');
+    
         $this->active_page_category = 'rankings';
     }
     

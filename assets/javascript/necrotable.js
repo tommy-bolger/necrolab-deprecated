@@ -920,8 +920,9 @@ NecroTable.prototype.render = function() {
         columns: instance.columns,
         stateSave: false,
         fixedHeader: {
-            header: false,
+            header: true,
         },
+        responsive: false,
         autoWidth: false,
         buttons: instance.buttons,
         paging: instance.paging,
@@ -1036,7 +1037,7 @@ NecroTable.prototype.render = function() {
         order: default_order,
         rowCallback: row_callback,
         drawCallback: draw_callback,
-        initComplete: function(settings, json) {
+        initComplete: function(settings, json) {            
             var table_id = $(this).attr('id');
             
             if(table_id != null) {
@@ -1062,11 +1063,16 @@ NecroTable.prototype.render = function() {
         },
     });
     
-    instance.dom_object_wrapper = $('#' + instance.table_id + '_wrapper');
+    $('#entries_table_length select').selectpicker({
+        width: 'auto'
+    });
     
     /* ---------- Set a processing overlay ---------- */
     
-    /*instance.dom_object.on('processing.dt',function(e, settings, processing) {        
+    /*
+     instance.dom_object_wrapper = $('#' + instance.table_id + '_wrapper');
+     
+     instance.dom_object.on('processing.dt',function(e, settings, processing) {        
         if(processing) {
             instance.dom_object_wrapper.LoadingOverlay('show');
         }
@@ -1141,6 +1147,8 @@ NecroTable.prototype.render = function() {
             
             instance.datatable.ajax.reload();
         });
+        
+        instance.release_field.selectpicker();
     }
     
     /* ---------- Render the mode field if it's enabled ---------- */
@@ -1179,6 +1187,8 @@ NecroTable.prototype.render = function() {
 
             instance.datatable.ajax.reload();
         });
+        
+        instance.mode_field.selectpicker();
     }
     
     /* ---------- Render the site field if it's enabled ---------- */
@@ -1193,7 +1203,39 @@ NecroTable.prototype.render = function() {
         for(var index = 0; index < site_values_length; index++) {
             var site_value = NecroTable.site_field_values[index];
             
+            var site_icon_html = '';
+            
+            switch(site_value.name) {
+                case 'beampro':
+                    site_icon_html = Formatting.getBeamproLogo();
+                    break;
+                case 'discord':
+                    site_icon_html = Formatting.getDiscordLogo();
+                    break;
+                case 'reddit':
+                    site_icon_html = Formatting.getRedditLogo();
+                    break;
+                case 'twitch':
+                    site_icon_html = Formatting.getTwitchLogo();
+                    break;
+                case 'twitter':
+                    site_icon_html = Formatting.getTwitterLogo();
+                    break;
+                case 'youtube':
+                    site_icon_html = Formatting.getYoutubeLogo();
+                    break;
+                default:
+                    site_icon_html = Formatting.getSteamLogo();
+                    break;
+            }
+
             site_field_html += '<option value="' + site_value.name + '"';
+            
+            if(site_icon_html.length > 0) {
+                site_icon_html = site_icon_html.replace(/"/g, '\'');
+                
+                site_field_html += ' data-content="' + site_icon_html + ' ' + site_value.display_name + '"';
+            }
             
             if(site_value.name == instance.site_field_value) {
                 site_field_html += ' selected="selected"';
@@ -1217,6 +1259,8 @@ NecroTable.prototype.render = function() {
             
             instance.datatable.ajax.reload();
         });
+        
+        instance.site_field.selectpicker();
     }
     
     /* ---------- Render the character field if it's enabled ---------- */
@@ -1231,7 +1275,24 @@ NecroTable.prototype.render = function() {
         for(var index = 0; index < character_values_length; index++) {
             var character_value = NecroTable.character_field_values[index];
             
-            character_field_html += '<option value="' + character_value.name + '"';
+            var character_image_html;
+            
+            //A thing to note: bootstrap select's custom html requires that it have single quotes instead of double.
+            if(character_value.name != 'all' && character_value.name != 'story') {
+                character_image_html = Formatting.getCharacterImageHtml(character_value.name) +  ' ' + character_value.display_name;
+                character_image_html = character_image_html.replace(/"/g, '\'');
+            }
+            else if(character_value.name == 'all') {
+                character_image_html = "<span class='menu_small'>" + character_value.display_name + "</span>";
+            }
+            else if(character_value.name == 'story') {
+                character_image_html = "<span class='menu_small'>Story</span>";
+            }
+            
+            character_field_html += '<option data-content="' + character_image_html + '" value="' + character_value.name + '"';
+            
+            /*character_field_html += '<option data-content="<span class=\'character_header ' + character_value.name + '_header\'>' + 
+                character_value.display_name + '</span>" value="' + character_value.name + '"';*/
             
             if(character_value.name == instance.character_field_value) {
                 character_field_html += ' selected="selected"';
@@ -1255,6 +1316,8 @@ NecroTable.prototype.render = function() {
             
             instance.datatable.ajax.reload();
         });
+        
+        instance.character_field.selectpicker();
     }
     
     /* ---------- Render the number of days field if it's enabled ---------- */
@@ -1300,6 +1363,8 @@ NecroTable.prototype.render = function() {
             
             instance.datatable.ajax.reload();
         });
+        
+        instance.number_of_days_field.selectpicker();
     }
     
     /* ---------- Render the date field if it's enabled ---------- */

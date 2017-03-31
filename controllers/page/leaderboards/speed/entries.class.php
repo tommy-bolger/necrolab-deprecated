@@ -39,6 +39,8 @@ extends BaseEntries {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Speed', '/leadeboards/speed/entries');
+        
         $this->active_page = 'speed_leaderboards';
         
         $this->title = "Leaderboard::Speed::Entries::{$this->lbid}";

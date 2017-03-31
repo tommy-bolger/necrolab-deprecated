@@ -40,6 +40,8 @@ extends Rankings {
     
     public function init() {
         parent::init();
+        
+        $this->addBreadCrumb('Power', '/rankings/power');
     
         $this->active_page_category = 'rankings';
         $this->active_page = 'power_rankings';

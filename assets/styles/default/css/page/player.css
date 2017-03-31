@@ -15,8 +15,12 @@
 }
 
 .login_form {
-    float: left; 
+    float: left;
     vertical-align: middle;
+}
+
+.login_form form .form_field {
+    padding-left: 0px;
 }
 
 .login_form form .form_button {

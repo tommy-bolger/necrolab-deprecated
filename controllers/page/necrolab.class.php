@@ -48,6 +48,8 @@ extends PageController {
 
     protected $active_page;
     
+    protected $breadcrumbs = array();
+    
     protected $date;
     
     protected $submitted_date;
@@ -70,17 +72,36 @@ extends PageController {
         }
     }
     
-    protected function addDataTableFiles() {        
-        $this->page->addJavascriptFiles(array(
-            'jquery.min.js',
-            'datatables.min.js',
-            'url.js',
-            'formatting.js',
-            'bootstrap-datepicker.min.js',
-            'moment.min.js',
-            'necrotable.js',
-            'request.js'
+    protected function addDataTableFiles() {  
+        $this->page->addCssFiles(array(
+            '/datatables/jquery.dataTables.min.css',
+            '/datatables/dataTables.bootstrap.min.css',
+            '/datatables/fixedHeader.bootstrap.min.css',
+            '/datatables/responsive.bootstrap.min.css',
+            '/bootstrap/bootstrap-datepicker3.min.css',
+            '/bootstrap/bootstrap-select.min.css',
+            '/datepicker.css',
+            '/characters_header.css',
+            '/necrotable.css'
         ));
+    
+        $this->page->addJavascriptFiles(array(
+            'moment.min.js',
+            'bootstrap-datepicker.min.js',
+            'bootstrap-select.min.js',
+            'datatables.min.js',
+            'formatting.js',
+            'request.js',
+            'url.js',
+            'necrotable.js'
+        ));
+    }
+    
+    public function addBreadCrumb($page_name, $url) {
+        $this->breadcrumbs[] = array(
+            'page_name' => $page_name,
+            'url' => $url
+        );
     }
     
     public function setup() {        
@@ -89,12 +110,14 @@ extends PageController {
         $this->page->setTitle("NecroLab::{$this->title}");
 
         $this->page->addCssFiles(array(
-            'reset.css',
-            'bootstrap.css',
-            'main.css',
-            '/jquery.dataTables.css',
-            '/bootstrap-datepicker3.min.css',
-            '/datepicker.css'
+            'normalize.css',
+            '/bootstrap/bootstrap.min.css',
+            'main.css'
+        ));
+        
+        $this->page->addJavascriptFiles(array(
+            'jquery.min.js',
+            'bootstrap.min.js'
         ));
         
         header('Expires: Sat, 26 Jul 1997 05:00:00 GMT');
@@ -110,6 +133,12 @@ extends PageController {
         
         $this->page->body->addChild($this->active_page_category, 'active_page_category');
         $this->page->body->addChild($this->active_page, 'active_page');
+        
+        $breadcrumbs_template = new TemplateElement('breadcrumbs.php');
+        
+        $breadcrumbs_template->addChild($this->breadcrumbs, 'breadcrumbs');
+        
+        $this->page->body->addChild($breadcrumbs_template, 'breadcrumbs');
         
         $last_refreshed_date = new DateTime();
         

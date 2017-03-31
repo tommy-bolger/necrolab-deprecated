@@ -41,6 +41,8 @@ extends BaseEntries {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Daily', '/leadeboards/daily/entries');
+        
         $this->active_page = 'daily_leaderboards';
         
         $this->title = "Leaderboard::Daily::Entries";

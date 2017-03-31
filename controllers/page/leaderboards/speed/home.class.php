@@ -39,6 +39,8 @@ extends Leaderboards {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Speed', '/leadeboards/speed');
+        
         $this->active_page = 'speed_leaderboards';
         
         $this->title = 'Leaderboards::Speed';

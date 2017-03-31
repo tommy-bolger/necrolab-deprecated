@@ -59,10 +59,12 @@ extends Players {
         if(empty($this->steam_user_record)) {
             Http::redirect('/players/');
         }
+        
+        $this->addBreadCrumb('Player Profile', "/players/player?id={$this->steamid}");
     }
     
     protected function setSteamId() {
-        $this->steamid = request()->get->getVariable('id', 'integer');
+        $this->steamid = request()->get->id;
     }
     
     public function setup() {

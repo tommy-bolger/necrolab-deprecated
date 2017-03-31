@@ -39,6 +39,8 @@ extends Categories {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Deathless', '/rankings/categories/deathless');
+        
         $this->active_page = 'deathless_rankings';
     }
     

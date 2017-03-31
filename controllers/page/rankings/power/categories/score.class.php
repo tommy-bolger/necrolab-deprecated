@@ -39,6 +39,8 @@ extends Categories {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Score', '/rankings/categories/score');
+        
         $this->active_page = 'score_rankings';
     }
     

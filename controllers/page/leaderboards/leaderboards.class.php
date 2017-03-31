@@ -38,6 +38,8 @@ class Leaderboards
 extends Necrolab {    
     public function init() {
         parent::init();
+        
+        $this->addBreadCrumb('Leaderboards', '/leaderboards/score');
     
         $this->active_page_category = 'leaderboards';
         

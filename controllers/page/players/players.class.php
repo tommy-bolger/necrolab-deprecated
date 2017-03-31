@@ -39,6 +39,8 @@ extends Necrolab {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Players', '/players');
+        
         $this->active_page_category = 'players';
     }
     

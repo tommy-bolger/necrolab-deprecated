@@ -47,6 +47,8 @@ extends Leaderboards {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Entries', '/leadeboards/entries');
+        
         $this->loadLeaderboard();
     }
     

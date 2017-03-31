@@ -39,6 +39,8 @@ extends About {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('API', '/about/api');
+        
         $this->active_page = 'api';
         
         $this->title = "API";

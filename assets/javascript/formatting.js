@@ -310,10 +310,14 @@ Formatting.getBeamproLoginLink = function() {
 
 /* ---------- Discord ---------- */
 
-Formatting.getDiscordLogo = function(discord_username, discriminator) {
+Formatting.getDiscordLogo = function() {
+    return '<img src="/assets/images/modules/necrolab/styles/default/logos/discord_logo_white_small.png" />';
+};
+
+Formatting.getDiscordUserLogo = function(discord_username, discriminator) {
     var full_username = discord_username + '#' + discriminator;
     
-    return '<a href="http://discord/' + full_username + '"><img src="/assets/images/modules/necrolab/styles/default/logos/discord_logo_white_small.png" alt="' + full_username + '" /></a>';
+    return '<a href="http://discord.gg"><img src="/assets/images/modules/necrolab/styles/default/logos/discord_logo_white_small.png" alt="' + full_username + '" /></a>';
 };
 
 Formatting.getDiscordFancyLink = function(discord_username, discriminator) {
@@ -457,7 +461,7 @@ Formatting.getSocialMedia = function(steamid, social_media) {
     }
     
     if(social_media['discord']['username'] != null) {
-        social_media_html += Formatting.getDiscordLogo(social_media.discord.username, social_media.discord.discriminator);
+        social_media_html += Formatting.getDiscordUserLogo(social_media.discord.username, social_media.discord.discriminator);
     }
     
     if(social_media['hitbox'] != null) {

@@ -40,6 +40,8 @@ extends Rankings {
     
     public function init() {
         parent::init();
+        
+        $this->addBreadCrumb('Daily', '/rankings/daily');
     
         $this->active_page = 'daily_rankings';
     }

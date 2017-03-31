@@ -39,6 +39,8 @@ extends Leaderboards {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Deathless', '/leadeboards/deathless');
+        
         $this->active_page = 'deathless_leaderboards';
         
         $this->title = 'Leaderboards::Deathless';

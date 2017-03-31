@@ -39,6 +39,8 @@ use \Framework\Html\Misc\TemplateElement;
 class About
 extends Necrolab {    
     public function init() {
+        $this->addBreadCrumb('About', '/about');
+    
         $this->active_page_category = 'about';
         
         $this->title = "About";

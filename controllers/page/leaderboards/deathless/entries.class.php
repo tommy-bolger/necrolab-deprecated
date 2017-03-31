@@ -39,6 +39,8 @@ extends BaseEntries {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Deathless', '/leadeboards/deathless/entries');
+        
         $this->active_page = 'deathless_leaderboards';
         
         $this->title = "Leaderboard::Deathless::Entries::{$this->lbid}";

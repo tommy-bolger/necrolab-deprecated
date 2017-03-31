@@ -39,6 +39,8 @@ extends Leaderboards {
     public function init() {
         parent::init();
         
+        $this->addBreadCrumb('Daily', '/leadeboards/daily');
+        
         $this->active_page = 'daily_leaderboards';
         
         $this->title = 'Leaderboards::Daily';
