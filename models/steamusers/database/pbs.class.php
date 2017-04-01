@@ -9,6 +9,7 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as DatabaseLeade
 use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots as DatabaseSnapshots;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
 use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
+use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
 use \Modules\Necrolab\Models\Leaderboards\Database\Details as DatabaseDetails;
 use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
@@ -166,14 +167,18 @@ extends BasePbs {
         
         $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
         $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
+        $resultset->addJoinCriteria('modes mo ON mo.mode_id = l.mode_id');
         $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
-        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
-        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sup.steam_user_id');
-        $resultset->addJoinCriteria('steam_replays sr ON sr.steam_replay_id = sup.steam_replay_id');
         $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = sup.leaderboard_entry_details_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
         
-        $resultset->addLeftJoinCriteria('run_results rr ON rr.run_result_id = sr.run_result_id');
-        $resultset->addLeftJoinCriteria('steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id');
+        $resultset->addJoinCriteria("
+            steam_replays sr ON sr.steam_replay_id = sup.steam_replay_id
+            LEFT JOIN run_results rr ON rr.run_result_id = sr.run_result_id
+            LEFT JOIN steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id
+        ");
+        
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sup.steam_user_id');
         
         return $resultset;
     }
@@ -196,6 +201,7 @@ extends BasePbs {
         
         DatabaseLeaderboards::setSelectFields($resultset);
         DatabaseCharacters::setSelectFields($resultset);
+        DatabaseModes::setSelectFields($resultset);
         DatabaseSnapshots::setSelectFields($resultset);
         DatabaseReplays::setSelectFields($resultset);
         DatabaseDetails::setSelectFields($resultset);

@@ -258,26 +258,43 @@ extends WebController {
     protected function getResultset() {}
     
     protected function getPlayerData($row) {
+        $steamid = (string)$row['steamid'];
+    
         return array(
-            'steamid' => (string)$row['steamid'],
+            'steamid' => $steamid,
             'personaname' => $row['personaname'],
             'linked' => array(
                 'steam' => array(
+                    'id' => $steamid,
                     'personaname' => $row['steam_personaname'],
                     'profile_url' => $row['steam_profile_url']
                 ),
-                'twitch' => $row['twitch_username'],
+                'twitch' => array(
+                    'id' => $row['twitch_id'],
+                    'username' => $row['twitch_username']
+                ),
                 'discord' => array(
+                    'id' => $row['discord_id'],
                     'username' => $row['discord_username'],
                     'discriminator' => $row['discord_discriminator']
                 ),
-                'reddit' => $row['reddit_username'],
-                'youtube' => $row['youtube_username'],
+                'reddit' => array(
+                    'id' => $row['reddit_id'],
+                    'username' => $row['reddit_username']
+                ),
+                'youtube' => array(
+                    'id' => $row['youtube_id'],
+                    'username' => $row['youtube_username']
+                ),
                 'twitter' => array(
+                    'id' => $row['twitter_id'],
                     'nickname' => $row['twitter_nickname'],
                     'name' => $row['twitter_name']
                 ),
-                'beampro' => $row['beampro_username'],
+                'beampro' => array(
+                    'id' => $row['beampro_id'],
+                    'username' => $row['beampro_username']
+                )
             )
         );
     }

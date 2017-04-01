@@ -102,8 +102,16 @@ extends BaseExternalSites {
                 'alias' => 'steam_profile_url'
             ),
             array(
+                'field' => 'tu.twitch_id',
+                'alias' => 'twitch_id'
+            ),
+            array(
                 'field' => 'tu.user_display_name',
                 'alias' => 'twitch_username'
+            ),
+            array(
+                'field' => "du.discord_id",
+                'alias' => 'discord_id'
             ),
             array(
                 'field' => "du.username",
@@ -114,12 +122,24 @@ extends BaseExternalSites {
                 'alias' => 'discord_discriminator'
             ),
             array(
+                'field' => "ru.reddit_id",
+                'alias' => 'reddit_id'
+            ),
+            array(
                 'field' => "ru.username",
                 'alias' => 'reddit_username'
             ),
             array(
                 'field' => "yu.youtube_id",
+                'alias' => 'youtube_id'
+            ),
+            array(
+                'field' => "yu.youtube_id",
                 'alias' => 'youtube_username'
+            ),
+            array(
+                'field' => 'twu.twitter_id',
+                'alias' => 'twitter_id'
             ),
             array(
                 'field' => 'twu.nickname',
@@ -130,16 +150,12 @@ extends BaseExternalSites {
                 'alias' => 'twitter_name'
             ),
             array(
+                'field' => 'bu.beampro_id',
+                'alias' => 'beampro_id'
+            ),
+            array(
                 'field' => 'bu.username',
                 'alias' => 'beampro_username'
-            ),
-            array(
-                'field' => 'NULL',
-                'alias' => 'hitbox_username'
-            ),
-            array(
-                'field' => 'su.website',
-                'alias' => 'website'
             )
         ));
     
@@ -149,6 +165,5 @@ extends BaseExternalSites {
         $resultset->addLeftJoinCriteria('youtube_users yu ON yu.youtube_user_id = su.youtube_user_id');
         $resultset->addLeftJoinCriteria('twitter_users twu ON twu.twitter_user_id = su.twitter_user_id');
         $resultset->addLeftJoinCriteria('beampro_users bu ON bu.beampro_user_id = su.beampro_user_id');
-        //$resultset->addLeftJoinCriteria('hitbox_users hu ON hu.hitbox_user_id = su.twitch_user_id');
     }
 }

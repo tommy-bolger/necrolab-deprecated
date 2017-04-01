@@ -172,14 +172,16 @@ extends BaseEntries {
             )
         ));
         
-        DatabaseEntry::setSelectFields($resultset);
-        
         $resultset->setFromTable('power_rankings pr');
         
         $resultset->addJoinCriteria('releases r ON r.release_id = pr.release_id');
         $resultset->addJoinCriteria('modes mo ON mo.mode_id = pr.mode_id');
         $resultset->addJoinCriteria("power_ranking_entries_{$date->format('Y_m')} pre ON pre.power_ranking_id = pr.power_ranking_id");
         $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
+        
+        //These two calls need to be made in this order for optimal query speed
+        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        DatabaseEntry::setSelectFields($resultset);
         
         $resultset->addFilterCriteria('pr.date = :date', array(
             ':date' => $date->format('Y-m-d')
@@ -194,8 +196,6 @@ extends BaseEntries {
         ));
         
         $resultset->setSortCriteria('pre.rank', 'ASC');
-        
-        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
         
         return $resultset;
     }
@@ -254,7 +254,6 @@ extends BaseEntries {
             )
         ));
         
-        DatabaseEntry::setSelectFields($resultset);
         DatabaseModes::setSelectFields($resultset);
         
         $resultset->setFromTable('power_rankings pr');
@@ -263,6 +262,8 @@ extends BaseEntries {
         $resultset->addJoinCriteria('modes mo ON mo.mode_id = pr.mode_id');
         $resultset->addJoinCriteria('{{PARTITION_TABLE}} pre ON pre.power_ranking_id = pr.power_ranking_id');
         $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = pre.steam_user_id');
+        
+        DatabaseEntry::setSelectFields($resultset);
         
         $parition_table_names = static::getPartitionTableNames('power_ranking_entries', $start_date, $end_date);
         

@@ -456,40 +456,28 @@ Formatting.getSocialMedia = function(steamid, social_media) {
     //Exclude this for now since it seems that steamids don't go to their exact profiles when linked.
     //social_media_html += Formatting.getSteamLogoLink(steamid);
     
-    if(social_media['beampro'] != null) {
-        social_media_html += Formatting.getBeamproLogoLink(social_media.beampro);
+    if(social_media['beampro']['username'] != null) {
+        social_media_html += Formatting.getBeamproLogoLink(social_media.beampro.username);
     }
     
     if(social_media['discord']['username'] != null) {
         social_media_html += Formatting.getDiscordUserLogo(social_media.discord.username, social_media.discord.discriminator);
     }
     
-    if(social_media['hitbox'] != null) {
-        social_media_html += Formatting.getHitboxLogoLink(social_media.hitbox);
+    if(social_media['reddit']['username'] != null) {
+        social_media_html += Formatting.getRedditLogoLink(social_media.reddit.username);
     }
     
-    if(social_media['reddit'] != null) {
-        social_media_html += Formatting.getRedditLogoLink(social_media.reddit);
-    }
-    
-    if(social_media['twitch'] != null) {
-        social_media_html += Formatting.getTwitchLogoLink(social_media.twitch);
+    if(social_media['twitch']['username'] != null) {
+        social_media_html += Formatting.getTwitchLogoLink(social_media.twitch.username);
     }
     
     if(social_media['twitter']['nickname'] != null) {
         social_media_html += Formatting.getTwitterLogoLink(social_media.twitter.nickname);
     }
     
-    /*if(social_media['nico_nico_url'] != null) {
-        social_media_html += Formatting.getNicoNicoFancyLink(social_media.nico_nico_url);
-    }*/
-    
-    if(social_media['youtube'] != null) {
-        social_media_html += Formatting.getYoutubeLogoLink(social_media.youtube);
-    }
-    
-    if(social_media['website'] != null) {
-        social_media_html += Formatting.getWebsiteFancyLink(social_media.website);
+    if(social_media['youtube']['username'] != null) {
+        social_media_html += Formatting.getYoutubeLogoLink(social_media.youtube.username);
     }
     
     social_media_html += '</span>';

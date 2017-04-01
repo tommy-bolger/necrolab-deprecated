@@ -13,12 +13,12 @@ function process_player_data(data, table) {
                 processed_data.push([
                     Formatting.getNecrolabUserLink(row_data.steamid, row_data.personaname),
                     Formatting.getSteamFancyLink(row_data.linked.steam.personaname, row_data.linked.steam.profile_url),
-                    Formatting.getBeamproFancyLink(row_data.linked.beampro),
+                    Formatting.getBeamproFancyLink(row_data.linked.beampro.username),
                     Formatting.getDiscordFancyLink(row_data.linked.discord.username, row_data.linked.discord.discriminator),
-                    Formatting.getRedditFancyLink(row_data.linked.reddit),
-                    Formatting.getTwitchFancyLink(row_data.linked.twitch),
+                    Formatting.getRedditFancyLink(row_data.linked.reddit.username),
+                    Formatting.getTwitchFancyLink(row_data.linked.twitch.username),
                     Formatting.getTwitterFancyLink(row_data.linked.twitter.nickname),
-                    Formatting.getYoutubeFancyLink(row_data.linked.youtube)
+                    Formatting.getYoutubeFancyLink(row_data.linked.youtube.username)
                 ]);
             }
         }

@@ -156,11 +156,11 @@ extends BaseReplays {
         
         $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_replay_id = sr.steam_replay_id');
         $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
-        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sr.steam_user_id');
         $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
         $resultset->addJoinCriteria('modes mo ON mo.mode_id = l.mode_id');
         $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
         $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = sup.leaderboard_entry_details_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sr.steam_user_id');
         
         $resultset->addLeftJoinCriteria('run_results rr ON rr.run_result_id = sr.run_result_id');
         $resultset->addLeftJoinCriteria('steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id');

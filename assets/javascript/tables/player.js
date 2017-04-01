@@ -3,12 +3,12 @@ function process_info_data(data, table) {
     
     
     if(data['steamid'] != null) {
-        var beampro_info = Formatting.getBeamproFancyLink(data.linked.beampro);
+        var beampro_info = Formatting.getBeamproFancyLink(data.linked.beampro.username);
         var discord_info = Formatting.getDiscordFancyLink(data.linked.discord.username, data.linked.discord.discriminator);
-        var reddit_info = Formatting.getRedditFancyLink(data.linked.reddit);
-        var twitch_info = Formatting.getTwitchFancyLink(data.linked.twitch);
+        var reddit_info = Formatting.getRedditFancyLink(data.linked.reddit.username);
+        var twitch_info = Formatting.getTwitchFancyLink(data.linked.twitch.username);
         var twitter_info = Formatting.getTwitterFancyLink(data.linked.twitter.nickname);
-        var youtube_info = Formatting.getYoutubeFancyLink(data.linked.youtube);
+        var youtube_info = Formatting.getYoutubeFancyLink(data.linked.youtube.username);
         
         if(NecroTable.user_api_key != null) {
             if(beampro_info == null) {
