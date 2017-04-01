@@ -1332,7 +1332,7 @@ NecroTable.prototype.render = function() {
         for(var index = 0; index < number_of_days_values_length; index++) {
             var number_of_days_value = NecroTable.number_of_days_field_values[index];
             
-            var display_name = number_of_days_value;
+            var display_name = number_of_days_value + ' Days';
             
             if(number_of_days_value == '0') {
                 display_name = 'All';
@@ -1351,7 +1351,6 @@ NecroTable.prototype.render = function() {
         
         number_of_days_field_container.html('\
             <label> \
-            # of Days: \
             ' + number_of_days_field_html + ' \
             </label> \
         ');
