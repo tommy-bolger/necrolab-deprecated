@@ -405,7 +405,7 @@ NecroTable.prototype.enableCollapsibleRows = function(number_of_collapsible_rows
         className: 'expand_control',
         orderable: false,
         data: 0,
-        defaultContent: '<a class="expandable_row closed" href="#">&#x25B6;</a>'
+        defaultContent: '<a class="expandable_row menu_small closed" href="#">+</a>'
     });
 };
 
@@ -901,13 +901,13 @@ NecroTable.prototype.render = function() {
                     link_element.removeClass('closed');
                     link_element.addClass('open');
                     
-                    link_element.html('&#x25BC;');
+                    link_element.html('-');
                 }
                 else {
                     link_element.removeClass('open');
                     link_element.addClass('closed');
                     
-                    link_element.html('&#x25B6;');
+                    link_element.html('+');
                 }
             });
         };
