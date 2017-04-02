@@ -18,7 +18,7 @@ function process_data(data, table) {
                     row_data.win,
                     row_data.replay.run_result,
                     row_data.replay.seed,
-                    Formatting.getReplayFileHtml(row_data.replay.replay_file)
+                    Formatting.getReplayFileHtml(row_data.replay.file_url)
                 ];
                 
                 processed_data.push(processed_row);

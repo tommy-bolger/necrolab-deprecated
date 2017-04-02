@@ -20,7 +20,7 @@ function process_data(data, table) {
                     Formatting.getNecrolabUserLink(row_data.player.steamid, row_data.player.personaname),
                     Formatting.convertSecondsToTime(row_data.time),
                     row_data.replay.seed,
-                    Formatting.getReplayFileHtml(row_data.replay.replay_file)
+                    Formatting.getReplayFileHtml(row_data.replay.file_url)
                 ];
                 
                 processed_data.push(processed_row);

@@ -1082,7 +1082,7 @@ function process_leaderboard_score_data(data, table) {
                     row_data.entry.win,
                     row_data.entry.replay.run_result,
                     row_data.entry.replay.seed,
-                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
+                    Formatting.getReplayFileHtml(row_data.entry.replay.file_url)
                 ];
                 
                 processed_data.push(processed_row);
@@ -1177,7 +1177,7 @@ function process_leaderboard_speed_data(data, table) {
                     row_data.entry.rank,
                     Formatting.convertSecondsToTime(row_data.entry.time),
                     row_data.entry.replay.seed,
-                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
+                    Formatting.getReplayFileHtml(row_data.entry.replay.file_url)
                 ];
                 
                 processed_data.push(processed_row);
@@ -1341,7 +1341,7 @@ function process_leaderboard_daily_data(data, table) {
                     row_data.entry.win,
                     row_data.entry.replay.run_result,
                     row_data.entry.replay.seed,
-                    Formatting.getReplayFileHtml(row_data.entry.replay.replay_file)
+                    Formatting.getReplayFileHtml(row_data.entry.replay.file_url)
                 ];
                 
                 processed_data.push(processed_row);
