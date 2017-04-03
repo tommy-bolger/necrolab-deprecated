@@ -66,7 +66,7 @@ class SteamUsers {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/{$group_number}.json.gz", gzencode(json_encode($data), 9));
+        file_put_contents("{$snapshot_path}/{$group_number}.json.gz", gzencode(json_encode($data, JSON_UNESCAPED_UNICODE), 9));
     }
     
     public static function getJson($file_path) {    
