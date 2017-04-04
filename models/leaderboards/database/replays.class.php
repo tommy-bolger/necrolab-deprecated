@@ -119,6 +119,11 @@ extends BaseReplays {
     public static function getSavedReplaysResultset() {
         $resultset = static::getEntriesResultset();
         
+        $resultset->setBaseQuery("
+            DECLARE saved_replays_data CURSOR FOR
+            {$resultset->getBaseQuery()}
+        ");
+        
         $resultset->addFilterCriteria('downloaded = 1');
         $resultset->addFilterCriteria('invalid = 0');
         
