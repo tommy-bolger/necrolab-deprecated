@@ -64,6 +64,8 @@ function NecroTable(dom_object) {
     this.enable_sort = false;
     this.sort_by;
     this.sort_direction = 'asc';
+    this.sort_by_set_callback;
+    this.sort_by_get_callback;
     
     this.enable_collapsible_rows = false;
     this.number_of_collapsible_rows = 1;
@@ -235,21 +237,46 @@ NecroTable.prototype.setStartFromUrl = function() {
     }
 };
 
-NecroTable.prototype.enableSort = function(default_sort_by, default_sort_direction) {  
+NecroTable.prototype.enableSort = function(default_sort_by, default_sort_direction, set_callback, get_callback) {  
     this.enable_sort = true;
-    this.sort_by = default_sort_by;
+    this.sort_by_set_callback = set_callback;
+    this.sort_by_get_callback = get_callback;
+
+    this.setSortBy(default_sort_by);
     this.sort_direction = default_sort_direction;
-    
+
     this.setSortFromUrl();
+};
+
+NecroTable.prototype.setSortBy = function(sort_by) {    
+    if(this.sort_by_set_callback != null) {
+        var callback_context = this.sort_by_set_callback.context;
+        
+        sort_by = callback_context[this.sort_by_set_callback.method](sort_by, this);
+    }
+    
+    this.sort_by = sort_by;
+};
+
+NecroTable.prototype.getSortBy = function() { 
+    var sort_by = this.sort_by;
+    
+    if(this.sort_by_get_callback != null) {
+        var callback_context = this.sort_by_get_callback.context;
+        
+        sort_by = callback_context[this.sort_by_get_callback.method](sort_by, this);
+    }
+    
+    return sort_by;
 };
 
 NecroTable.prototype.setSortFromUrl = function() {  
     if(this.enable_sort && this.enable_history) {
         var url_sort_by = this.url.getValue('sort_by');
         var url_sort_direction = this.url.getValue('sort_direction');
-        
+
         if(url_sort_by != null && url_sort_direction != null) {
-            this.sort_by = url_sort_by;
+            this.setSortBy(url_sort_by);
             this.sort_direction = url_sort_direction;
         }
     }
@@ -760,13 +787,13 @@ NecroTable.prototype.render = function() {
     /* ---------- Initialize sort by ---------- */
     
     var url_sort_by = instance.url.getValue('sort_by');
-                    
+    
     if(url_sort_by != null) {
-        instance.sort_by = url_sort_by;
+        instance.setSortBy(url_sort_by);
     }
     else {
-        if(instance.sort_by == null) {
-            instance.sort_by = instance.column_names[0];
+        if(instance.sort_by == null) {            
+            instance.setSortBy(instance.column_names[0]);
         }
     }
     
@@ -956,11 +983,12 @@ NecroTable.prototype.render = function() {
                     request.limit = instance.limit;
                 }
                 
-                if(instance.enable_sort) {
-                    instance.sort_by = instance.column_names[table_state.order[0].column];
+                if(instance.enable_sort) {                    
+                    instance.setSortBy(instance.column_names[table_state.order[0].column]);
+                    
                     instance.sort_direction = table_state.order[0].dir;
                     
-                    request.sort_by = instance.sort_by;
+                    request.sort_by = instance.getSortBy();
                     request.sort_direction = instance.sort_direction;
                 }
                 
