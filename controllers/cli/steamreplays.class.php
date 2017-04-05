@@ -258,7 +258,7 @@ extends Cli {
                 }
             }
         }
-        while(!empty($leaderboard_entries));
+        while(!empty($replays_to_update));
         
         $database->commit();
         
