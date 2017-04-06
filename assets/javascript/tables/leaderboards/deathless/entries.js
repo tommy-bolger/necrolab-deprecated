@@ -14,6 +14,12 @@ function process_data(data, table) {
             for(var index = 0; index < data_length; index++) {
                 var row_data = data[index];
                 
+                var run_result = null;
+                
+                if(row_data.win != 1) {
+                    run_result = row_data.replay.run_result;
+                }
+                
                 var processed_row = [
                     row_data.rank,
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
@@ -22,7 +28,7 @@ function process_data(data, table) {
                     row_data.zone,
                     row_data.level,
                     row_data.win,
-                    row_data.replay.run_result
+                    run_result
                 ];
                 
                 processed_data.push(processed_row);

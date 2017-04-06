@@ -1073,6 +1073,12 @@ function process_leaderboard_score_data(data, table) {
             for(var index = 0; index < data_length; index++) {
                 var row_data = data[index];
                 
+                var run_result = null;
+                
+                if(row_data.entry.win != 1) {
+                    run_result = row_data.entry.replay.run_result;
+                }
+                
                 var processed_row = [
                     Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
                     row_data.entry.rank,
@@ -1080,7 +1086,7 @@ function process_leaderboard_score_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    row_data.entry.replay.run_result,
+                    run_result,
                     row_data.entry.replay.seed,
                     Formatting.getReplayFileHtml(row_data.entry.replay.file_url)
                 ];
@@ -1246,6 +1252,12 @@ function process_leaderboard_deathless_data(data, table) {
             for(var index = 0; index < data_length; index++) {
                 var row_data = data[index];
                 
+                var run_result = null;
+                
+                if(row_data.entry.win != 1) {
+                    run_result = row_data.entry.replay.run_result;
+                }
+                
                 var processed_row = [
                     Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
                     row_data.entry.rank,
@@ -1253,7 +1265,7 @@ function process_leaderboard_deathless_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    row_data.entry.replay.run_result
+                    run_result
                 ];
                 
                 processed_data.push(processed_row);
@@ -1332,6 +1344,12 @@ function process_leaderboard_daily_data(data, table) {
             for(var index = 0; index < data_length; index++) {
                 var row_data = data[index];
                 
+                var run_result = null;
+                
+                if(row_data.entry.win != 1) {
+                    run_result = row_data.entry.replay.run_result;
+                }
+                
                 var processed_row = [
                     row_data.leaderboard.daily_date,
                     row_data.entry.rank,
@@ -1339,7 +1357,7 @@ function process_leaderboard_daily_data(data, table) {
                     row_data.entry.zone,
                     row_data.entry.level,
                     row_data.entry.win,
-                    row_data.entry.replay.run_result,
+                    run_result,
                     row_data.entry.replay.seed,
                     Formatting.getReplayFileHtml(row_data.entry.replay.file_url)
                 ];
