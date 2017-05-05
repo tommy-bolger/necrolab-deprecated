@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Models\SteamUsers\Database;
 
 use \DateTime;
+use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as DatabaseSteamUserPb;
 use \Modules\Necrolab\Models\SteamUsers\SteamUsers as DatabaseSteamUsers;
@@ -49,56 +50,125 @@ extends BasePbs {
         }
     }
     
-    public static function save(DatabaseSteamUserPb $steam_user_pb, $cache_query_name = NULL) {
-        $steam_user_pb_id = static::getId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score);
-        
-        $pb_record = array();
-            
-        if(!empty($cache_query_name)) {
-            $cache_query_name .= '_insert';
-            
-            $pb_record = $steam_user_pb->toArray();
-        }
-        else {
-            $pb_record = $steam_user_pb->toArray(false);
-        }
+    public static function dropTableConstraints() {    
+        db()->exec("
+            ALTER TABLE steam_user_pbs
+            DROP CONSTRAINT fk_steam_user_pbs_first_leaderboard_snapshot_id,
+            DROP CONSTRAINT fk_steam_user_pbs_leaderboard_entry_details_id,
+            DROP CONSTRAINT fk_steam_user_pbs_leaderboard_id,
+            DROP CONSTRAINT fk_steam_user_pbs_steam_replay_id,
+            DROP CONSTRAINT fk_steam_user_pbs_steam_user_id;
+        ");
+    }
     
-        $steam_user_pb_id = db()->insert('steam_user_pbs', $pb_record, $cache_query_name);
+    public static function createTableConstraints() {        
+        db()->exec("
+            ALTER TABLE steam_user_pbs
+            ADD CONSTRAINT fk_steam_user_pbs_first_leaderboard_snapshot_id FOREIGN KEY (first_leaderboard_snapshot_id)
+                REFERENCES leaderboard_snapshots (leaderboard_snapshot_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_steam_user_pbs_leaderboard_entry_details_id FOREIGN KEY (leaderboard_entry_details_id)
+                REFERENCES leaderboard_entry_details (leaderboard_entry_details_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_steam_user_pbs_leaderboard_id FOREIGN KEY (leaderboard_id)
+                REFERENCES leaderboards (leaderboard_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_steam_user_pbs_steam_replay_id FOREIGN KEY (steam_replay_id)
+                REFERENCES steam_replays (steam_replay_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_steam_user_pbs_steam_user_id FOREIGN KEY (steam_user_id)
+                REFERENCES steam_users (steam_user_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE;
+        ");
+    }
+
+    public static function dropTableIndexes() {
+        db()->exec("
+            DROP INDEX IF EXISTS idx_steam_user_pbs_first_leaderboard_id;
+            DROP INDEX IF EXISTS idx_steam_user_pbs_first_leaderboard_snapshot_id;
+            DROP INDEX IF EXISTS idx_steam_user_pbs_leaderboard_entry_details_id;
+            DROP INDEX IF EXISTS idx_steam_user_pbs_steam_replay_id;
+            DROP INDEX IF EXISTS idx_steam_user_pbs_steam_user_id;
+        ");
+    }
+    
+    public static function createTableIndexes() {
+        db()->exec("
+            CREATE INDEX idx_steam_user_pbs_first_leaderboard_id
+            ON steam_user_pbs
+            USING btree (leaderboard_id);
+
+            CREATE INDEX idx_steam_user_pbs_first_leaderboard_snapshot_id
+            ON steam_user_pbs
+            USING btree (first_leaderboard_snapshot_id);
+
+            CREATE INDEX idx_steam_user_pbs_leaderboard_entry_details_id
+            ON steam_user_pbs
+            USING btree (leaderboard_entry_details_id);
+
+            CREATE INDEX idx_steam_user_pbs_steam_replay_id
+            ON steam_user_pbs
+            USING btree (steam_replay_id);
+
+            CREATE INDEX idx_steam_user_pbs_steam_user_id
+            ON steam_user_pbs
+            USING btree (steam_user_id);
+        ");
+    }
+    
+    public static function getNewRecordId() {
+        return db()->getOne("SELECT nextval('steam_user_pbs_seq'::regclass)");
+    }
+    
+    public static function save(DatabaseSteamUserPb $steam_user_pb, InsertQueue $insert_queue) {
+        $steam_user_pb_id = static::getNewRecordId();
+        
+        $pb_record = $steam_user_pb->toArray();
+        
+        $pb_record['steam_user_pb_id'] = $steam_user_pb_id;
+    
+        $insert_queue->addRecord($pb_record);
         
         static::addId($steam_user_pb->leaderboard_id, $steam_user_pb->steam_user_id, $steam_user_pb->score, $steam_user_pb_id);
         
         return $steam_user_pb_id;
     }
     
-    public static function update($steam_user_pb_id, DatabaseSteamUserPb $steam_user_pb, $cache_query_name = NULL) {                        
-        $pb_record = array();
-        
-        if(!empty($cache_query_name)) {            
-            $pb_record = $steam_user_pb->toArray();
-        }
-        else {
-            $pb_record = $steam_user_pb->toArray(false);
-        }
-        
-        if(array_key_exists('leaderboard_id', $pb_record)) {
-            unset($pb_record['leaderboard_id']);
-        }
-        
-        if(array_key_exists('steam_user_id', $pb_record)) {
-            unset($pb_record['steam_user_id']);
-        }
-        
-        if(array_key_exists('score', $pb_record)) {
-            unset($pb_record['score']);
-        }
-    
-        db()->update('steam_user_pbs', $pb_record, array(
-            'steam_user_pb_id' => $steam_user_pb_id
-        ), array(), $cache_query_name);
-    }
-    
     public static function vacuum() {
         db()->exec("VACUUM ANALYZE steam_user_pbs;");
+    }
+    
+    public static function getTempInsertQueue() {
+        return new InsertQueue("steam_user_pbs_temp", db(), 5000);
+    }
+    
+    public static function createTemporaryTable() {
+        db()->exec("
+            CREATE TEMPORARY TABLE steam_user_pbs_temp (
+                steam_user_pb_id integer NOT NULL,
+                leaderboard_id smallint NOT NULL,
+                steam_user_id integer NOT NULL,
+                score integer,
+                first_leaderboard_snapshot_id integer NOT NULL,
+                first_rank integer NOT NULL,
+                \"time\" double precision,
+                win_count smallint,
+                zone smallint,
+                level smallint,
+                is_win smallint,
+                leaderboard_entry_details_id smallint NOT NULL,
+                steam_replay_id integer
+            )
+            ON COMMIT DROP;
+        ");
+    }
+    
+    public static function saveNewTemp() {
+        db()->query("
+            INSERT INTO steam_user_pbs
+            SELECT *
+            FROM steam_user_pbs_temp
+        ");
     }
     
     public static function getRecordModel(array $properties) {
@@ -183,7 +253,7 @@ extends BasePbs {
         return $resultset;
     }
     
-    public static function getAllApiResultset($release_name) {
+    public static function getAllApiResultset($release_name, $mode_name, $character_name) {
         $resultset = static::getAllResultset();
         
         $resultset->setName('api:pbs');
@@ -214,13 +284,53 @@ extends BasePbs {
             ':release_name' => $release_name
         ));
         
-        $resultset->addSortCriteria('ls.date', 'ASC');
+        $resultset->addFilterCriteria('mo.name = :mode_name', array(
+            ':mode_name' => $mode_name
+        ));
+        
+        $resultset->addFilterCriteria('c.name = :character_name', array(
+            ':character_name' => $character_name
+        ));
+        
+        $resultset->addSortCriteria('ls.date', 'DESC');
         
         return $resultset;
     }
     
-    public static function getApiSteamUserResultset($release_name, $steamid) {
-        $resultset = static::getAllApiResultset($release_name);
+    public static function getAllApiScoreResultset($release_name, $mode_name, $character_name) {
+        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+        
+        $resultset->setName("api:pbs:score");
+        
+        $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_daily = 0");
+        $resultset->addFilterCriteria("l.is_deathless = 0");
+        
+        return $resultset;
+    }
+    
+    public static function getAllApiSpeedResultset($release_name, $mode_name, $character_name) {
+        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+        
+        $resultset->setName("api:pbs:speed");
+        
+        $resultset->addFilterCriteria("l.is_speedrun = 1");
+        
+        return $resultset;
+    }
+    
+    public static function getAllApiDeathlessResultset($release_name, $mode_name, $character_name) {
+        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+        
+        $resultset->setName("api:pbs:deathless");
+        
+        $resultset->addFilterCriteria("l.is_deathless = 1");
+        
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid) {
+        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
         
         $resultset->setName("api:{$steamid}:pbs");
         
@@ -228,6 +338,37 @@ extends BasePbs {
             ':steamid' => $steamid
         ));
         
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserScoreResultset($release_name, $mode_name, $character_name, $steamid) {                       
+        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+        
+        $resultset->setName("api:{$steamid}:pbs:score");
+        
+        $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_daily = 0");
+    
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserSpeedResultset($release_name, $mode_name, $character_name, $steamid) {                       
+        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+        
+        $resultset->setName("api:{$steamid}:pbs:speed");
+        
+        $resultset->addFilterCriteria("l.is_speedrun = 1");
+    
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserDeathlessResultset($release_name, $mode_name, $character_name, $steamid) {                       
+        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+        
+        $resultset->setName("api:{$steamid}:pbs:deathless");
+        
+        $resultset->addFilterCriteria("l.is_deathless = 1");
+    
         return $resultset;
     }
 }

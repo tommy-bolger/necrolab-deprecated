@@ -20,6 +20,8 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Details;
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\LeaderboardEntry;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\LeaderboardEntry as DatabaseLeaderboardEntry;
+use \Modules\Necrolab\Models\Rankings\Rankings;
+use \Modules\Necrolab\Models\Dailies\Rankings\Rankings as DailyRankings;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as DatabaseSteamUserPbs;
@@ -29,7 +31,7 @@ class SteamImport
 extends Cli {
     protected $as_of_date; 
     
-    public function importXmlChildProcess($leaderboard) { 
+    protected function importXmlChildProcess($leaderboard) { 
         $lbid = $leaderboard->lbid;
         $next_page_url = $leaderboard->url;
         
@@ -61,7 +63,7 @@ extends Cli {
             }
             
             if(!empty($entries_xml)) {
-                Entries::saveXml($lbid, $this->as_of_date, $page, $entries_xml);
+                Entries::saveTempXml($lbid, $this->as_of_date, $page, $entries_xml);
                 
                 $parsed_xml = Leaderboards::getParsedXml($entries_xml);
             
@@ -81,16 +83,33 @@ extends Cli {
     public function actionImportXml() {
         $this->as_of_date = new DateTime();
         
-        Leaderboards::deleteXml($this->as_of_date);
+        Leaderboards::deleteTempXml($this->as_of_date);
     
         $leaderboards_xml = Leaderboards::getSteamXml($this->module->configuration->leaderboard_url);
         
         if(!empty($leaderboards_xml)) {
-            Leaderboards::saveXml($this->as_of_date, $leaderboards_xml);
-            
+            Leaderboards::saveTempXml($this->as_of_date, $leaderboards_xml);
+
             $parsed_xml = Leaderboards::getParsedXml($leaderboards_xml);
+            
+            if(!empty($parsed_xml->leaderboard)) {            
+                foreach($parsed_xml->leaderboard as $leaderboard) {                        
+                    if($leaderboard->entries > 0) {
+                        $this->importXmlChildProcess($leaderboard);
+                    }
+                }
+            }
+
+            Leaderboards::compressTempToSavedXml($this->as_of_date);
+            
+            Leaderboards::deleteTempXml($this->as_of_date);
         
-            if(!empty($parsed_xml->leaderboard)) {
+            /*
+                The commented code is for retrieving leaderboard xml via parallel child tasks. It's much slower than downloading one page
+                of one leaderboard at a time right now, so it will be commented out until there's a faster method of doing so.
+            */
+            
+            /*if(!empty($parsed_xml->leaderboard)) {
                 $leaderboard_import_job_queue = new ParallelProcessQueue();
             
                 foreach($parsed_xml->leaderboard as $leaderboard) {                
@@ -104,17 +123,21 @@ extends Cli {
                 }
                 
                 $leaderboard_import_job_queue->run();
-            }
+            }*/
+            
+            Leaderboards::addToXmlSaveQueue($this->as_of_date);
+            Leaderboards::addToXmlUploadQueue($this->as_of_date);
         }
     }
     
     protected function saveXml(DateTime $date) {
         $this->as_of_date = $date;
         
-        Leaderboards::copyXmlToTempFolder($this->as_of_date);
+        Leaderboards::deleteTempXml($this->as_of_date);
+        Leaderboards::decompressToTempXml($this->as_of_date);
         
         $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date, true);
-        
+
         $leaderboards_xml = Leaderboards::getXml($xml_file_groups['leaderboards_xml']);
         $parsed_xml = Leaderboards::getParsedXml($leaderboards_xml);
 
@@ -123,6 +146,16 @@ extends Cli {
         
         if(!empty($parsed_xml->leaderboard)) {
             db()->beginTransaction();
+            
+            DatabaseSteamUsers::createTemporaryTable();
+            Replays::createTemporaryTable();
+            DatabaseSteamUserPbs::createTemporaryTable();
+            Entries::createTemporaryTable();
+
+            $steam_users_temp_insert_queue = DatabaseSteamUsers::getTempInsertQueue();
+            $replays_temp_insert_queue = Replays::getTempInsertQueue();
+            $pbs_temp_insert_queue = DatabaseSteamUserPbs::getTempInsertQueue();
+            $leaderboard_entries_insert_queue = Entries::getTempInsertQueue();
         
             foreach($parsed_xml->leaderboard as $leaderboard) {
                 $database_leaderboard = new DatabaseLeaderboard();
@@ -159,16 +192,14 @@ extends Cli {
                                     $entries = array($entries);
                                 }
                             
-                                foreach($entries as $entry) {                                    
+                                foreach($entries as $entry) {
                                     $steam_user_id = DatabaseSteamUsers::getId($entry->steamid);
                                     
-                                    if(empty($steam_user_id)) {                                    
-                                        $database_steam_user = new DatabaseSteamUser();
-                                        
-                                        $database_steam_user->steamid = $entry->steamid;
-                                    
-                                        $steam_user_id = DatabaseSteamUsers::save($database_steam_user, 'steam_import');
+                                    if(empty($steam_user_id)) {                                                                        
+                                        $steam_user_id = DatabaseSteamUsers::saveToQueue($entry->steamid, $steam_users_temp_insert_queue);
                                     }
+                                    
+                                    $steam_replay_id = Replays::save($entry->ugcid, $steam_user_id, $replays_temp_insert_queue);
                                     
                                     $score = $entry->score;
                                     
@@ -180,19 +211,21 @@ extends Cli {
                                         $database_steam_user_pb->setPropertiesFromSteamObject($entry, $database_leaderboard, $rank, $this->as_of_date);
                                         
                                         if($database_steam_user_pb->isValid($database_leaderboard)) {
+                                            $database_steam_user_pb->steam_user_id = $steam_user_id;
                                             $database_steam_user_pb->leaderboard_id = $leaderboard_id;
                                             $database_steam_user_pb->first_leaderboard_snapshot_id = $leaderboard_snapshot_id;
+                                            $database_steam_user_pb->steam_replay_id = $steam_replay_id;
                                         
-                                            $steam_user_pb_id = DatabaseSteamUserPbs::save($database_steam_user_pb, 'steam_user_pb_xml_save');
+                                            $steam_user_pb_id = DatabaseSteamUserPbs::save($database_steam_user_pb, $pbs_temp_insert_queue);
                                         }
                                     }
                                     
-                                    if(!empty($steam_user_pb_id)) {                                        
-                                        Entry::save($this->as_of_date, array(
+                                    if(!empty($steam_user_pb_id)) {             
+                                        $leaderboard_entries_insert_queue->addRecord(array(
                                             'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
                                             'steam_user_pb_id' => $steam_user_pb_id,
                                             'rank' => $rank
-                                        ), "save_steam_xml_{$this->as_of_date->format('Y_m')}");
+                                        ));
                                         
                                         $rank += 1;
                                     }
@@ -203,6 +236,47 @@ extends Cli {
                 }
             }
             
+            $steam_users_temp_insert_queue->commit();
+            $replays_temp_insert_queue->commit();
+            $pbs_temp_insert_queue->commit();
+            $leaderboard_entries_insert_queue->commit();
+            
+            //Save users
+            DatabaseSteamUsers::dropTableConstraints();
+            DatabaseSteamUsers::dropTableIndexes();
+            
+            DatabaseSteamUsers::saveNewTemp();
+            
+            DatabaseSteamUsers::createTableConstraints();
+            DatabaseSteamUsers::createTableIndexes();
+            
+            //Save replays
+            Replays::dropTableConstraints();
+            Replays::dropTableIndexes();
+            
+            Replays::saveNewTemp();
+            
+            Replays::createTableConstraints();
+            Replays::createTableIndexes();
+            
+            //Save user pbs
+            DatabaseSteamUserPbs::dropTableConstraints();
+            DatabaseSteamUserPbs::dropTableIndexes();
+            
+            DatabaseSteamUserPbs::saveNewTemp();
+            
+            DatabaseSteamUserPbs::createTableConstraints();
+            DatabaseSteamUserPbs::createTableIndexes();
+            
+            //Save leaderboard entries
+            Entries::dropPartitionTableConstraints($date);
+            Entries::dropPartitionTableIndexes($date);
+            
+            Entries::saveTempEntries($date);
+            
+            Entries::createPartitionTableConstraints($date);
+            Entries::createPartitionTableIndexes($date);
+            
             db()->commit();
             
             Leaderboards::vacuum();
@@ -210,16 +284,19 @@ extends Cli {
             Entries::vacuum($this->as_of_date);
             DatabaseSteamUserPbs::vacuum();
             Details::vacuum();
-        }
+            
+            Leaderboards::deleteTempXml($this->as_of_date);
         
-        Leaderboards::deleteTempXml($this->as_of_date);
+            Rankings::addToGenerateQueue($this->as_of_date);
+            DailyRankings::addToGenerateQueue($this->as_of_date);
+        }
     }
     
     public function actionSaveXml($date = NULL) { 
         if(empty($date)) {
             $date = date('Y-m-d');
         }
-    
+
         $this->saveXml(new DateTime($date));
     }
     
@@ -236,61 +313,49 @@ extends Cli {
         }
     }
     
+    public function saveXmlQueueMessageReceived($message) {
+        $this->actionSaveXml($message->body);
+    }
+    
+    public function actionRunXmlSaveQueueListener() {    
+        Leaderboards::runQueue(Leaderboards::getXmlSaveQueueName(), array(
+            $this,
+            'saveXmlQueueMessageReceived'
+        ));
+    }
+    
     protected function uploadXmlToS3(DateTime $date) {
         $this->as_of_date = clone $date;
-        
-        Leaderboards::deleteS3Xml($this->as_of_date);
-    
-        $xml_file_groups = Leaderboards::getXmlFiles($this->as_of_date);
-        
-        if(!empty($xml_file_groups)) {
-            Loader::load('autoload.php', true, false);
-        
-            $aws_client = new Aws(array(
-                'version' => $this->module->configuration->aws_s3_version,
-                'region' => $this->module->configuration->aws_s3_region,
-                'credentials' => array(
-                    'key'    => Encryption::decrypt($this->module->configuration->aws_s3_write_key),
-                    'secret' => Encryption::decrypt($this->module->configuration->aws_s3_write_secret)
-                )
-            ));
 
-            $s3_client = $aws_client->s3;
-            
-            $bucket = $s3_client->bucket('necrolab');
+        Leaderboards::deleteS3ZippedXml($this->as_of_date);
         
-            $leaderboards_xml_path = $xml_file_groups['leaderboards_xml'];
+        Loader::load('autoload.php', true, false);
+    
+        $aws_client = new Aws(array(
+            'version' => $this->module->configuration->aws_s3_version,
+            'region' => $this->module->configuration->aws_s3_region,
+            'credentials' => array(
+                'key'    => Encryption::decrypt($this->module->configuration->aws_s3_write_key),
+                'secret' => Encryption::decrypt($this->module->configuration->aws_s3_write_secret)
+            )
+        ));
+
+        $s3_client = $aws_client->s3;
         
-            $leaderboards_xml = Leaderboards::getXml($leaderboards_xml_path);
-            
-            Leaderboards::saveS3Xml($this->as_of_date, $leaderboards_xml);
-            
-            unset($xml_file_groups['leaderboards_xml']);
-            unset($leaderboards_xml);
+        $bucket = $s3_client->bucket('necrolab');
         
-            foreach($xml_file_groups as $lbid => $xml_file_group) {
-                if(!empty($xml_file_group)) {
-                    foreach($xml_file_group as $page => $xml_file) {
-                        $entries_xml = Leaderboards::getXml($xml_file);
-                        
-                        Entries::saveS3Xml($lbid, $this->as_of_date, $page, $entries_xml);
-                    }
-                }
-            }
-            
-            $s3_file_path = Leaderboards::compressS3Xml($this->as_of_date);
-            
-            $zipped_file_handle = fopen($s3_file_path, 'r');
-            
-            $object = $bucket->putObject([
-                'Key'  => "leaderboard_xml/{$this->as_of_date->format('Y-m-d')}.zip",
-                'Body' => $zipped_file_handle,
-            ]);
-            
-            fclose($zipped_file_handle);
-            
-            Leaderboards::deleteS3ZippedXml($this->as_of_date);
-        }
+        $s3_file_path = Leaderboards::copyZippedXmlToS3($this->as_of_date);
+        
+        $zipped_file_handle = fopen($s3_file_path, 'r');
+        
+        $object = $bucket->putObject([
+            'Key'  => "leaderboard_xml/{$this->as_of_date->format('Y-m-d')}.zip",
+            'Body' => $zipped_file_handle,
+        ]);
+        
+        fclose($zipped_file_handle);
+
+        Leaderboards::deleteS3ZippedXml($this->as_of_date);
     }
     
     public function actionUploadXmlToS3($date = NULL) {
@@ -308,6 +373,17 @@ extends Cli {
         
             $current_date->add(new DateInterval('P1D'));
         }
+    }
+    
+    public function uploadXmlQueueMessageReceived($message) {
+        $this->actionUploadXmlToS3($message->body);
+    }
+    
+    public function actionRunXmlUploadQueueListener() {    
+        Leaderboards::runQueue(Leaderboards::getXmlUploadQueueName(), array(
+            $this,
+            'uploadXmlQueueMessageReceived'
+        ));
     }
     
     public function actionImportFromCsv($date, $csv_path) {
@@ -350,20 +426,26 @@ extends Cli {
     
     protected function recompressXml(DateTime $date) {
         $xml_file_groups = Leaderboards::getXmlFiles($date);
-        
+
         if(!empty($xml_file_groups)) {
             $leaderboards_xml = Leaderboards::getOldXml($xml_file_groups['leaderboards_xml']);
             unset($xml_file_groups['leaderboards_xml']);
             
-            Leaderboards::saveXml($date, $leaderboards_xml);
+            Leaderboards::saveTempXml($date, $leaderboards_xml);
             
             foreach($xml_file_groups as $lbid => $xml_file_group) {
                 foreach($xml_file_group as $page => $xml_file) {
                     $entries_xml = Leaderboards::getOldXml($xml_file);
                     
-                    Entries::saveXml($lbid, $date, $page, $entries_xml);
+                    Entries::saveTempXml($lbid, $date, $page, $entries_xml);
                 }
             }
+            
+            Leaderboards::compressTempToSavedXml($date);
+            
+            Leaderboards::deleteTempXml($date);
+            
+            Leaderboards::deleteXml($date);
         }
     }
     

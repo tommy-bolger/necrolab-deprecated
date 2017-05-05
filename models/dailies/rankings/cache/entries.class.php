@@ -10,7 +10,7 @@ use \Modules\Necrolab\Models\Dailies\Rankings\Database\RecordModels\DailyRanking
 
 class Entries
 extends BaseEntries {     
-    public static function saveChunkToDatabase($entries, $daily_ranking_id, $date) {
+    public static function saveChunkToDatabase($entries, $daily_ranking_id, $date, $entries_insert_queue) {
         if(!empty($entries)) {
             foreach($entries as $entry) {
                 if(!empty($entry)) {                
@@ -20,20 +20,21 @@ extends BaseEntries {
                     
                     $daily_ranking_entry->daily_ranking_id = $daily_ranking_id;
                     
-                    DatabaseEntry::save($date, $daily_ranking_entry);
+                    $entries_insert_queue->addRecord($daily_ranking_entry->toArray());
                 }
             }
         }
     }
 
-    public static function saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, DateTime $date, $cache) {
+    public static function saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, DateTime $date, $cache, $entries_insert_queue) {
         $daily_ranking_entries = CacheDailyRankings::getTotalPointsByRank($release_id, $mode_id, $daily_ranking_day_type_id, $cache);
     
         $transaction = $cache->transaction();
             
         $transaction->setCommitProcessCallback(array(get_called_class(), 'saveChunkToDatabase'), array(
             'daily_ranking_id' => $daily_ranking_id,
-            'date' => $date
+            'date' => $date,
+            'entries_insert_queue' => $entries_insert_queue
         ));
     
         foreach($daily_ranking_entries as $rank => $steam_user_id) {

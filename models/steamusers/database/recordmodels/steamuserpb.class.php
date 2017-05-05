@@ -5,11 +5,7 @@ namespace Modules\Necrolab\Models\SteamUsers\Database\RecordModels;
 use \DateTime;
 use \Framework\Core\RecordModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry;
-use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers;
-use \Modules\Necrolab\Models\Leaderboards\Database\Replays;
 use \Modules\Necrolab\Models\Leaderboards\Database\Details;
-use \Modules\Necrolab\Models\SteamUsers\RecordModels\SteamUser;
-use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
 class SteamUserPb
 extends RecordModel {
@@ -39,21 +35,10 @@ extends RecordModel {
     
     protected $steam_replay_id;
     
-    public function setPropertiesFromSteamObject($steam_object, $leaderboard, $rank, DateTime $date) {
-        $this->steam_user_id = SteamUsers::getId($steam_object->steamid);
-                                    
-        if(empty($this->steam_user_id)) {
-            $database_steam_user = new DatabaseSteamUser();
-            
-            $database_steam_user->steamid = $steam_object->steamid;
-        
-            $this->steam_user_id = SteamUsers::save($database_steam_user, 'steam_import');
-        }
-    
+    public function setPropertiesFromSteamObject($steam_object, $leaderboard, $rank, DateTime $date) {    
         $this->score = (int)$steam_object->score;
         $this->first_rank = $rank;
         
-        $this->steam_replay_id = Replays::save($steam_object->ugcid, $this->steam_user_id);
         $this->leaderboard_entry_details_id = Details::save($steam_object->details);
 
         if($leaderboard->is_speedrun == 1) {            

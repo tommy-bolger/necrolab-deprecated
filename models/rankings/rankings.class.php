@@ -29,6 +29,14 @@ extends Necrolab {
         return false;
     }
     
+    public static function getGenerateQueueName() {
+        return 'power_ranking_generation';
+    }
+    
+    public static function addToGenerateQueue(DateTime $date) {        
+        static::addDateToQueue(static::getGenerateQueueName(), $date);
+    }
+    
     public static function getFormattedApiRecord($data_row) {
         return $data_row['date'];
     }

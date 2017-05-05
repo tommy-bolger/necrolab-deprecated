@@ -15,6 +15,32 @@
 </div>
 <table id="player_info_table"></table>
 <br />
+<div class="menu_smaller">Achievements</div>
+<br />
+<p>Progress</p>
+<div class="progress">
+    <div id="achievements_progress_bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0px;"> 
+        0%
+    </div>
+</div>
+<br />
+<table id="player_achievements_table"></table>
+<br />
+<br />
+<div class="menu_small">PBs</div>
+<br />
+<div class="menu_smaller">Score</div>
+<br />
+<table id="player_score_pbs_table"></table>
+<br />
+<div class="menu_smaller">Speed</div>
+<br />
+<table id="player_speed_pbs_table"></table>
+<br />
+<div class="menu_smaller">Deathless</div>
+<br />
+<table id="player_deathless_pbs_table"></table>
+<br />
 <br />
 <div class="menu_small">Rankings</div>
 <br />

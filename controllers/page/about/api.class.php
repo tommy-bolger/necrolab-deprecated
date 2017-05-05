@@ -50,6 +50,8 @@ extends About {
         $leaderboards_content = new TemplateElement('/api/leaderboards.php');
         $rankings_content = new TemplateElement('/api/rankings.php');
         $players_content = new TemplateElement('/api/players.php');
+        $achievements_content = new TemplateElement('/api/achievements.php');
+        $pbs_content = new TemplateElement('/api/pbs.php');
         $player_leaderboards_content = new TemplateElement('/api/player_leaderboards.php');
         $player_rankings_content = new TemplateElement('/api/player_rankings.php');
         
@@ -58,6 +60,8 @@ extends About {
         $page_content->addChild($leaderboards_content, 'leaderboards');
         $page_content->addChild($rankings_content, 'rankings');
         $page_content->addChild($players_content, 'players');
+        $page_content->addChild($achievements_content, 'achievements');
+        $page_content->addChild($pbs_content, 'pbs');
         $page_content->addChild($player_leaderboards_content, 'player_leaderboards');
         $page_content->addChild($player_rankings_content, 'player_rankings');
         

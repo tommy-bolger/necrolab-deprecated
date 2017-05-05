@@ -77,7 +77,7 @@ Formatting.convertSecondsToTime = function(seconds) {
 };
 
 Formatting.addCommasToNumber = function(unformatted_number) {
-    var formatted_number;
+    var formatted_number = null;
     
     if(unformatted_number != null) {
         formatted_number = unformatted_number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -94,6 +94,26 @@ Formatting.getReplayFileHtml = function(replay_file_url) {
     }
     
     return replay_file_html;
+};
+
+Formatting.getAchievementIconHtml = function(icon_url) {
+    var icon_html = null;
+    
+    if(icon_url != null) {
+        icon_html = '<img src="' + icon_url + '" />';
+    }
+    
+    return icon_html;
+};
+
+Formatting.addNoWrapHtml = function(wrapped) {
+    var unwrapped_html = null;
+    
+    if(wrapped != null) {
+        unwrapped_html = '<span class="no_wrap">' + wrapped + '</span>';
+    }
+    
+    return unwrapped_html;
 };
 
 /* ---------- Characters ---------- */
@@ -126,7 +146,7 @@ Formatting.getSteamFancyLink = function(personaname, profile_url) {
     var link_html = null;
     
     if(profile_url != null) {
-        link_html = '<a href="' + profile_url + '" target="_blank">' + Formatting.getSteamLogo() + '&nbsp' + personaname + '</a>';
+        link_html = '<span class="no_wrap">' + '<a href="' + profile_url + '" target="_blank">' + Formatting.getSteamLogo() + '&nbsp' + personaname + '</a>' + '</span>';
     }
     
     return link_html;
@@ -317,7 +337,7 @@ Formatting.getDiscordLogo = function() {
 Formatting.getDiscordUserLogo = function(discord_username, discriminator) {
     var full_username = discord_username + '#' + discriminator;
     
-    return '<a href="http://discord.gg"><img src="/assets/images/modules/necrolab/styles/default/logos/discord_logo_white_small.png" alt="' + full_username + '" /></a>';
+    return '<a class="icon_popover" data-content="' + full_username + '"><img src="/assets/images/modules/necrolab/styles/default/logos/discord_logo_white_small.png" alt="' + full_username + '" title="' + full_username + '"/></a>';
 };
 
 Formatting.getDiscordFancyLink = function(discord_username, discriminator) {

@@ -259,6 +259,12 @@ extends WebController {
     
     protected function getPlayerData($row) {
         $steamid = (string)$row['steamid'];
+        
+        $discord_discriminator = NULL;
+        
+        if(!empty($row['discord_discriminator'])) {
+            $discord_discriminator = str_pad($row['discord_discriminator'], 4, '0', STR_PAD_LEFT);
+        }
     
         return array(
             'steamid' => $steamid,
@@ -276,7 +282,7 @@ extends WebController {
                 'discord' => array(
                     'id' => $row['discord_id'],
                     'username' => $row['discord_username'],
-                    'discriminator' => $row['discord_discriminator']
+                    'discriminator' => $discord_discriminator
                 ),
                 'reddit' => array(
                     'id' => $row['reddit_id'],

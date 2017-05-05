@@ -16,7 +16,6 @@ use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseRep
 use \Modules\Necrolab\Models\Leaderboards\RecordModels\SteamReplay;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\RunResult as DatabaseRunResult;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\ReplayVersion as DatabaseReplayVersion;
-use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\SteamReplay as DatabaseSteamReplay;
 
 class SteamReplays
 extends Cli {
@@ -109,6 +108,10 @@ extends Cli {
         
         if(!empty($temp_replay_files)) {
             db()->beginTransaction();
+            
+            DatabaseReplays::createTemporaryTable();
+            
+            $temp_insert_queue = DatabaseReplays::getTempInsertQueue();
         
             foreach($temp_replay_files as $ugcid => $temp_replay_file) {    
                 $steam_replay = new SteamReplay();
@@ -144,19 +147,28 @@ extends Cli {
                         $replay_version_id = DatabaseReplayVersions::save($replay_version);
                     }
                     
-                    //Steam replay save
-                    $steam_replay_record = new DatabaseSteamReplay();
-                    
-                    $steam_replay_record->seed = $steam_replay->seed;
-                    $steam_replay_record->run_result_id = $run_result_id;
-                    $steam_replay_record->steam_replay_version_id = $replay_version_id;
-                    $steam_replay_record->downloaded = 1;
-                    $steam_replay_record->invalid = 0;
-                    $steam_replay_record->uploaded_to_s3 = 0;
-                    
-                    DatabaseReplays::updateBatch(DatabaseReplays::get($ugcid), $steam_replay_record);
+                    //Steam replay save                    
+                    $temp_insert_queue->addRecord(array(
+                        'steam_replay_id' => DatabaseReplays::get($ugcid),
+                        'seed' => $steam_replay->seed,
+                        'run_result_id' => $run_result_id,
+                        'steam_replay_version_id' => $replay_version_id,
+                        'downloaded' => 1,
+                        'invalid' => 0,
+                        'uploaded_to_s3' => 0
+                    ));
                 }
             }
+            
+            $temp_insert_queue->commit();
+            
+            DatabaseReplays::dropTableIndexes();
+            DatabaseReplays::dropTableConstraints();
+            
+            DatabaseReplays::saveDownloadedTemp();
+            
+            DatabaseReplays::createTableConstraints();
+            DatabaseReplays::createTableIndexes();
             
             db()->commit();
         }
@@ -165,20 +177,31 @@ extends Cli {
         
         if(!empty($invalid_replay_files)) {
             db()->beginTransaction();
+            
+            DatabaseReplays::createTemporaryTable();
+            
+            $temp_insert_queue = DatabaseReplays::getTempInsertQueue();
         
-            foreach($invalid_replay_files as $steam_user_id => $invalid_replay_file) {            
+            foreach($invalid_replay_files as $steam_replay_id => $invalid_replay_file) {            
                 $successful = unlink($invalid_replay_file);
                 
-                if($successful) {
-                    $steam_replay_record = new DatabaseSteamReplay();
-                    
-                    $steam_replay_record->downloaded = 0;
-                    $steam_replay_record->invalid = 1;
-                    $steam_replay_record->uploaded_to_s3 = 0;
-                    
-                    DatabaseReplays::updateBatch($steam_user_id, $steam_replay_record);
+                if($successful) {                    
+                    $temp_insert_queue->addRecord(array(
+                        'steam_replay_id' => $steam_replay_id,
+                        'downloaded' => 0,
+                        'invalid' => 1,
+                        'uploaded_to_s3' => 0
+                    ));
                 }
             }
+            
+            $temp_insert_queue->commit();
+            
+            DatabaseReplays::dropTableIndexes();
+            
+            DatabaseReplays::saveInvalidTemp();
+            
+            DatabaseReplays::createTableIndexes();
             
             db()->commit();
         }
@@ -192,18 +215,21 @@ extends Cli {
         $database = db();
     
         $database->beginTransaction();
+        
+        DatabaseReplays::createTemporaryTable();
+            
+        $temp_insert_queue = DatabaseReplays::getTempInsertQueue();
     
         $replays_to_update_resultset = DatabaseReplays::getSavedReplaysResultset();
+        
+        $replays_to_update_resultset->setAsCursor(200000);
         
         $replays_to_update_resultset->prepareExecuteQuery();
         
         $replays_to_update = array();
         
         do {
-            $replays_to_update = $database->getAll("
-                FETCH 200000
-                FROM saved_replays_data
-            ");
+            $replays_to_update = $replays_to_update_resultset->getNextCursorChunk();
             
             if(!empty($replays_to_update)) {
                 foreach($replays_to_update as $replay_to_update) { 
@@ -242,23 +268,26 @@ extends Cli {
                             $replay_version_id = DatabaseReplayVersions::save($replay_version);
                         }
                         
-                        //Steam replay save
-                        $steam_replay_record = new DatabaseSteamReplay();
-                        
+                        //Steam replay save                        
                         $seed = $steam_replay->seed;
                         
-                        if(!(empty($seed) && empty($run_result_id) && empty($replay_version_id))) {
-                            $steam_replay_record->seed = $seed;
-                            $steam_replay_record->run_result_id = $run_result_id;
-                            $steam_replay_record->steam_replay_version_id = $replay_version_id;
-                            
-                            DatabaseReplays::update($replay_to_update['steam_replay_id'], $steam_replay_record);
+                        if(!(empty($seed) && empty($run_result_id) && empty($replay_version_id))) {                            
+                            $temp_insert_queue->addRecord(array(
+                                'steam_replay_id' => $replay_to_update['steam_replay_id'],
+                                'seed' => $seed,
+                                'run_result_id' => $run_result_id,
+                                'steam_replay_version_id' => $replay_version_id
+                            ));
                         }
                     }
                 }
             }
         }
         while(!empty($replays_to_update));
+        
+        $temp_insert_queue->commit();
+        
+        DatabaseReplays::saveUpdatedFromFilesTemp();
         
         $database->commit();
         
@@ -267,7 +296,13 @@ extends Cli {
         DatabaseReplayVersions::vacuum();
     }
     
-    public function actionUploadFilesToS3() {        
+    public function actionUploadFilesToS3() {   
+        db()->beginTransaction();
+        
+        DatabaseReplays::createTemporaryTable();
+            
+        $temp_insert_queue = DatabaseReplays::getTempInsertQueue();
+    
         $replays_to_upload_resultset = DatabaseReplays::getUnuploadedReplaysResultset();
         
         $replays_to_upload = $replays_to_upload_resultset->prepareExecuteQuery();
@@ -306,13 +341,18 @@ extends Cli {
                 
                 DatabaseReplays::deleteS3ZippedQueueFile($ugcid);
                 
-                //Steam replay save
-                $steam_replay_record = new DatabaseSteamReplay();
-
-                $steam_replay_record->uploaded_to_s3 = 1;
-                
-                DatabaseReplays::update($replay_to_upload['steam_replay_id'], $steam_replay_record);
+                //Steam replay save                
+                $temp_insert_queue->addRecord(array(
+                    'steam_replay_id' => $replay_to_upload['steam_replay_id'],
+                    'uploaded_to_s3' => 1
+                ));
             }
         }
+        
+        $temp_insert_queue->commit();
+        
+        DatabaseReplays::saveS3UploadedTemp();
+        
+        db()->commit();
     }
 }

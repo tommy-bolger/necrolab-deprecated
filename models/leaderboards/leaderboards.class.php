@@ -43,7 +43,7 @@ extends Necrolab {
         
         $request_error = curl_error($request);
         
-        if(!empty($request_error)) {
+        if($http_response_code != 200 || !empty($request_error)) {
             $error_code = curl_errno($request);
         
             if(!empty($error_code)) {
@@ -90,32 +90,29 @@ extends Necrolab {
         }
     }
     
-    public static function saveXml(DateTime $date, $xml) {
-        $snapshot_path = static::getXmlPath($date);
-        
-        if(!is_dir($snapshot_path)) {
-            mkdir($snapshot_path);
-        }
-    
-        file_put_contents("{$snapshot_path}/leaderboards.xml.gz", gzencode($xml, 9));
+    public static function getOldXml($file_path) {    
+        return gzdecode(file_get_contents($file_path));
     }
     
-    /*public static function getOldXml($file_path) {    
-        return gzuncompress(file_get_contents($file_path));
-    }*/
-    
     public static function getXml($file_path) {    
-        return gzdecode(file_get_contents($file_path));
+        return file_get_contents($file_path);
     }
     
     public static function getXmlFiles(DateTime $date, $temp_directory = false) {  
         $snapshot_path = NULL;
+        $search_extension = NULL;
+        $full_extension = 'xml';
         
         if(empty($temp_directory)) {
             $snapshot_path = static::getXmlPath($date);
+            
+            $search_extension = 'gz';
+            $full_extension .= '.gz';
         }
         else {
             $snapshot_path = static::getXmlTempPath($date);
+            
+            $search_extension = 'xml';
         }
         
         $xml_file_groups = array();
@@ -123,10 +120,10 @@ extends Necrolab {
         if(is_dir($snapshot_path)) {
             $directory_iterator = new RecursiveDirectoryIterator($snapshot_path);
             $file_iterator = new RecursiveIteratorIterator($directory_iterator);
-            $matched_files = new RegexIterator($file_iterator, '/^.+\.gz$/i', RecursiveRegexIterator::GET_MATCH);
+            $matched_files = new RegexIterator($file_iterator, "/^.+\.{$search_extension}$/i", RecursiveRegexIterator::GET_MATCH);
             
             foreach($matched_files as $matched_file) {
-                if(strpos($matched_file[0], 'leaderboards.xml.gz') !== false) {
+                if(strpos($matched_file[0], "leaderboards.{$full_extension}") !== false) {
                     $xml_file_groups['leaderboards_xml'] = $matched_file[0];
                 }
                 else {
@@ -137,7 +134,7 @@ extends Necrolab {
                     $xml_file_name_split = explode('_', $xml_file_name);
                     
                     $page_number = array_pop($xml_file_name_split);
-                    $page_number = (int)str_replace('.xml.gz', '', $page_number);
+                    $page_number = (int)str_replace(".{$full_extension}", '', $page_number);
                     
                     $lbid = array_pop($file_name_split);
                     
@@ -167,15 +164,14 @@ extends Necrolab {
         return "{$installation_path}/leaderboard_xml/temp/{$date->format('Y-m-d')}";
     }
     
-    public static function copyXmlToTempFolder(DateTime $date) {
-        $xml_path = static::getXmlPath($date);
-        $xml_temp_path = static::getXmlTempPath($date);
+    public static function saveTempXml(DateTime $date, $xml) {
+        $snapshot_path = static::getXmlTempPath($date);
+        
+        if(!is_dir($snapshot_path)) {
+            mkdir($snapshot_path);
+        }
     
-        /* 
-            Since this will only run on the backend this would be simplest way to copy an entire folder.
-            TODO: Implement a method in the File utility to recursively copy a directory.
-        */
-        exec("cp -r {$xml_path} {$xml_temp_path}");
+        file_put_contents("{$snapshot_path}/leaderboards.xml", $xml);
     }
     
     public static function deleteTempXml(DateTime $date) {
@@ -186,51 +182,62 @@ extends Necrolab {
         }
     }
     
-    public static function deleteS3Xml(DateTime $date) {
-        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}";
-        
-        if(is_dir($snapshot_path)) {
-            File::deleteDirectoryRecursive($snapshot_path);
-        }
-    }
-    
-    public static function saveS3Xml(DateTime $date, $xml) {
-        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}";
-        
-        if(!is_dir($snapshot_path)) {
-            mkdir($snapshot_path);
-        }
-    
-        file_put_contents("{$snapshot_path}/leaderboards.xml", $xml);
-    }
-    
-    public static function compressS3Xml(DateTime $date) {
+    public static function compressTempToSavedXml(DateTime $date) {
         $date_formatted = $date->format('Y-m-d');
     
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_parent_path = "{$installation_path}/leaderboard_xml/s3_queue";
-        $snapshot_path = "{$snapshot_parent_path}/{$date_formatted}";
+        $temp_parent_path = "{$installation_path}/leaderboard_xml/temp";
         
-        $zip_snapshot_path = "{$snapshot_path}.zip";
+        $zip_snapshot_path = static::getXmlPath($date) . ".zip";
     
         /* 
             Since this will only run on the backend this would be simplest way to compress an entire folder.
             TODO: Implement a method in the File utility to recursively compress all files in a file using ZipArchive.
         */
-        exec("cd {$snapshot_parent_path} ; zip -r {$date_formatted}.zip {$date_formatted}");
-        
-        static::deleteS3Xml($date);
+        exec("cd {$temp_parent_path} ; zip -r {$date_formatted}.zip {$date_formatted}; rm -rf {$zip_snapshot_path}; mv {$date_formatted}.zip {$zip_snapshot_path}");
     
         return $zip_snapshot_path;
+    }
+    
+    public static function decompressToTempXml(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+    
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $temp_parent_path = "{$installation_path}/leaderboard_xml/temp";
+        
+        $zip_snapshot_path = static::getXmlPath($date) . ".zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to decompress an entire folder.
+            TODO: Implement a method in the File utility to recursively decompress all files in a file using ZipArchive.
+        */
+        exec("unzip {$zip_snapshot_path} -d {$temp_parent_path}");
+    }
+    
+    public static function copyZippedXmlToS3(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+    
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        $s3_parent_path = "{$installation_path}/leaderboard_xml/s3_queue";
+        
+        $zip_snapshot_path = static::getXmlPath($date) . ".zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to decompress an entire folder.
+            TODO: Implement a method in the File utility to copy this file over.
+        */
+        exec("cp {$zip_snapshot_path} {$s3_parent_path}");
+        
+        return "{$s3_parent_path}/{$date_formatted}.zip";
     }
     
     public static function deleteS3ZippedXml(DateTime $date) {
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
         $snapshot_path = "{$installation_path}/leaderboard_xml/s3_queue/{$date->format('Y-m-d')}.zip";
     
-        unlink($snapshot_path);
+        if(is_file($snapshot_path)) {
+            unlink($snapshot_path);
+        }
     }
     
     public static function getXmlUrls() {
@@ -248,6 +255,22 @@ extends Necrolab {
         }
         
         return $xml_urls;
+    }
+    
+    public static function getXmlSaveQueueName() {
+        return "save_xml";
+    }
+    
+    public static function addToXmlSaveQueue(DateTime $date) {
+        static::addDateToQueue(static::getXmlSaveQueueName(), $date);
+    }
+    
+    public static function getXmlUploadQueueName() {
+        return "upload_xml";
+    }
+    
+    public static function addToXmlUploadQueue(DateTime $date) {        
+        static::addDateToQueue(static::getXmlUploadQueueName(), $date);
     }
     
     public static function getFormattedApiRecord($data_row) {

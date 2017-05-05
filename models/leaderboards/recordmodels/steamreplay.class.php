@@ -42,10 +42,15 @@ extends RecordModel {
             
             $this->replay_version = $replay_data_segments[0];
             
-            if($this->replay_version < 83) {
+            if($this->replay_version < 82) {
                 $zone_1_seed = $replay_data_segments[10];
 
                 $this->seed = Replays::getSeedFromZ1Seed($zone_1_seed);
+            }
+            elseif($this->replay_version < 84) {
+                $zone_1_seed = $replay_data_segments[10];
+
+                $this->seed = Replays::getOldDLCSeedFromZ1Seed($zone_1_seed);
             }
             else {
                 $zone_1_seed = $replay_data_segments[7];

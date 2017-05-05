@@ -2,6 +2,7 @@
 namespace Modules\Necrolab\Models\Dailies\Rankings\Database;
 
 use \DateTime;
+use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DatabaseEntry;
@@ -10,8 +11,58 @@ use \Modules\Necrolab\Models\Dailies\Rankings\Entries as BaseEntries;
 
 class Entries
 extends BaseEntries {    
+    public static function dropPartitionTableConstraints(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("
+            ALTER TABLE daily_ranking_entries_{$date_formatted}
+            DROP CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_daily_ranking_id,
+            DROP CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_steam_user_id;
+        ");
+    }
+    
+    public static function createPartitionTableConstraints(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+        
+        db()->exec("
+            ALTER TABLE daily_ranking_entries_{$date_formatted}
+            ADD CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_daily_ranking_id FOREIGN KEY (daily_ranking_id)
+                REFERENCES daily_rankings (daily_ranking_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_steam_user_id FOREIGN KEY (steam_user_id)
+                REFERENCES steam_users (steam_user_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE;
+        ");
+    }
+
+    public static function dropPartitionTableIndexes(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+        
+        db()->exec("
+            DROP INDEX IF EXISTS idx_daily_ranking_entries_{$date_formatted}_daily_ranking_id;
+            DROP INDEX IF EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id;
+        ");
+    }
+    
+    public static function createPartitionTableIndexes(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("
+            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_daily_ranking_id
+            ON daily_ranking_entries_{$date_formatted}
+            USING btree (daily_ranking_id);
+
+            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_steam_user_id
+            ON daily_ranking_entries_{$date_formatted}
+            USING btree (steam_user_id);
+        ");
+    }
+    
+
     public static function createPartitionTable(DateTime $date) {
         $date_formatted = $date->format('Y_m');
+        
+        static::dropPartitionTableIndexes($date);
     
         db()->exec("
             CREATE TABLE daily_ranking_entries_{$date_formatted} (
@@ -29,28 +80,15 @@ extends BaseEntries {
                 sum_of_ranks integer NOT NULL,
                 total_score integer NOT NULL,
                 rank integer NOT NULL,
-            CONSTRAINT pk_daily_ranking_entries_{$date_formatted}_daily_ranking_entry_id PRIMARY KEY (daily_ranking_id, steam_user_id),
-            CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_daily_ranking_id FOREIGN KEY (daily_ranking_id)
-                REFERENCES daily_rankings (daily_ranking_id) MATCH SIMPLE
-                ON UPDATE CASCADE ON DELETE CASCADE,
-            CONSTRAINT fk_daily_ranking_entries_{$date_formatted}_steam_user_id FOREIGN KEY (steam_user_id)
-                REFERENCES steam_users (steam_user_id) MATCH SIMPLE
-                ON UPDATE CASCADE ON DELETE CASCADE
+                CONSTRAINT pk_daily_ranking_entries_{$date_formatted}_daily_ranking_entry_id PRIMARY KEY (daily_ranking_id, steam_user_id)
             )
             WITH (
                 OIDS=FALSE
             );
-
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_daily_ranking_id
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree
-            (daily_ranking_id);
-
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_steam_user_id
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree
-            (steam_user_id);
         ");
+        
+        static::createPartitionTableConstraints($date);
+        static::createPartitionTableIndexes($date);
     }
     
     public static function clear($daily_ranking_id, DateTime $date) {
@@ -61,11 +99,50 @@ extends BaseEntries {
         ));
     }
     
+    public static function getInsertQueue(DateTime $date) {
+        return new InsertQueue("daily_ranking_entries_{$date->format('Y_m')}", db(), 4679);
+    }
+    
     public static function vacuum(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         db()->exec("VACUUM ANALYZE daily_ranking_entries_{$date_formatted};");
     }
+    
+    public static function getTempInsertQueue() {
+        return new InsertQueue("daily_ranking_entries", db(), 600);
+    }
+    
+    public static function createTemporaryTable() {
+        db()->exec("
+            CREATE TEMPORARY TABLE daily_ranking_entries
+            (
+                daily_ranking_id integer NOT NULL,
+                steam_user_id integer NOT NULL,
+                first_place_ranks smallint NOT NULL,
+                top_5_ranks smallint NOT NULL,
+                top_10_ranks smallint NOT NULL,
+                top_20_ranks smallint NOT NULL,
+                top_50_ranks smallint NOT NULL,
+                top_100_ranks smallint NOT NULL,
+                total_points double precision NOT NULL,
+                total_dailies smallint NOT NULL,
+                total_wins smallint NOT NULL,
+                sum_of_ranks integer NOT NULL,
+                total_score integer NOT NULL,
+                rank integer NOT NULL
+            )
+            ON COMMIT DROP;
+        ");
+    }
+    
+    public static function saveTempEntries(DateTime $date) {
+        db()->exec("
+            INSERT INTO daily_ranking_entries_{$date->format('Y_m')}
+            SELECT *
+            FROM daily_ranking_entries
+        ");
+    }    
 
     public static function getAllBaseResultset($release_name, $mode_name, DateTime $date, $number_of_days = NULL) {
         if(empty($number_of_days)) {

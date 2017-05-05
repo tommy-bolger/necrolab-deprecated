@@ -1,0 +1,10 @@
+ .popover {
+    font-family: NecroSans !important;
+    src: url(/assets/files/modules/necrolab/fonts/NecroSans.ttf) !important;
+    background-color: rgb(51, 51, 51);
+    border: 2px #FFFFFF solid;
+ }
+ 
+ .popover-title {
+     background-color: inherit;
+ }

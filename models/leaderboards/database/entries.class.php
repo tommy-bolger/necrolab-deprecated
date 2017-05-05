@@ -3,6 +3,7 @@ namespace Modules\Necrolab\Models\Leaderboards\Database;
 
 use \DateTime;
 use \Exception;
+use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
 use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
@@ -19,38 +20,72 @@ use \Modules\Necrolab\Models\Leaderboards\Entries as BaseEntries;
 
 class Entries
 extends BaseEntries {
+    public static function dropPartitionTableConstraints(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("
+            ALTER TABLE leaderboard_entries_{$date_formatted}
+            DROP CONSTRAINT fk_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id,
+            DROP CONSTRAINT fk_leaderboard_entries_{$date_formatted}_steam_user_pb_id;
+        ");
+    }
+    
+    public static function createPartitionTableConstraints(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+        
+        db()->exec("
+            ALTER TABLE leaderboard_entries_{$date_formatted}
+            ADD CONSTRAINT fk_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id FOREIGN KEY (leaderboard_snapshot_id)
+                REFERENCES leaderboard_snapshots (leaderboard_snapshot_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE,
+            ADD CONSTRAINT fk_leaderboard_entries_{$date_formatted}_steam_user_pb_id FOREIGN KEY (steam_user_pb_id) 
+                REFERENCES steam_user_pbs (steam_user_pb_id) MATCH SIMPLE
+                ON UPDATE CASCADE ON DELETE CASCADE;
+        ");
+    }
+
+    public static function dropPartitionTableIndexes(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+        
+        db()->exec("
+            DROP INDEX IF EXISTS idx_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id;
+            DROP INDEX IF EXISTS idx_leaderboard_entries_{$date_formatted}_steam_user_pb_id;
+        ");
+    }
+    
+    public static function createPartitionTableIndexes(DateTime $date) {
+        $date_formatted = $date->format('Y_m');
+    
+        db()->exec("
+            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id
+            ON leaderboard_entries_{$date_formatted}
+            USING btree (leaderboard_snapshot_id);            
+            
+            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_steam_user_pb_id
+            ON leaderboard_entries_{$date_formatted}
+            USING btree (steam_user_pb_id);
+        ");
+    }
+
     public static function createPartitionTable(DateTime $date) {
         $date_formatted = $date->format('Y_m');
+        
+        static::dropPartitionTableIndexes($date);
     
         db()->exec("        
             CREATE TABLE leaderboard_entries_{$date_formatted} (
                 leaderboard_snapshot_id integer NOT NULL,
                 steam_user_pb_id integer NOT NULL,
                 rank integer NOT NULL,
-                CONSTRAINT pk_leaderboard_entries_{$date_formatted}_leaderboard_entry_id PRIMARY KEY (leaderboard_snapshot_id, steam_user_pb_id, rank),
-                CONSTRAINT fk_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id FOREIGN KEY (leaderboard_snapshot_id)
-                    REFERENCES leaderboard_snapshots (leaderboard_snapshot_id) MATCH SIMPLE
-                    ON UPDATE CASCADE ON DELETE CASCADE,
-                CONSTRAINT fk_leaderboard_entries_{$date_formatted}_steam_user_pb_id FOREIGN KEY (steam_user_pb_id) 
-                    REFERENCES steam_user_pbs (steam_user_pb_id) MATCH SIMPLE
-                    ON UPDATE CASCADE ON DELETE CASCADE
+                CONSTRAINT pk_leaderboard_entries_{$date_formatted}_leaderboard_entry_id PRIMARY KEY (leaderboard_snapshot_id, steam_user_pb_id, rank)
             )
             WITH (
                 OIDS=FALSE
             );
-
-            DROP INDEX IF EXISTS idx_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id;
-            
-            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_leaderboard_snapshot_id
-            ON leaderboard_entries_{$date_formatted}
-            USING btree (leaderboard_snapshot_id);
-            
-            DROP INDEX IF EXISTS idx_leaderboard_entries_{$date_formatted}_steam_user_pb_id;
-            
-            CREATE INDEX idx_leaderboard_entries_{$date_formatted}_steam_user_pb_id
-            ON leaderboard_entries_{$date_formatted}
-            USING btree (steam_user_pb_id);
         ");
+        
+        static::createPartitionTableConstraints($date);
+        static::createPartitionTableIndexes($date);
     }
     
     public static function clear($leaderboard_snapshot_id, DateTime $date) {
@@ -61,89 +96,38 @@ extends BaseEntries {
         ), array(), "leaderboard_entries_{$date_formatted}_delete");
     }
     
+    public static function getInsertQueue(DateTime $date) {
+        return new InsertQueue("leaderboard_entries_{$date->format('Y_m')}", db(), 10000);
+    }
+    
     public static function vacuum(DateTime $date) {
         $date_formatted = $date->format('Y_m');
     
         db()->exec("VACUUM ANALYZE leaderboard_entries_{$date_formatted};");
     }
     
-    public static function getSteamPbPopulateResultset(DateTime $date) {
-        $date_formatted = $date->format('Y_m');
-    
-        $resultset = new SQL("steam_pb_leaderboard_entries_{$date_formatted}");
-        
-        $resultset->setBaseQuery("
-            DECLARE archived_leaderboard_data_{$date_formatted} CURSOR FOR
-            {$resultset->getBaseQuery()}
+    public static function createTemporaryTable() {
+        db()->exec("
+            CREATE TEMPORARY TABLE leaderboard_entries (
+                leaderboard_snapshot_id integer NOT NULL,
+                steam_user_pb_id integer NOT NULL,
+                rank integer NOT NULL
+            )
+            ON COMMIT DROP;
         ");
-        
-        $resultset->addSelectFields(array(
-            array(
-                'field' => 'l.leaderboard_id',
-                'alias' => 'leaderboard_id'
-            ),
-            array(
-                'field' => 'le.leaderboard_snapshot_id',
-                'alias' => 'leaderboard_snapshot_id'
-            ),
-            array(
-                'field' => 'le.steam_user_id',
-                'alias' => 'steam_user_id'
-            ),
-            array(
-                'field' => 'le.score',
-                'alias' => 'score'
-            ),
-            array(
-                'field' => 'le.rank',
-                'alias' => 'rank'
-            ),
-            array(
-                'field' => 'le.steam_replay_id',
-                'alias' => 'steam_replay_id'
-            ),
-            array(
-                'field' => 'le.leaderboard_entry_details_id',
-                'alias' => 'leaderboard_entry_details_id'
-            ),
-            array(
-                'field' => 'le.time',
-                'alias' => 'time'
-            ),
-            array(
-                'field' => 'le.is_win',
-                'alias' => 'is_win'
-            ),
-            array(
-                'field' => 'le.zone',
-                'alias' => 'zone'
-            ),
-            array(
-                'field' => 'le.level',
-                'alias' => 'level'
-            ),
-            array(
-                'field' => 'le.win_count',
-                'alias' => 'win_count'
-            ),
-        ));
-        
-        $resultset->setFromTable('leaderboards l');
-
-        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id');
-        $resultset->addJoinCriteria("archived_leaderboard_entries_{$date_formatted} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id");
-
-        $resultset->addFilterCriteria('ls.date BETWEEN :start_date AND :end_date', array(
-            ':start_date' => $date->format('Y-m-01'),
-            ':end_date' => $date->format('Y-m-t'),
-        ));
-        
-        $resultset->addSortCriteria('ls.date', 'ASC');
-        $resultset->addSortCriteria('l.leaderboard_id', 'ASC');
-        $resultset->addSortCriteria('le.rank', 'ASC');
-        
-        return $resultset;
     }
+    
+    public static function getTempInsertQueue() {
+        return new InsertQueue("leaderboard_entries", db(), 20000);
+    }
+    
+    public static function saveTempEntries(DateTime $date) {
+        db()->exec("
+            INSERT INTO leaderboard_entries_{$date->format('Y_m')}
+            SELECT *
+            FROM leaderboard_entries
+        ");
+    }    
     
     public static function closeSteamPbPopulateResultset(DateTime $date) {
         $date_formatted = $date->format('Y_m');

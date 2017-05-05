@@ -1,6 +1,6 @@
 <?php
 /**
-* The all pbs api end point in Necrolab.
+* The api endpoint for a player's pbs in Necrolab.
 * Copyright (c) 2017, Tommy Bolger
 * All rights reserved.
 * 
@@ -30,39 +30,7 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Api\Players;
+namespace Modules\Necrolab\Controllers\Api\Players\Player\Pbs;
 
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
-use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
-
-class Pbs
-extends Players {
-    public function init() {
-        $this->getResultsetStateFromRequest();
-        
-        $this->setReleaseFromRequest();
-    }
-
-    protected function getResultset() {
-        return SteamUserPbsModel::getAllApiResultset($this->release_name);
-    }
-    
-    public function formatResponse($data) {        
-        $processed_data = array();
-        
-        if(!empty($data)) {        
-            foreach($data as $row) { 
-                $steamid = $row['steamid'];
-                $lbid = $row['lbid'];
-            
-                $processed_data[$steamid]['player'] = $this->getPlayerData($row);
-
-                $processed_data[$steamid]['leaderboards'][$lbid]['leaderboard'] = LeaderboardsModel::getFormattedApiRecord($row);
-                
-                $processed_data[$steamid]['leaderboards'][$lbid]['entries'][] = SteamUserPbsModel::getFormattedApiRecord($row);
-            }
-        }
-        
-        return array_values($processed_data);
-    }
-}
+class Home
+extends Pbs {}

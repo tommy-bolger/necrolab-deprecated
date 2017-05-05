@@ -30,8 +30,9 @@
 * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 * POSSIBILITY OF SUCH DAMAGE.
 */
-namespace Modules\Necrolab\Controllers\Api\Players\Player;
+namespace Modules\Necrolab\Controllers\Api\Players\Player\Pbs;
 
+use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
 
@@ -42,11 +43,15 @@ extends Player {
         
         $this->setReleaseFromRequest();
         
+        $this->setModeFromRequest();
+        
+        $this->setCharacterFromRequest();
+        
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultset() {
-        return SteamUserPbsModel::getApiSteamUserResultset($this->release_name, $this->steamid);
+        return SteamUserPbsModel::getApiSteamUserResultset($this->release_name, $this->mode, $this->character_name, $this->steamid);
     }
     
     public function formatResponse($data) {        
@@ -54,11 +59,11 @@ extends Player {
 
         if(!empty($data)) {        
             foreach($data as $row) {  
-                $lbid = $row['lbid'];
             
-                $processed_data[$lbid]['leaderboard'] = LeaderboardsModel::getFormattedApiRecord($row);
-                
-                $processed_data[$lbid]['entries'][] = SteamUserPbsModel::getFormattedApiRecord($row);
+                $processed_data[] = array(
+                    'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
+                    'pb' => SteamUserPbsModel::getFormattedApiRecord($row)
+                );
             }
         }
         

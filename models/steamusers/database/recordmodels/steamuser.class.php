@@ -64,4 +64,26 @@ extends RecordModel {
     protected $twitter_user_id;
     
     protected $beampro_user_id;
+    
+    public function getTempRecordArray() {
+        return array(
+            'communityvisibilitystate' => $this->communityvisibilitystate,
+            'profilestate' => $this->profilestate,
+            'personaname' => $this->personaname,
+            'lastlogoff' => $this->lastlogoff,
+            'profileurl' => $this->profileurl,
+            'avatar' => $this->avatar,
+            'avatarmedium' => $this->avatarmedium,
+            'avatarfull' => $this->avatarfull,
+            'personastate' => $this->personastate,
+            'realname' => $this->realname,
+            'primaryclanid' => $this->primaryclanid,
+            'timecreated' => $this->timecreated,
+            'personastateflags' => $this->personastateflags,
+            'loccountrycode' => $this->loccountrycode,
+            'locstatecode' => $this->locstatecode,
+            'loccityid' => $this->loccityid,
+            'updated' => $this->updated
+        );
+    }
 }

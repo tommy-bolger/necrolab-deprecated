@@ -25,6 +25,12 @@ class SteamUsers {
         return static::$users[$steamid];
     }
     
+    public static function getAllIds() {
+        static::loadIds();
+        
+        return static::$user_ids;
+    }
+    
     public static function getId($steamid) {
         static::loadIds();
         
@@ -66,11 +72,11 @@ class SteamUsers {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/{$group_number}.json.gz", gzencode(json_encode($data, JSON_UNESCAPED_UNICODE), 9));
+        file_put_contents("{$snapshot_path}/{$group_number}.json", json_encode($data, JSON_UNESCAPED_UNICODE));
     }
     
     public static function getJson($file_path) {    
-        return json_decode(gzdecode(file_get_contents($file_path)));
+        return json_decode(file_get_contents($file_path));
     }
     
     public static function getJsonFiles(DateTime $date) {  
@@ -82,7 +88,7 @@ class SteamUsers {
         if(is_dir($snapshot_path)) {
             $directory_iterator = new RecursiveDirectoryIterator($snapshot_path);
             $file_iterator = new RecursiveIteratorIterator($directory_iterator);
-            $matched_files = new RegexIterator($file_iterator, '/^.+\.gz$/i', RecursiveRegexIterator::GET_MATCH);
+            $matched_files = new RegexIterator($file_iterator, '/^.+\.json$/i', RecursiveRegexIterator::GET_MATCH);
             
             foreach($matched_files as $matched_file) {
                 $json_files[] = current($matched_file);

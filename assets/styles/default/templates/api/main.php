@@ -54,9 +54,27 @@
             <a href="#player_endpoints">Player Endpoints</a>
             <ul class="table_of_contents_items">
                 <li><a href="#players"><code>/players</code></a></li>
-                <li><a href="#players_pbs"><code>/players/pbs</code></a></li>
                 <li><a href="#players_player"><code>/players/player</code></a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#player_endpoints">Achievements Endpoints</a>
+            <ul class="table_of_contents_items">
+                <li><a href="#achievements"><code>/achievements</code></a></li>
+                <li><a href="#players_player_achievements"><code>/players/player/achievements</code></a></li>
+            </ul>
+        </li>
+        <li>
+            <a href="#pbs_endpoints">PBs Endpoints</a>
+            <ul class="table_of_contents_items">
+                <li><a href="#players_pbs"><code>/players/pbs</code></a></li>
+                <li><a href="#players_pbs_score"><code>/players/pbs/score</code></a></li>
+                <li><a href="#players_pbs_speed"><code>/players/pbs/speed</code></a></li>
+                <li><a href="#players_pbs_deathless"><code>/players/pbs/deathless</code></a></li>
                 <li><a href="#players_player_pbs"><code>/players/player/pbs</code></a></li>
+                <li><a href="#players_player_pbs_score"><code>/players/player/pbs/score</code></a></li>
+                <li><a href="#players_player_pbs_speed"><code>/players/player/pbs/speed</code></a></li>
+                <li><a href="#players_player_pbs_deathless"><code>/players/player/pbs/deathless</code></a></li>
             </ul>
         </li>
         <li>
@@ -604,7 +622,6 @@
         </li>
     </ul>
 </p>
-
 <br />
 <p>
     <span class="bold">GET</span> <a name="modes"><code>/modes</code></a>
@@ -802,5 +819,7 @@
 <?php echo $this->leaderboards; ?>
 <?php echo $this->rankings; ?>
 <?php echo $this->players; ?>
+<?php echo $this->achievements; ?>
+<?php echo $this->pbs; ?>
 <?php echo $this->player_leaderboards; ?>
 <?php echo $this->player_rankings; ?>

@@ -3,10 +3,10 @@ namespace Modules\Necrolab\Controllers\Cli;
 
 use \DateTime;
 use \Framework\Core\Controllers\Cli;
-use \Framework\Utilities\ParallelProcessQueue;
 use \Framework\Api\Steam\ISteamUser;
 use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
+use \Modules\Necrolab\Models\SteamUsers\Cache\SteamUsers as CacheSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
 class SteamUsers
@@ -15,7 +15,7 @@ extends Cli {
     
     protected $date;
 
-    public function importJsonChildProcess(array $request_steam_ids, $group_number) {        
+    protected function importJsonChildProcess(array $request_steam_ids, $group_number) {        
         $retrieval_attempts = 1;
         $retrieval_successful = false;
         $steam_users_data = NULL;
@@ -37,7 +37,7 @@ extends Cli {
         }
         
         if($retrieval_successful == false) {
-            throw new Exception("Retrieval for steam use group {$group_number} has failed.");
+            throw new Exception("Retrieval for steam user group {$group_number} has failed.");
         }
         
         DatabaseSteamUsers::saveJson($this->date, $group_number, $steam_users_data);
@@ -54,20 +54,13 @@ extends Cli {
             
             DatabaseSteamUsers::deleteJson($this->date);
         
-            $steam_update_job_queue = new ParallelProcessQueue();
-            
-            $steam_update_job_queue->setMaxParallelProcesses(10);
-        
             $steamids_group = array();
             $group_counter = 1;
             $group_number = 1;
         
             foreach($users_to_update as $steam_user_id => $steamid) {
-                if($group_counter == 101) {                    
-                    $steam_update_job_queue->addProcessToQueue(array($this, 'importJsonChildProcess'), array(
-                        'steamids_group' => $steamids_group,
-                        'group_number' => $group_number
-                    ));
+                if($group_counter == 101) {
+                    $this->importJsonChildProcess($steamids_group, $group_number);
                     
                     $group_counter = 1;
                     $steamids_group = array();
@@ -81,13 +74,8 @@ extends Cli {
             }
             
             if(!empty($steamids_group)) {
-                $steam_update_job_queue->addProcessToQueue(array($this, 'importJsonChildProcess'), array(
-                    'steamids_group' => $steamids_group,
-                    'group_number' => $group_number
-                ));
+                $this->importJsonChildProcess($steamids_group, $group_number);
             }
-            
-            $steam_update_job_queue->run();
         }
     }
     
@@ -98,6 +86,10 @@ extends Cli {
             
         if(!empty($steam_user_files)) {            
             db()->beginTransaction();
+            
+            DatabaseSteamUsers::clearTemp();
+            
+            $temp_insert_queue = DatabaseSteamUsers::getTempInsertQueue();
             
             foreach($steam_user_files as $steam_user_file) {
                 $steam_users = DatabaseSteamUsers::getJson($steam_user_file);
@@ -110,16 +102,31 @@ extends Cli {
                         
                         $steam_user_record->updated = date('Y-m-d H:i:s');
                         
-                        DatabaseSteamUsers::save($steam_user_record);
+                        $temp_record = $steam_user_record->getTempRecordArray();
+                        
+                        $temp_record['steam_user_id'] = DatabaseSteamUsers::getId($steam_user->steamid);
+                        
+                        $temp_insert_queue->addRecord($temp_record);
                     }
                 }
             }
             
+            $temp_insert_queue->commit();
+            
+            DatabaseSteamUsers::saveTemp();
+            
+            DatabaseSteamUsers::clearTemp();
+            
             db()->commit();
             
             DatabaseSteamUsers::vacuum();
+            DatabaseSteamUsers::vacuumTemp();
             
             DatabaseSteamUsers::deleteJson($this->date);
         }
+    }
+    
+    public function actionPopulateCache() {
+        CacheSteamUsers::populate();
     }
 }

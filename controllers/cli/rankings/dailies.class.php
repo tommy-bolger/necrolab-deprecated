@@ -58,6 +58,10 @@ extends Cli {
         
         if(!empty($modes_used)) {
             $database->beginTransaction();
+            
+            DatabaseDailyRankingEntries::createTemporaryTable();
+            
+            $entries_insert_queue = DatabaseDailyRankingEntries::getTempInsertQueue();
         
             foreach($modes_used as $mode_id) {
                 $mode = DatabaseModes::getById($mode_id);
@@ -76,12 +80,22 @@ extends Cli {
                                 
                                 DatabaseDailyRankingEntries::clear($daily_ranking_id, $this->as_of_date);
                             
-                                CacheDailyRankingEntries::saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date, $this->cache);
+                                CacheDailyRankingEntries::saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date, $this->cache, $entries_insert_queue);
                             }
                         }
                     }
                 }
             }
+            
+            $entries_insert_queue->commit();
+            
+            DatabaseDailyRankingEntries::dropPartitionTableConstraints($this->as_of_date);
+            DatabaseDailyRankingEntries::dropPartitionTableIndexes($this->as_of_date);
+            
+            DatabaseDailyRankingEntries::saveTempEntries($this->as_of_date);
+            
+            DatabaseDailyRankingEntries::createPartitionTableConstraints($this->as_of_date);
+            DatabaseDailyRankingEntries::createPartitionTableIndexes($this->as_of_date);
             
             $database->commit();
         }
@@ -117,6 +131,17 @@ extends Cli {
         
             $current_date->add(new DateInterval('P1D'));
         }
+    }
+    
+    public function generateQueueMessageReceived($message) {
+        $this->actionGenerate($message->body);
+    }
+    
+    public function actionRunGenerateQueueListener() {    
+        DatabaseDailyRankings::runQueue(DatabaseDailyRankings::getGenerateQueueName(), array(
+            $this,
+            'generateQueueMessageReceived'
+        ));
     }
     
     public function actionCreateEntriesParition($date = NULL) {

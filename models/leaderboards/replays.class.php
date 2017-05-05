@@ -59,6 +59,14 @@ extends Necrolab {
         if($seed >= $overflow) {
             $seed -= $period;
         }
+
+        return $seed;
+    }
+    
+    public static function getOldDLCSeedFromZ1Seed($zone_1_seed) {
+        $multiplied_seed = $zone_1_seed * 1899818559;
+        
+        $seed = $multiplied_seed % 2147483647;
         
         return $seed;
     }

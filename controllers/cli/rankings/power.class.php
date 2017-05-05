@@ -54,6 +54,10 @@ extends Cli {
             $characters = DatabaseCharacters::getActive();
         
             $database->beginTransaction();
+            
+            DatabaseEntries::createTemporaryTable();
+            
+            $entries_insert_queue = DatabaseEntries::getTempInsertQueue();
         
             foreach($releases as $release) {
                 $release_id = $release['release_id'];
@@ -81,11 +85,21 @@ extends Cli {
                             
                             DatabaseEntries::clear($power_ranking_id, $this->as_of_date);
                         
-                            CacheEntries::saveToDatabase($power_ranking_id, $release_id, $mode_id, $this->as_of_date, $this->cache);
+                            CacheEntries::saveToDatabase($power_ranking_id, $release_id, $mode_id, $this->as_of_date, $this->cache, $entries_insert_queue);
                         }
                     }
                 }
             }
+            
+            $entries_insert_queue->commit();
+            
+            DatabaseEntries::dropPartitionTableConstraints($this->as_of_date);
+            DatabaseEntries::dropPartitionTableIndexes($this->as_of_date);
+            
+            DatabaseEntries::saveTempEntries($this->as_of_date);
+            
+            DatabaseEntries::createPartitionTableConstraints($this->as_of_date);
+            DatabaseEntries::createPartitionTableIndexes($this->as_of_date);
             
             $database->commit();
         }
@@ -98,7 +112,7 @@ extends Cli {
     
     public function actionGenerate($date = NULL) {
         $this->as_of_date = new DateTime($date);
-    
+
         $this->generate();
     }
     
@@ -113,6 +127,17 @@ extends Cli {
         
             $current_date->add(new DateInterval('P1D'));
         }
+    }
+    
+    public function generateQueueMessageReceived($message) {
+        $this->actionGenerate($message->body);
+    }
+    
+    public function actionRunGenerateQueueListener() {    
+        DatabaseRankings::runQueue(DatabaseRankings::getGenerateQueueName(), array(
+            $this,
+            'generateQueueMessageReceived'
+        ));
     }
     
     public function actionCreateEntriesParition($date = NULL) {

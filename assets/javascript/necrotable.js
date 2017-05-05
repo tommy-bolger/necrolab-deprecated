@@ -937,6 +937,12 @@ NecroTable.prototype.render = function() {
                     link_element.html('+');
                 }
             });
+            
+            $('#' + instance.table_id).popover({
+                selector: '.icon_popover',
+                animation: false,
+                trigger: 'click',
+            });
         };
     }    
     

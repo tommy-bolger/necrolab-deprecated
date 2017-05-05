@@ -73,12 +73,28 @@ extends Players {
         parent::setup();
         
         $this->page->addCssFiles(array(
+            'progress_bar.css',
             'page/player.css',
             'characters_header.css'
         ));
         
         $this->page->addJavascriptFiles(array(
-            'tables/player.js'
+            'tables/player/info.js',
+            'tables/player/achievements.js',
+            'tables/player/pbs/score.js',
+            'tables/player/pbs/speed.js',
+            'tables/player/pbs/deathless.js',
+            'tables/player/rankings/power.js',
+            'tables/player/rankings/score.js',
+            'tables/player/rankings/speed.js',
+            'tables/player/rankings/deathless.js',
+            'tables/player/rankings/character.js',
+            'tables/player/rankings/daily.js',
+            'tables/player/leaderboards/score.js',
+            'tables/player/leaderboards/speed.js',
+            'tables/player/leaderboards/deathless.js',
+            'tables/player/leaderboards/daily.js',
+            'tables/player/player.js'
         ));
         
         if(isset(session()->steamid)) {

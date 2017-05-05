@@ -81,6 +81,7 @@ extends PageController {
             '/bootstrap/bootstrap-datepicker3.min.css',
             '/bootstrap/bootstrap-select.min.css',
             '/datepicker.css',
+            '/popover.css',
             '/characters_header.css',
             '/necrotable.css'
         ));

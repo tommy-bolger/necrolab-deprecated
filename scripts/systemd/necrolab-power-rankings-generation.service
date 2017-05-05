@@ -1,0 +1,12 @@
+[Unit]
+Description=Necrolab power rankings generation service.
+
+[Service]
+PIDFile=/var/run/necrolab-power-rankings-generation.pid
+ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab rankings/power RunGenerateQueueListener > /dev/null 2>/dev/null
+Type=simple
+User=<your_user_name>
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
