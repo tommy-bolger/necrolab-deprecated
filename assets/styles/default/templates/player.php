@@ -36,8 +36,6 @@
         <br />
         <div class="menu_smaller">Deathless</div>
         <br />
-        <table id="player_daily_rankings_table"></table>
-        <br />
         <table id="player_deathless_pbs_table"></table>
     </div>
     <div role="tabpanel" class="tab-pane" id="rankings">
@@ -63,6 +61,8 @@
         <table id="player_character_rankings_table"></table>
         <br />
         <div class="menu_smaller">Daily</div>
+        <br />
+        <table id="player_daily_rankings_table"></table>
     </div>
     <div role="tabpanel" class="tab-pane" id="leaderboards">
         <br />
