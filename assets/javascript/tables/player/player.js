@@ -1,4 +1,4 @@
-$(document).ready(function() {
+$(document).ready(function() {    
     initialize_info_table();
     
     initialize_achievements_table();

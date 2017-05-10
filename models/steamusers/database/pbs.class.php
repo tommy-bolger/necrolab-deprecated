@@ -347,6 +347,7 @@ extends BasePbs {
         $resultset->setName("api:{$steamid}:pbs:score");
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
+        $resultset->addFilterCriteria("l.is_deathless = 0");
         $resultset->addFilterCriteria("l.is_daily = 0");
     
         return $resultset;
