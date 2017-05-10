@@ -14,6 +14,8 @@ function NecroTable(dom_object) {
     this.default_request = {};
     this.header_row_html = [];
     
+    this.fixed_header = false;
+    
     this.has_length_menu = false;
     this.length_menu = false;
     this.limit = 100;
@@ -246,6 +248,10 @@ NecroTable.prototype.enableSort = function(default_sort_by, default_sort_directi
     this.sort_direction = default_sort_direction;
 
     this.setSortFromUrl();
+};
+
+NecroTable.prototype.enableFixedHeader = function() {  
+    this.fixed_header = true;
 };
 
 NecroTable.prototype.setSortBy = function(sort_by) {    
@@ -953,7 +959,7 @@ NecroTable.prototype.render = function() {
         columns: instance.columns,
         stateSave: false,
         fixedHeader: {
-            header: true,
+            header: instance.fixed_header,
         },
         responsive: false,
         autoWidth: false,

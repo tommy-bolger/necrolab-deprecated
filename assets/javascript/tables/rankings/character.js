@@ -85,6 +85,7 @@ function get_rank_column_name(sort_by, table) {
 $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
     
+    table.enableFixedHeader();
     table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();

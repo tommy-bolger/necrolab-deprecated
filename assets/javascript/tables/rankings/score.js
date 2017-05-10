@@ -85,6 +85,7 @@ function process_score_data(data, table) {
 $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
     
+    table.enableFixedHeader();
     table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();

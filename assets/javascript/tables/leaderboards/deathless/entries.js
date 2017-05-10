@@ -43,6 +43,7 @@ $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
 
     table.addRequestParameter('lbid');
+    table.enableFixedHeader();
     table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
