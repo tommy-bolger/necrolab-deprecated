@@ -27,8 +27,11 @@ function process_ranking_speed_data(data, table) {
                     row_data.coda.speed.rank,
                     row_data.nocturna.speed.rank,
                     row_data.diamond.speed.rank,
+                    row_data.mary.speed.rank,
+                    row_data.tempo.speed.rank,
+                    row_data.story.speed.rank,
                     row_data.all.speed.rank,
-                    row_data.story.speed.rank
+                    row_data.all_dlc.speed.rank
                 ]);
                 
                 processed_data.push([
@@ -48,8 +51,11 @@ function process_ranking_speed_data(data, table) {
                     Formatting.roundNumber(row_data.coda.speed.rank_points),
                     Formatting.roundNumber(row_data.nocturna.speed.rank_points),
                     Formatting.roundNumber(row_data.diamond.speed.rank_points),
+                    Formatting.roundNumber(row_data.mary.speed.rank_points),
+                    Formatting.roundNumber(row_data.tempo.speed.rank_points),
+                    Formatting.roundNumber(row_data.story.speed.rank_points),
                     Formatting.roundNumber(row_data.all.speed.rank_points),
-                    Formatting.roundNumber(row_data.story.speed.rank_points)
+                    Formatting.roundNumber(row_data.all_dlc.speed.rank_points)
                 ]);
                 
                 processed_data.push([
@@ -69,8 +75,11 @@ function process_ranking_speed_data(data, table) {
                     Formatting.convertSecondsToTime(row_data.coda.speed.time),
                     Formatting.convertSecondsToTime(row_data.nocturna.speed.time),
                     Formatting.convertSecondsToTime(row_data.diamond.speed.time),
+                    Formatting.convertSecondsToTime(row_data.mary.speed.time),
+                    Formatting.convertSecondsToTime(row_data.tempo.speed.time),
+                    Formatting.convertSecondsToTime(row_data.story.speed.time),
                     Formatting.convertSecondsToTime(row_data.all.speed.time),
-                    Formatting.convertSecondsToTime(row_data.story.speed.time)
+                    Formatting.convertSecondsToTime(row_data.all_dlc.speed.time)
                 ]);
             }
         }
@@ -172,15 +181,30 @@ function initialize_ranking_speed_table() {
             type: 'num-fmt'
         },
         {
-            name: 'all_speed_rank',
-            title: 'All',
+            name: 'mary_speed_rank',
+            title: Formatting.getCharacterImageHtml('mary'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'tempo_speed_rank',
+            title: Formatting.getCharacterImageHtml('tempo'),
             type: 'num-fmt'
         },
         {
             name: 'story_speed_rank',
             title: 'Story',
             type: 'num-fmt'
-        }
+        },
+        {
+            name: 'all_speed_rank',
+            title: 'All',
+            type: 'num-fmt'
+        },
+        {
+            name: 'all_dlc_speed_rank',
+            title: 'All DLC',
+            type: 'num-fmt'
+        },
     ]);
     
     table.setDataProcessCallback(window, 'process_ranking_speed_data');

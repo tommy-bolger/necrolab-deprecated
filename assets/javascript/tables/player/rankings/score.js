@@ -25,8 +25,11 @@ function process_score_ranking_data(data, table) {
                     row_data.coda.score.rank,
                     row_data.nocturna.score.rank,
                     row_data.diamond.score.rank,
+                    row_data.mary.score.rank,
+                    row_data.tempo.score.rank,
+                    row_data.story.score.rank,
                     row_data.all.score.rank,
-                    row_data.story.score.rank
+                    row_data.all_dlc.score.rank
                 ]);
                 
                 processed_data.push([
@@ -46,8 +49,11 @@ function process_score_ranking_data(data, table) {
                     Formatting.roundNumber(row_data.coda.score.rank_points),
                     Formatting.roundNumber(row_data.nocturna.score.rank_points),
                     Formatting.roundNumber(row_data.diamond.score.rank_points),
+                    Formatting.roundNumber(row_data.mary.score.rank_points),
+                    Formatting.roundNumber(row_data.tempo.score.rank_points),
+                    Formatting.roundNumber(row_data.story.score.rank_points),
                     Formatting.roundNumber(row_data.all.score.rank_points),
-                    Formatting.roundNumber(row_data.story.score.rank_points)
+                    Formatting.roundNumber(row_data.all_dlc.score.rank_points)
                 ]);
                 
                 processed_data.push([
@@ -67,8 +73,11 @@ function process_score_ranking_data(data, table) {
                     row_data.coda.score.score,
                     row_data.nocturna.score.score,
                     row_data.diamond.score.score,
+                    row_data.mary.score.score,
+                    row_data.tempo.score.score,
+                    row_data.story.score.score,
                     row_data.all.score.score,
-                    row_data.story.score.score
+                    row_data.all_dlc.score.score
                 ]);
             }
         }
@@ -170,15 +179,30 @@ function initialize_ranking_score_table() {
             type: 'num-fmt'
         },
         {
-            name: 'all_score_rank',
-            title: 'All',
+            name: 'mary_score_rank',
+            title: Formatting.getCharacterImageHtml('mary'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'tempo_score_rank',
+            title: Formatting.getCharacterImageHtml('tempo'),
             type: 'num-fmt'
         },
         {
             name: 'story_score_rank',
             title: 'Story',
             type: 'num-fmt'
-        }
+        },
+        {
+            name: 'all_score_rank',
+            title: 'All',
+            type: 'num-fmt'
+        },
+        {
+            name: 'all_dlc_score_rank',
+            title: 'All DLC',
+            type: 'num-fmt'
+        },
     ]);
     
     table.setDataProcessCallback(window, 'process_score_ranking_data');

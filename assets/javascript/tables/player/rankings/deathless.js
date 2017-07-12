@@ -26,7 +26,9 @@ function process_ranking_deathless_data(data, table) {
                     row_data.dorian.deathless.rank,
                     row_data.coda.deathless.rank,
                     row_data.nocturna.deathless.rank,
-                    row_data.diamond.deathless.rank
+                    row_data.diamond.deathless.rank,
+                    row_data.mary.deathless.rank,
+                    row_data.tempo.deathless.rank
                 ]);
                 
                 processed_data.push([
@@ -45,7 +47,9 @@ function process_ranking_deathless_data(data, table) {
                     Formatting.roundNumber(row_data.dorian.deathless.rank_points),
                     Formatting.roundNumber(row_data.coda.deathless.rank_points),
                     Formatting.roundNumber(row_data.nocturna.deathless.rank_points),
-                    Formatting.roundNumber(row_data.diamond.deathless.rank_points)
+                    Formatting.roundNumber(row_data.diamond.deathless.rank_points),
+                    Formatting.roundNumber(row_data.mary.deathless.rank_points),
+                    Formatting.roundNumber(row_data.tempo.deathless.rank_points)
                 ]);
                 
                 processed_data.push([
@@ -64,7 +68,9 @@ function process_ranking_deathless_data(data, table) {
                     row_data.dorian.deathless.win_count,
                     row_data.coda.deathless.win_count,
                     row_data.nocturna.deathless.win_count,
-                    row_data.diamond.deathless.win_count
+                    row_data.diamond.deathless.win_count,
+                    row_data.mary.deathless.win_count,
+                    row_data.tempo.deathless.win_count
                 ]);
             }
         }
@@ -163,6 +169,16 @@ function initialize_ranking_deathless_table() {
         {
             name: 'diamond_deathless_rank',
             title: Formatting.getCharacterImageHtml('diamond'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'mary_deathless_rank',
+            title: Formatting.getCharacterImageHtml('mary'),
+            type: 'num-fmt'
+        },
+        {
+            name: 'tempo_deathless_rank',
+            title: Formatting.getCharacterImageHtml('tempo'),
             type: 'num-fmt'
         }
     ]);

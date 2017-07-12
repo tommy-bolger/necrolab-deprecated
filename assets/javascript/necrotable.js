@@ -1368,7 +1368,7 @@ NecroTable.prototype.render = function() {
             var character_image_html;
             
             //A thing to note: bootstrap select's custom html requires that it have single quotes instead of double.
-            if(character_value.name != 'all' && character_value.name != 'story') {
+            if(character_value.name != 'all' && character_value.name != 'story' && character_value.name != 'all_dlc') {
                 character_image_html = Formatting.getCharacterImageHtml(character_value.name) +  ' ' + character_value.display_name;
                 character_image_html = character_image_html.replace(/"/g, '\'');
             }
