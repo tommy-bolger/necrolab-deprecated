@@ -133,7 +133,7 @@ extends BaseEntries {
     }
     
     public static function getTempInsertQueue() {
-        return new InsertQueue("power_ranking_entries", db(), 600);
+        return new InsertQueue("power_ranking_entries", db(), 400);
     }
     
     public static function createTemporaryTable() {
