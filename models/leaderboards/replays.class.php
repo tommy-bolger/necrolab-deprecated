@@ -250,8 +250,10 @@ extends Necrolab {
     public static function getFormattedApiRecord($data_row) {
         $processed_row = array();
         
-        if(!empty($data_row['downloaded'])) {            
-            $processed_row['ugcid'] = $data_row['ugcid'];
+        if(!empty($data_row['downloaded'])) {
+            $ugcid = $processed_row['ugcid'];
+        
+            $processed_row['ugcid'] = $ugcid;
             $processed_row['version'] = $data_row['version'];
             $processed_row['seed'] = $data_row['seed'];
             $processed_row['run_result'] = $data_row['run_result'];
