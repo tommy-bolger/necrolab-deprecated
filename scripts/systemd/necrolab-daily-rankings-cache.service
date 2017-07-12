@@ -3,7 +3,7 @@ Description=Necrolab Daily Rankings caching service.
 
 [Service]
 PIDFile=/var/run/necrolab-daily-rankings-cache.pid
-ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab rankings/daily RunCacheQueueListener > /dev/null 2>/dev/null
+ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab rankings/dailies RunCacheQueueListener > /dev/null 2>/dev/null
 Type=simple
 User=<your_user_name>
 KillMode=process

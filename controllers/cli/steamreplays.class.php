@@ -365,7 +365,7 @@ extends Cli {
     }
     
     public function actionRunCacheQueueListener() {    
-        DatabaseSteamUsers::runQueue(Entries::getCacheQueueName(), array(
+        DatabaseReplays::runQueue(DatabaseReplays::getCacheQueueName(), array(
             $this,
             'cacheQueueMessageReceived'
         ));
