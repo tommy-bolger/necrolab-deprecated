@@ -298,6 +298,10 @@ extends BasePbs {
                 'alias' => 'downloaded'
             ),
             array(
+                'field' => 'sr.uploaded_to_s3',
+                'alias' => 'uploaded_to_s3'
+            ),
+            array(
                 'field' => 'srv.name',
                 'alias' => 'version'
             ),

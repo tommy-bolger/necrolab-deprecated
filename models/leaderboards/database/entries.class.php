@@ -362,6 +362,10 @@ extends BaseEntries {
                 'alias' => 'downloaded'
             ),
             array(
+                'field' => 'sr.uploaded_to_s3',
+                'alias' => 'uploaded_to_s3'
+            ),
+            array(
                 'field' => 'srv.name',
                 'alias' => 'version'
             ),
@@ -581,6 +585,10 @@ extends BaseEntries {
             array(
                 'field' => 'sr.downloaded',
                 'alias' => 'downloaded'
+            ),
+            array(
+                'field' => 'sr.uploaded_to_s3',
+                'alias' => 'uploaded_to_s3'
             ),
             array(
                 'field' => 'srv.name',
