@@ -19,14 +19,6 @@ extends Necrolab {
         );
     }
     
-    /*public static function getIfWin($details) {
-        $is_win = 'No';
-                            
-        if($details == "0500000006000000") {
-            $is_win = "Yes";
-        }
-    }*/
-    
     public static function getWinCount($score) {
         $win_count = NULL;
     

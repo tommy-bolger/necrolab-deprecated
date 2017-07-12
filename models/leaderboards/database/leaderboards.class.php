@@ -212,17 +212,6 @@ extends BaseLeaderboards {
         $resultset->addFilterCriteria('l.is_daily = 0');
         
         return $resultset;
-    
-        /*$resultset = new HybridResultset(CacheNames::getRecordsName(), cache(), cache('local'));
-        
-        $resultset->setCacheResultsetName(CacheNames::getRecordsName());
-        
-        $resultset->setIndexName(CacheNames::getRecordsIndexName(array(
-            $release_id,
-            $mode_id
-        )));
-        
-        return $resultset;*/
     }
     
     public static function getAllDailyResultset($release_id, $mode_id) { 
@@ -248,18 +237,6 @@ extends BaseLeaderboards {
         $resultset->setSortCriteria('l.daily_date', 'DESC');
         
         return $resultset;
-    
-        /*$resultset = new HybridResultset('daily_leaderboards', cache(), cache('local'));
-        
-        $resultset->setCacheResultsetName(CacheNames::getRecordsName());
-        
-        $resultset->setIndexName(CacheNames::getRecordsIndexName(array(
-            $release_id,
-            $mode_id,
-            'daily'
-        )));
-        
-        return $resultset;*/
     }
     
     public static function getAllDailyDatesResultset($release_id, $mode_id) { 
@@ -280,18 +257,6 @@ extends BaseLeaderboards {
         $resultset->addFilterCriteria("l.is_deathless = 0");
         
         return $resultset;
-    
-        /*$resultset = new HybridResultset(CacheNames::getRecordsName(), cache(), cache('local'));
-        
-        $resultset->setCacheResultsetName(CacheNames::getRecordsName());
-        
-        $resultset->setIndexName(CacheNames::getRecordsIndexName(array(
-            $release_id,
-            $mode_id,
-            'score'
-        )));
-        
-        return $resultset;*/
     }
     
     public static function getAllSpeedResultset($release_id, $mode_id) {     
@@ -300,18 +265,6 @@ extends BaseLeaderboards {
         $resultset->addFilterCriteria("l.is_speedrun = 1");
         
         return $resultset;
-    
-        /*$resultset = new HybridResultset(CacheNames::getRecordsName(), cache(), cache('local'));
-        
-        $resultset->setCacheResultsetName(CacheNames::getRecordsName());
-        
-        $resultset->setIndexName(CacheNames::getRecordsIndexName(array(
-            $release_id,
-            $mode_id,
-            'speed'
-        )));
-        
-        return $resultset;*/
     }
     
     public static function getAllDeathlessResultset($release_id, $mode_id) { 
@@ -320,18 +273,6 @@ extends BaseLeaderboards {
         $resultset->addFilterCriteria("l.is_deathless = 1");
         
         return $resultset;
-    
-        /*$resultset = new HybridResultset(CacheNames::getRecordsName(), cache(), cache('local'));
-        
-        $resultset->setCacheResultsetName(CacheNames::getRecordsName());
-        
-        $resultset->setIndexName(CacheNames::getRecordsIndexName(array(
-            $release_id,
-            $mode_id,
-            'deathless'
-        )));
-        
-        return $resultset;*/
     }
     
     protected static function getSteamUserBaseResulset($steamid, $release_id, $mode_id) {
@@ -422,100 +363,4 @@ extends BaseLeaderboards {
     
         return $resultset;
     }
-    
-    /*public static function loadIntoCache() {     
-        $resultset = new SQL("leaderboards");
-            
-        static::setSelectFields($resultset);
-        
-        $resultset->setFromTable('leaderboards l');
-        
-        $resultset->addLeftJoinCriteria("leaderboards_blacklist lb ON lb.leaderboard_id = l.leaderboard_id");
-        
-        $resultset->addFilterCriteria("lb.leaderboards_blacklist_id IS NULL");
-
-        $resultset->setAsCursor(1000);
-        
-        db()->beginTransaction();
-        
-        $transaction = cache()->transaction();
-        
-        $resultset->prepareExecuteQuery();
-        
-        $current_leaderboard_snapshot_id = NULL;
-        $current_leaderboard_id = NULL;
-        
-        $records_cache_name = CacheNames::getRecordsName();
-        
-        $entries = array();
-        $indexes = array();
-        $ids = array();
-        
-        do {
-            $entries = $resultset->getNextCursorChunk();
-        
-            if(!empty($entries)) {
-                foreach($entries as $entry) {
-                    $leaderboard_id = (int)$entry['leaderboard_id'];
-                    $lbid = (int)$entry['lbid'];
-                    $release_id = (int)$entry['release_id'];
-                    $mode_id = (int)$entry['mode_id'];
-                    
-                    $is_daily = $entry['is_daily'];
-                    $is_daily_ranking = $entry['is_daily_ranking'];
-                    $is_score_run = $entry['is_score_run'];
-                    $is_speedrun = $entry['is_speedrun'];
-                    $is_deathless = $entry['is_deathless'];
-                    
-                    $type = 'score';
-                    
-                    if(empty($is_daily)) {
-                        if(!empty($is_deathless)) {
-                            $type = 'deathless';
-                        }
-                        else {
-                            if(!empty($is_speedrun)) {
-                                $type = 'speed';
-                            }
-                        }
-                    }
-                    else {
-                        if(!empty($is_daily_ranking)) {
-                            $type = 'daily';
-                        }
-                    }
-                    
-                    $transaction->hSet($records_cache_name, $leaderboard_id, static::encodeRecord($entry));
-                    
-                    $indexes[CacheNames::getRecordsIndexName(array(
-                        $release_id,
-                        $mode_id,
-                        $type
-                    ))][] = $leaderboard_id;
-                    
-                    $indexes[CacheNames::getRecordsIndexName(array(
-                        $release_id,
-                        $mode_id
-                    ))][] = $leaderboard_id;
-                    
-                    $ids[$lbid] = $leaderboard_id;
-                }
-            }
-        }
-        while(!empty($entries));
-        
-        if(!empty($indexes)) {
-            foreach($indexes as $key => $index_data) {
-                $transaction->set($key, static::encodeRecord($index_data));
-            }
-        }
-        
-        if(!empty($ids)) {
-            $transaction->set(CacheNames::getIdsName(), static::encodeRecord($ids));
-        }
-        
-        $transaction->commit();
-        
-        db()->commit();
-    }*/
 }

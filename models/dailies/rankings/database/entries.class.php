@@ -43,12 +43,6 @@ extends BaseEntries {
         db()->exec("
             DROP INDEX IF EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id;
         ");
-        
-        /*db()->exec("
-            DROP INDEX IF EXISTS 
-                idx_daily_ranking_entries_{$date_formatted}_steam_user_id,
-                idx_daily_ranking_entries_{$date_formatted}_rank;
-        ");*/
     }
     
     public static function createPartitionTableIndexes(DateTime $date) {
@@ -59,16 +53,6 @@ extends BaseEntries {
             ON daily_ranking_entries_{$date_formatted}
             USING btree (steam_user_id);
         ");
-    
-        /*db()->exec("
-            CREATE INDEX IF NOT EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree (steam_user_id);
-            
-            CREATE INDEX IF NOT EXISTS idx_daily_ranking_entries_{$date_formatted}_rank
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree (rank);
-        ");*/
     }
     
 
@@ -352,133 +336,4 @@ extends BaseEntries {
         
         db()->commit();
     }
-    
-    /*public static function loadIntoCache(DateTime $date) {    
-        $date_formatted = $date->format('Y-m-d');
-    
-        $resultset = new SQL("leaderboard_entries");
-        
-        $resultset->setBaseQuery("
-            SELECT 
-                dre.*,
-                dr.date,
-                dr.release_id,
-                dr.mode_id,
-                dr.daily_ranking_day_type_id,
-                su.beampro_user_id,
-                su.discord_user_id,
-                su.reddit_user_id,
-                su.twitch_user_id,
-                su.twitter_user_id,
-                su.youtube_user_id
-            FROM daily_rankings dr 
-            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
-            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
-            {{WHERE_CRITERIA}}
-            ORDER BY dr.daily_ranking_id ASC
-        ");
-        
-        $resultset->addFilterCriteria("dr.date = :date", array(
-            ':date' => $date_formatted
-        ));
-
-        $resultset->setAsCursor(10000);
-        
-        ExternalSites::loadAll();
-        
-        db()->beginTransaction();
-        
-        $transaction = cache()->transaction();
-        
-        $resultset->prepareExecuteQuery();
-        
-        $current_daily_ranking_id = NULL;
-        $current_ranking_meta = array();
-        
-        $entries = array();
-        $daily_ranking_entries = array();
-        $indexes = array();
-        
-        do {
-            $entries = $resultset->getNextCursorChunk();
-        
-            if(!empty($entries)) {
-                foreach($entries as $entry) {
-                    $daily_ranking_id = (int)$entry['daily_ranking_id'];
-                    $steam_user_id = (int)$entry['steam_user_id'];
-                    $release_id = (int)$entry['release_id'];
-                    $mode_id = (int)$entry['mode_id'];    
-                    $daily_ranking_day_type_id = (int)$entry['daily_ranking_day_type_id'];
-                
-                    if($current_daily_ranking_id != $daily_ranking_id) {                        
-                        if(!empty($current_daily_ranking_id)) {
-                            static::saveIntoCache(
-                                $date, 
-                                $current_ranking_meta['release_id'],
-                                $current_ranking_meta['mode_id'], 
-                                $current_ranking_meta['daily_ranking_day_type_id'], 
-                                $transaction, 
-                                $daily_ranking_entries, 
-                                $indexes
-                            );
-                            
-                            $daily_ranking_entries = array();
-                            $indexes = array();
-                        }
-                        
-                        $current_daily_ranking_id = $daily_ranking_id;
-                        
-                        $current_ranking_meta = array(
-                            'release_id' => $release_id,
-                            'mode_id' => $mode_id,
-                            'daily_ranking_day_type_id' => $daily_ranking_day_type_id
-                        );
-                    }
-                    
-                    $rank = (int)$entry['rank']; 
-                    
-                    ExternalSites::addToSiteIdIndexes(
-                        $indexes, 
-                        $entry, 
-                        CacheNames::getEntriesIndexName($release_id, $mode_id, $daily_ranking_day_type_id, array()), 
-                        $steam_user_id,
-                        $rank
-                    );
-                    
-                    $daily_ranking_entries[$steam_user_id] = implode(',', array(
-                        $steam_user_id,
-                        (int)$entry['first_place_ranks'],
-                        (int)$entry['top_5_ranks'],
-                        (int)$entry['top_10_ranks'],
-                        (int)$entry['top_20_ranks'],
-                        (int)$entry['top_50_ranks'],
-                        (int)$entry['top_100_ranks'],
-                        (float)$entry['total_points'],
-                        (int)$entry['total_dailies'],
-                        (int)$entry['total_wins'],
-                        (int)$entry['sum_of_ranks'],
-                        (int)$entry['total_score'],
-                        $rank
-                    ));
-                }
-            }
-        }
-        while(!empty($entries));
-        
-        if(!empty($daily_ranking_entries)) {            
-            static::saveIntoCache(
-                $date, 
-                $current_ranking_meta['release_id'],
-                $current_ranking_meta['mode_id'], 
-                $current_ranking_meta['daily_ranking_day_type_id'], 
-                $transaction, 
-                $daily_ranking_entries, 
-                $indexes
-            );
-        }
-        
-        $transaction->commit();
-        
-        db()->commit();
-    }*/
 }
