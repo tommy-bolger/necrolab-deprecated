@@ -4,11 +4,11 @@ namespace Modules\Necrolab\Models\Leaderboards\Database;
 use \DateTime;
 use \Exception;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis\Hybrid as HybridResultset;
 use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Leaderboards\Snapshots as BaseSnapshots;
-use \Modules\Necrolab\Models\Releases\Database\Leaderboards;
-use \Modules\Necrolab\Models\Releases\Database\Releases;
 use \Modules\Necrolab\Models\leaderboards\Database\RecordModels\Leaderboard as DatabaseLeaderboard;
+use \Modules\Necrolab\Models\Leaderboards\CacheNames;
 
 class Snapshots
 extends BaseSnapshots {
@@ -34,6 +34,9 @@ extends BaseSnapshots {
             }
         }
     }
+
+
+
 
     public static function save(DatabaseLeaderboard $leaderboard_record, DateTime $date) {
         $lbid = $leaderboard_record->lbid;
@@ -89,34 +92,36 @@ extends BaseSnapshots {
         ));
     }
     
-    public static function getAllBaseResultset($lbid) {
+    public static function getAllBaseResultset($leaderboard_id) {
         $resultset = new SQL('leaderboard_snapshots');
         
-        $resultset->setBaseQuery("
-            SELECT 
-                ls.*,
-                ls.date AS snapshot_date
-            FROM leaderboards l
-            JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
-            {{WHERE_CRITERIA}}
-        ");
+        $resultset->setSelectField('date');
         
-        $resultset->addFilterCriteria('l.lbid = :lbid', array(
-            ':lbid' => $lbid
+        $resultset->setFromTable('leaderboard_snapshots');
+        
+        $resultset->addFilterCriteria('leaderboard_id = ?', array(
+            $leaderboard_id
         ));
         
-        $resultset->addSortCriteria('ls.date', 'ASC');
+        $resultset->addSortCriteria('date', 'DESC');
         
         return $resultset;
+    
+        /*$resultset = new HybridResultset(CacheNames::getAllSnapshotsName(), cache(), cache('local'));
+        
+        $resultset->disableDecodeRecords();
+        
+        $resultset->setIndexName(CacheNames::getSnapshotsIndexName($leaderboard_id));
+        
+        return $resultset;*/
     }
     
-    public static function getSteamUserBaseResultset($steamid, $lbid) {
-        $resultset = new SQL('leaderboard_snapshots');
+    public static function getSteamUserBaseResultset($steamid, $leaderboard_id) {
+        $resultset = new SQL('steam_user_leaderboard_snapshots');
         
         $resultset->setBaseQuery("
             SELECT 
-                ls.*,
-                ls.date AS snapshot_date
+                ls.date
             FROM leaderboards l
             JOIN leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
             JOIN {{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
@@ -136,12 +141,89 @@ extends BaseSnapshots {
             $steamid
         ));
         
-        $resultset->addFilterCriteria('l.lbid = ?', array(
-            $lbid
+        $resultset->addFilterCriteria('l.leaderboard_id = ?', array(
+            $leaderboard_id
         ));
         
-        $resultset->addSortCriteria('date', 'ASC');
+        $resultset->addSortCriteria('date', 'DESC');
         
         return $resultset;
     }
+    
+    protected static function saveIntoCache($date_formatted, $leaderboard_id, $transaction, &$entries, &$indexes) {
+        if(!empty($entries)) {
+            $transaction->hSet(CacheNames::getEntriesName($leaderboard_id), $date_formatted, static::encodeRecord($entries));
+                                
+            if(!empty($indexes)) {
+                foreach($indexes as $key => $index_data) {
+                    $transaction->hSet($key, $date_formatted, static::encodeRecord($index_data));
+                }
+            }
+        }
+    }
+    
+    /*public static function loadIntoCache() {
+        $resultset = new SQL("leaderboard_entries");
+            
+        $resultset->setBaseQuery("
+            SELECT 
+                ls.leaderboard_id,
+                ls.leaderboard_snapshot_id,
+                ls.date
+            FROM leaderboard_snapshots ls
+            JOIN leaderboards l ON l.leaderboard_id = ls.leaderboard_id
+            LEFT JOIN leaderboards_blacklist lb ON lb.leaderboard_id = ls.leaderboard_id
+            {{WHERE_CRITERIA}}
+            ORDER BY ls.date ASC, ls.leaderboard_snapshot_id ASC
+        ");
+        
+        $resultset->addFilterCriteria("
+            l.is_daily = 0
+        ");
+        
+        $resultset->addFilterCriteria("
+            lb.leaderboards_blacklist_id IS NULL
+        ");
+
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $transaction = cache()->transaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $entries = array();
+        $snapshot_entries = array();
+        $indexes = array();
+        
+        do {
+            $entries = $resultset->getNextCursorChunk();
+        
+            if(!empty($entries)) {
+                foreach($entries as $entry) {
+                    $leaderboard_id = (int)$entry['leaderboard_id'];
+                    $leaderboard_snapshot_id = (int)$entry['leaderboard_snapshot_id'];
+                    $date = $entry['date'];
+                    
+                    $transaction->hSet(CacheNames::getAllSnapshotsName(), $leaderboard_snapshot_id, $date);
+                    
+                    $indexes[CacheNames::getSnapshotsIndexName($leaderboard_id)][] = $leaderboard_snapshot_id;
+                }
+            }
+        }
+        while(!empty($entries));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data));
+            }
+        }
+        
+        unset($indexes);
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }*/
 }

@@ -4,7 +4,7 @@ namespace Modules\Necrolab\Models\Leaderboards\Database;
 use \DateTime;
 use \Modules\Necrolab\Models\Leaderboards\Entry as BaseEntry;
 use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\LeaderboardEntry as DatabaseEntry;
-use \Modules\Necrolab\Models\Releases\Database\Releases as DatabaseReleases;
+use \Modules\Necrolab\Models\Releases;
 
 class Entry
 extends BaseEntry {
@@ -15,7 +15,7 @@ extends BaseEntry {
     public static function getIfWin(DateTime $date, $release_id, $zone, $level) {    
         $is_win = 0;
         
-        $release = DatabaseReleases::getByDateAndId($date, $release_id);
+        $release = Releases::getByDateAndId($date, $release_id);
         
         if(!empty($release)) {                    
             if($zone == $release['win_zone'] && $level == $release['win_level']) {

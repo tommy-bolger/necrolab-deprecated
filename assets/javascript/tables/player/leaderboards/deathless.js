@@ -15,7 +15,7 @@ function process_leaderboard_deathless_data(data, table) {
                 }
                 
                 var processed_row = [
-                    Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
+                    Formatting.getCharacterDisplay(row_data.leaderboard.character),
                     row_data.entry.rank,
                     row_data.entry.win_count,
                     row_data.entry.zone,
@@ -37,9 +37,11 @@ function initialize_leaderboard_deathless_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('leaderboard_name', 'asc');
     table.enableReleaseField();
+    table.enableModeField();
+    table.enableSeededField();
+    table.enableCoOpField();
+    table.enableCustomField();
     table.enableDateField();
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/deathless/entries'));
@@ -48,8 +50,8 @@ function initialize_leaderboard_deathless_table() {
 
     table.addColumns([
         {
-            name: 'leaderboard_name',
-            title: 'Leaderboard',
+            name: 'character_name',
+            title: 'Character',
             type: 'string'
         },
         {

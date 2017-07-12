@@ -33,25 +33,23 @@
 namespace Modules\Necrolab\Controllers\Api\Rankings\Daily;
 
 use \Modules\Necrolab\Controllers\Api\Necrolab;
-use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DayTypesModel;
+use \Modules\Necrolab\Models\Dailies\Rankings\DayTypes as DayTypesModel;
 
 class NumberOfDays
 extends Necrolab {
     public function init() {}
-
-    protected function getResultSet() {
-        return DayTypesModel::getAllEnabledResultset();
-    }
     
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
+        $number_of_days_data = DayTypesModel::getAll();
+        
+        if(!empty($number_of_days_data)) {        
+            foreach($number_of_days_data as $row) {
                 $processed_data[] = $row['number_of_days'];
             }
         }
-        
-        return $processed_data;
+
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

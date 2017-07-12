@@ -44,10 +44,8 @@ $(document).ready(function() {
 
     table.addRequestParameter('lbid');
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
-    table.enableSort('rank', 'asc');
     table.enableHistory();
     table.enableSearchField();
     table.enableDateField();

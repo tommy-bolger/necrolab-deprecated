@@ -54,8 +54,8 @@ extends Replays {
         
             $processed_data = array(
                 'steamid' => $row['steamid'],
-                'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
-                'pb' => SteamUserPbsModel::getFormattedApiRecord($row),
+                'lbid' => $row['lbid'],
+                'date' => $row['date'],
                 'replay' => ReplaysModel::getFormattedApiRecord($row),
             );
         }

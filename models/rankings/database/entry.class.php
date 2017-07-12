@@ -3,7 +3,7 @@ namespace Modules\Necrolab\Models\Rankings\Database;
 
 use \DateTime;
 use \Modules\Necrolab\Models\Rankings\Database\RecordModels\PowerRankingEntry as DatabaseEntry;
-use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
+use \Modules\Necrolab\Models\Characters as Characters;
 use \Modules\Necrolab\Models\Rankings\Entry as BaseEntry;
 
 class Entry
@@ -15,7 +15,7 @@ extends BaseEntry {
     }
     
     public static function setSelectFields($resultset) {
-        $active_characters = DatabaseCharacters::getActive();
+        $active_characters = Characters::getActive();
         
         $resultset->addSelectFields(array(
             array(
@@ -61,7 +61,7 @@ extends BaseEntry {
                     )
                 ));
                 
-                if($character_name != 'all' && $character_name != 'story') {
+                if($character_name != 'all' && $character_name != 'story' && $character_name != 'all_dlc') {
                     $deathless_pb_name = "{$character_name}_deathless_pb";
                     
                     $resultset->addLeftJoinCriteria("steam_user_pbs {$deathless_pb_name} ON {$deathless_pb_name}.steam_user_pb_id = pre.{$deathless_pb_name}_id");

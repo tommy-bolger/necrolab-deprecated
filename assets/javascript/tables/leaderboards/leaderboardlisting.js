@@ -74,6 +74,16 @@ function LeaderboardListing(type) {
             name: 'diamond',
             title: '&nbsp;',
             type: 'string'
+        },
+        {
+            name: 'mary',
+            title: '&nbsp;',
+            type: 'string'
+        },
+        {
+            name: 'tempo',
+            title: '&nbsp;',
+            type: 'string'
         }
     ];
     
@@ -86,6 +96,12 @@ function LeaderboardListing(type) {
         
         columns.push({
             name: 'all',
+            title: '&nbsp;',
+            type: 'string'
+        });
+        
+        columns.push({
+            name: 'all_dlc',
             title: '&nbsp;',
             type: 'string'
         });
@@ -118,10 +134,13 @@ LeaderboardListing.prototype.process_data = function(data, players_table) {
                 null,
                 null,
                 null,
+                null,
+                null,
                 null
             ];
             
             if(this.type != 'deathless') {
+                blank_row.push(null);
                 blank_row.push(null);
                 blank_row.push(null);
             }
@@ -159,6 +178,9 @@ LeaderboardListing.prototype.process_data = function(data, players_table) {
                 
                 if(this.type != 'deathless' && row_data.character == 'all') {
                     link_display = 'All Chars';
+                }
+                else if(this.type != 'deathless' && row_data.character == 'all_dlc') {
+                    link_display = 'All Chars DLC';
                 }
                 else if(this.type != 'deathless' && row_data.character == 'story') {
                     link_display = 'Story Mode';

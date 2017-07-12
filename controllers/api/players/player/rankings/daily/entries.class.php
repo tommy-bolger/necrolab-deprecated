@@ -34,25 +34,33 @@ namespace Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Daily;
 
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entries as DailyRankingEntriesModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DailyRankingEntryModel;
-use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
 use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Entries
-extends Daily {   
+extends Necrolab {   
     public function init() {
         $this->setSteamidFromRequest();
     
         $this->setReleaseFromRequest();
-    
-        $this->getResultsetStateFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->setNumberOfDaysFromRequest();
         
         $this->setDateRangeFromRequest();
+        
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return DailyRankingEntriesModel::getSteamUserBaseResultset($this->release_name, $this->steamid, $this->start_date, $this->end_date, $this->number_of_days);
+        return DailyRankingEntriesModel::getSteamUserBaseResultset(
+            $this->release_id, 
+            $this->mode_id, 
+            $this->steamid, 
+            $this->start_date, 
+            $this->end_date, 
+            $this->daily_ranking_day_type_id
+        );
     }
     
     public function formatResponse($data) {        
@@ -65,8 +73,6 @@ extends Daily {
                 $processed_row['date'] = $row['date'];
                 
                 $processed_row['steamid'] = $row['steamid'];
-            
-                $processed_row['mode'] = ModesModel::getFormattedApiRecord($row);
             
                 $processed_row = array_merge($processed_row, DailyRankingEntryModel::getFormattedApiRecord($row));
                 

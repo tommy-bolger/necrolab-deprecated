@@ -11,7 +11,6 @@ function process_score_ranking_data(data, table) {
                 processed_data.push([
                     null,
                     row_data.date,
-                    row_data.mode.display_name,
                     'Ranks',
                     row_data.score.rank,
                     row_data.cadence.score.rank,
@@ -33,7 +32,6 @@ function process_score_ranking_data(data, table) {
                 processed_data.push([
                     '&nbsp;',
                     null,
-                    null,
                     'Points',
                     Formatting.roundNumber(row_data.score.rank_points),
                     Formatting.roundNumber(row_data.cadence.score.rank_points),
@@ -54,7 +52,6 @@ function process_score_ranking_data(data, table) {
                 
                 processed_data.push([
                     '&nbsp;',
-                    null,
                     null,
                     'Scores',
                     row_data.score.total_score,
@@ -85,8 +82,9 @@ function initialize_ranking_score_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
     table.enableReleaseField();
+    table.enableModeField();
+    table.enableSeededField();
     table.enableDateRangeFields();
     table.enableCollapsibleRows(2);
     
@@ -99,12 +97,6 @@ function initialize_ranking_score_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'mode',
-            title: 'Mode',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'type',
@@ -188,8 +180,6 @@ function initialize_ranking_score_table() {
             type: 'num-fmt'
         }
     ]);
-    
-    table.enableSort('date', 'desc');
     
     table.setDataProcessCallback(window, 'process_score_ranking_data');
     

@@ -32,32 +32,34 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Power;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Rankings;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Rankings\Database\Rankings as PowerRankingsModel;
 
 class Power
-extends Rankings {
+extends Necrolab {
     public function init() {
+        $this->cached_response_prefix_name = "player:rankings:power";
+    
         $this->setSteamidFromRequest();
     
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-    
-        $this->getResultsetStateFromRequest();
+        
+        $this->setSeededFromRequest();
     }
-
+    
     protected function getResultSet() {
-        return PowerRankingsModel::getSteamUserBaseResultset($this->release_name, $this->mode, $this->steamid);
+        return PowerRankingsModel::getSteamUserDatesResultset($this->release_id, $this->mode_id, $this->seeded, $this->steamid);
     }
     
     public function formatResponse($data) {        
         $processed_data = array();
-        
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = PowerRankingsModel::getFormattedApiRecord($row);
-            }
+
+        if(!empty($data)) {
+            $processed_data = array_column($data, 'date');
+            
+            rsort($processed_data);
         }
         
         return $processed_data;

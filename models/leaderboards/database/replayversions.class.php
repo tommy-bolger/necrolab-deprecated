@@ -15,6 +15,10 @@ extends BaseReplayVersions {
                     steam_replay_version_id
                 FROM steam_replay_versions
             ");
+            
+            if(!empty(static::$replay_versions)) {
+                static::$replay_versions_by_id = array_flip(static::$replay_versions);
+            }
         }
     }
     

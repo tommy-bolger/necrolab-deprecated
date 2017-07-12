@@ -66,27 +66,10 @@ function process_character_data(data, table) {
     return processed_data;
 };
 
-function set_rank_column_name(sort_by, table) {
-    if(sort_by.indexOf('_rank') < 0) {
-        return sort_by;
-    }
-    
-    return 'rank';
-};
-
-function get_rank_column_name(sort_by, table) {
-    if(sort_by != 'rank') {
-        return sort_by;
-    }
-    
-    return table.getCharacterFieldValue() + '_' + sort_by;
-};
-
 $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
     
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
     table.enableHistory();    
@@ -95,16 +78,9 @@ $(document).ready(function() {
     table.enableReleaseField();
     table.enableModeField();
     table.enableDateField();
+    table.enableSeededField();
     table.enableSiteField();
     table.enableCollapsibleRows(2);
-    
-    table.enableSort('rank', 'asc', {
-        context: window,
-        method: 'set_rank_column_name'
-    }, {
-        context: window,
-        method: 'get_rank_column_name'
-    });
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/character/entries'));
     

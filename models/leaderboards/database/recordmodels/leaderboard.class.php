@@ -7,9 +7,9 @@ use \DateTime;
 use \Framework\Core\RecordModel;
 use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Leaderboards\Database\Blacklist;
-use \Modules\Necrolab\Models\Releases\Database\Releases;
-use \Modules\Necrolab\Models\Modes\Database\Modes;
-use \Modules\Necrolab\Models\Characters\Database\Characters;
+use \Modules\Necrolab\Models\Releases;
+use \Modules\Necrolab\Models\Modes;
+use \Modules\Necrolab\Models\Characters;
 
 class Leaderboard
 extends RecordModel {  
@@ -20,12 +20,6 @@ extends RecordModel {
     protected $lbid;
     
     protected $display_name;
-    
-    protected $entries;
-    
-    protected $sortmethod;
-    
-    protected $displaytype;
     
     protected $character_id;
     
@@ -43,21 +37,11 @@ extends RecordModel {
     
     protected $is_score_run;
     
-    protected $is_all_character;
-    
     protected $is_deathless;
-    
-    protected $is_story_mode;
-    
-    protected $is_hard_mode;
-    
-    protected $is_no_return;
 
     protected $is_dev;
     
     protected $is_prod;
-    
-    protected $is_dlc;
     
     protected $is_power_ranking;
     
@@ -122,6 +106,12 @@ extends RecordModel {
         elseif(strpos($leaderboard_name, 'diamond') !== false) {
             $character_name = 'diamond';
         }
+        elseif(strpos($leaderboard_name, 'mary') !== false) {
+            $character_name = 'mary';
+        }
+        elseif(strpos($leaderboard_name, 'tempo') !== false) {
+            $character_name = 'tempo';
+        }
         //If nobody else assume it's Cadence
         else {
             $character_name = 'cadence';
@@ -133,14 +123,10 @@ extends RecordModel {
         $is_seeded = 0;
         $is_daily = 0;
         $is_score_run = 0;
-        $is_all_character = 0;
         $is_deathless = 0;
-        $is_story_mode = 0;
         $is_dev = 0;
         $is_prod = 0;
         $is_dlc = 0;
-        $is_hard_mode = 0;
-        $is_no_return = 0;
         $mode = Modes::getByName('normal');
         
         if(strpos($leaderboard_name, 'speedrun') !== false) {
@@ -165,8 +151,11 @@ extends RecordModel {
             $is_score_run = 1;
         }
         
+        if(strpos($leaderboard_name, 'all chars dlc') !== false) {
+            $character_name = 'all_alc';
+        }
+        
         if(strpos($leaderboard_name, 'all chars') !== false) {
-            $is_all_character = 1;
             $character_name = 'all';
         }
         
@@ -176,7 +165,6 @@ extends RecordModel {
         
         if(strpos($leaderboard_name, 'story') !== false) {
             $character_name = 'story';
-            $is_story_mode = 1;
         }
         
         if(strpos($leaderboard_name, 'dev') !== false) {
@@ -191,16 +179,24 @@ extends RecordModel {
             $is_dlc = 1;
         }
         
-        if(strpos($leaderboard_name, 'hard mode') !== false) {
-            $is_hard_mode = 1;
-            
+        if(strpos($leaderboard_name, 'hard mode') !== false) {            
             $mode = Modes::getByName('hard');
         }
         
-        if(strpos($leaderboard_name, 'no return') !== false) {
-            $is_no_return = 1;
-            
+        if(strpos($leaderboard_name, 'no return') !== false) {            
             $mode = Modes::getByName('no_return');
+        }
+        
+        if(strpos($leaderboard_name, 'phasing') !== false) {            
+            $mode = Modes::getByName('phasing');
+        }
+        
+        if(strpos($leaderboard_name, 'randomizer') !== false) {            
+            $mode = Modes::getByName('randomizer');
+        }
+        
+        if(strpos($leaderboard_name, 'mystery') !== false) {            
+            $mode = Modes::getByName('mystery');
         }
         
         $mode_id = $mode['mode_id'];
@@ -252,9 +248,8 @@ extends RecordModel {
             $score_or_speed_run && 
             empty($is_custom) && 
             empty($is_co_op) && 
-            empty($is_seeded) && 
             empty($is_daily) &&
-            (empty($is_deathless) || (!empty($is_deathless) && empty($is_story_mode) && empty($is_all_character) && empty($is_speedrun)))
+            (empty($is_deathless) || !empty($is_deathless))
         ) {
             $is_power_ranking = 1;
         }
@@ -282,12 +277,12 @@ extends RecordModel {
         }
         elseif(!empty($is_prod)) {
             if(!empty($is_dlc)) {
-                $release = Releases::getByName('amplified_dlc_early_access');
+                $release = Releases::getByName('amplified_dlc');
                 
                 $release_id = $release['release_id'];
             }
             else {
-                $release = Releases::getByName('original_release');
+                $release = Releases::getByName('original');
             
                 $release_id = $release['release_id'];
             }
@@ -297,9 +292,6 @@ extends RecordModel {
         $this->url = $leaderboard->url;
         $this->lbid = $leaderboard->lbid;
         $this->display_name = $leaderboard->display_name;
-        $this->entries = $leaderboard->entries;
-        $this->sortmethod = $leaderboard->sortmethod;
-        $this->displaytype = $leaderboard->displaytype;
         $this->is_speedrun = $is_speedrun;
         $this->is_custom = $is_custom;
         $this->is_co_op = $is_co_op;
@@ -307,16 +299,11 @@ extends RecordModel {
         $this->is_daily = $is_daily;
         $this->daily_date = $daily_date_formatted;
         $this->is_score_run = $is_score_run;
-        $this->is_all_character = $is_all_character;
         $this->is_deathless = $is_deathless;
-        $this->is_story_mode = $is_story_mode;
         $this->is_dev = $is_dev;
         $this->is_prod = $is_prod;
         $this->is_power_ranking = $is_power_ranking;
         $this->is_daily_ranking = $is_daily_ranking;    
-        $this->is_dlc = $is_dlc;
-        $this->is_hard_mode = $is_hard_mode;
-        $this->is_no_return = $is_no_return;
         $this->release_id = $release_id;
         $this->mode_id = $mode_id;
     }

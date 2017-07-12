@@ -15,7 +15,6 @@ function process_ranking_character_data(data, table) {
                 var rank_row = [
                     null,
                     row_data.date,
-                    row_data.mode.display_name,
                     'Ranks',
                     row_data.rank,
                     character_rankings.score.rank,
@@ -25,7 +24,6 @@ function process_ranking_character_data(data, table) {
                 var points_row = [
                     '&nbsp;',
                     null,
-                    null,
                     'Points',
                     Formatting.roundNumber(character_rankings.rank_points),
                     Formatting.roundNumber(character_rankings.score.rank_points),
@@ -34,7 +32,6 @@ function process_ranking_character_data(data, table) {
                 
                 var score_row = [
                     '&nbsp;',
-                    null,
                     null,
                     'Score/Time/Wins',
                     null,
@@ -71,9 +68,10 @@ function initialize_ranking_character_table() {
     
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
     table.enableCharacterField();
     table.enableReleaseField();
+    table.enableModeField();
+    table.enableSeededField();
     table.enableDateRangeFields();
     table.enableCollapsibleRows(2);
     
@@ -86,12 +84,6 @@ function initialize_ranking_character_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'mode',
-            title: 'Mode',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'type',

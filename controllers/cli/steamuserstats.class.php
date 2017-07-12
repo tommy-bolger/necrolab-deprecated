@@ -1,14 +1,15 @@
 <?php
 namespace Modules\Necrolab\Controllers\Cli;
 
+use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Api\Steam\ISteamUserStats;
 use \Framework\Utilities\Encryption;
-use \Modules\Necrolab\Models\Achievements\Database\Achievements as DatabaseAchievements;
+use \Modules\Necrolab\Models\Achievements\Achievements as AllAchievements;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\Achievements as DatabaseSteamUserAchievements;
-use \Modules\Necrolab\Models\Achievements\Database\RecordModels\Achievement as DatabaseAchievement;
+use \Modules\Necrolab\Models\Achievements\Achievement as AchievementRecord;
 
 class SteamUserStats
 extends Cli { 
@@ -32,14 +33,14 @@ extends Cli {
             $achievements = $game_stats->game->availableGameStats->achievements;
         
             foreach($achievements as $achievement) {
-                $database_achievement = DatabaseAchievements::getByName($achievement->name);
+                $database_achievement = AllAchievements::getByName($achievement->name);
 
                 if(empty($database_achievement)) {
-                    $achievement_record = new DatabaseAchievement();
+                    $achievement_record = new AchievementRecord();
                     
                     $achievement_record->setPropertiesFromSteamObject($achievement);
                     
-                    DatabaseAchievements::save($achievement_record, 'achievement_import');
+                    AllAchievements::save($achievement_record, 'achievement_import');
                 }
             }
         }
@@ -89,7 +90,7 @@ extends Cli {
                             if(!empty($steam_achievement->unlockTimestamp)) {
                                 $achievement_name = strtoupper($steam_achievement->apiname); 
                             
-                                $achievement_id = DatabaseAchievements::getIdByName($achievement_name);
+                                $achievement_id = AllAchievements::getIdByName($achievement_name);
                                 
                                 if(!empty($achievement_id)) {
                                     if(!DatabaseSteamUserAchievements::recordExists($steam_user_id, $achievement_id)) {
@@ -125,6 +126,28 @@ extends Cli {
             db()->commit();
             
             DatabaseSteamUserAchievements::vacuum();
+        }
+    }
+    
+    public function actionImportUserStats() {        
+        $steam_users = DatabaseSteamUsers::getAllIds();
+        
+        if(!empty($steam_users)) {
+            foreach($steam_users as $steamid => $steam_user_id) {
+                $steam_user_achievements = NULL;
+            
+                try {
+                    $steam_user_achievements = $this->steam_api->getUserStatsForGame($steamid, $this->app_id);
+                }
+                catch(Exception $exception) {
+                    $steam_user_achievements = NULL;
+                }
+                
+                if(!empty($steam_user_achievements)) { 
+                    file_put_contents(__DIR__ . '/stats.txt', var_export($steam_user_achievements, true));
+                    //DatabaseSteamUserAchievements::saveXml($steam_user_id, $steam_user_achievements_xml);
+                }
+            }
         }
     }
 }

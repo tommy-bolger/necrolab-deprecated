@@ -10,7 +10,6 @@ function process_pbs_speed_data(data, table) {
                 
                 var processed_row = [
                     row_data.pb.date,
-                    Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
                     row_data.pb.rank,
                     Formatting.convertSecondsToTime(row_data.pb.time),
                     row_data.pb.replay.seed,
@@ -30,10 +29,11 @@ function initialize_pbs_speed_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('snapshot_date', 'desc');
     table.enableReleaseField();
     table.enableModeField();
+    table.enableSeededField();
+    table.enableCoOpField();
+    table.enableCustomField();
     table.enableCharacterField();
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/pbs/speed'));
@@ -45,12 +45,6 @@ function initialize_pbs_speed_table() {
             name: 'snapshot_date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'leaderboard_name',
-            title: 'Leaderboard',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'first_rank',

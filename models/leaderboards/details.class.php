@@ -7,6 +7,8 @@ class Details
 extends Necrolab {
     protected static $details_records = array();
     
+    protected static $details_records_by_id = array();
+    
     public static function loadAll() {}
     
     public static function get($details) {
@@ -19,6 +21,18 @@ extends Necrolab {
         }
         
         return $leaderboard_entry_details_id;
+    }
+    
+    public static function getById($leaderboard_entry_details_id) {
+        static::loadAll();
+        
+        $details = NULL;
+        
+        if(isset(static::$details_records_by_id[$leaderboard_entry_details_id])) {
+            $details = static::$details_records_by_id[$leaderboard_entry_details_id];
+        }
+        
+        return $details;
     }
     
     public static function getFormattedApiRecord($data_row) {

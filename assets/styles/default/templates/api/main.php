@@ -216,7 +216,7 @@
                 </td>
             </tr>
             <tr>
-                <td class="last">
+                <td>
                     <a name="record_count">
                         <code>record_count</code>
                     </a>
@@ -244,7 +244,7 @@
 </p>
     <pre><code>{
     "request": {
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "date": "2017-03-01",
         "start": 0,
         "limit": 100,
@@ -290,10 +290,10 @@
                         <code>early_access</code>
                     </li>
                     <li>
-                        <code>original_release</code>
+                        <code>original</code>
                     </li>
                     <li>
-                        <code>amplified_dlc_early_access</code>
+                        <code>amplified_dlc</code>
                     </li>
                 </ul>
             </td>
@@ -605,14 +605,14 @@
             "end_date": "2015-04-22"
         },
         {
-            "name": "original_release",
+            "name": "original",
             "display_name": "Original Release",
             "start_date": "2015-04-23",
             "end_date": null
         },
         {
-            "name": "amplified_dlc_early_access",
-            "display_name": "Amplified DLC Early Access",
+            "name": "amplified_dlc",
+            "display_name": "Amplified DLC",
             "start_date": "2017-01-24",
             "end_date": null
         }

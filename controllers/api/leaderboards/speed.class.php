@@ -36,7 +36,15 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 
 class Speed
 extends Leaderboards {
+    public function init() {
+        $this->cached_response_prefix_name = 'leaderboards:speed';
+    
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
+    }
+
     protected function getResultSet() {
-        return LeaderboardsModel::getAllSpeedResultset($this->release_name, $this->mode);
+        return LeaderboardsModel::getAllSpeedResultset($this->release_id, $this->mode_id);
     }
 }

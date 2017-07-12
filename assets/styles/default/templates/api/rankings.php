@@ -111,14 +111,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/rankings/power?release=amplified_dlc_early_access&mode=normal</code>
+                <code>https://api.necrolab.com/rankings/power?release=amplified_dlc&mode=normal</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "mode": "normal",
         "start": 0,
         "limit": 100,
@@ -323,14 +323,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/rankings/power/entries?release=original_release&mode=normal&date=2017-03-10</code>
+                <code>https://api.necrolab.com/rankings/power/entries?release=original&mode=normal&date=2017-03-10</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "date": "2017-03-10",
         "start": 0,
@@ -787,14 +787,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/rankings/daily?release=original_release&mode=normal&number_of_days=0</code>
+                <code>https://api.necrolab.com/rankings/daily?release=original&mode=normal&number_of_days=0</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "number_of_days": 0
     },
@@ -1002,14 +1002,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/rankings/daily/entries?release=original_release&mode=normal&date=2016-02-10&number_of_days=0</code>
+                <code>https://api.necrolab.com/rankings/daily/entries?release=original&mode=normal&date=2016-02-10&number_of_days=0</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "date": "2016-02-10",
         "start": 0,

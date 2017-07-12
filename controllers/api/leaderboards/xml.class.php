@@ -33,18 +33,15 @@
 namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Xml
-extends Leaderboards {
+extends Necrolab {
     public function init() {}
 
     public function actionGet() {
         $xml_urls = LeaderboardsModel::getXmlUrls();
-    
-        return array(
-            'request' => array(),
-            'record_count' => count($xml_urls),
-            'data' => $xml_urls
-        );
+        
+        return $this->getResponse(count($xml_urls), $xml_urls);
     }
 }

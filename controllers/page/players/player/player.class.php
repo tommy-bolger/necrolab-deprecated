@@ -69,7 +69,7 @@ extends Players {
     
     public function setup() {
         $this->title = "Profile for {$this->steam_user_record['personaname']}";
-    
+        
         parent::setup();
         
         $this->page->addCssFiles(array(

@@ -74,16 +74,16 @@ extends BaseReddit {
         db()->exec("VACUUM ANALYZE reddit_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("reddit_users site_user ON site_user.reddit_user_id = su.reddit_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.reddit_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => 'site_user.username',
+                'field' => 'ru.username',
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.reddit_id',
+                'field' => 'ru.reddit_id',
                 'alias' => 'reddit_id'
             )
         ));

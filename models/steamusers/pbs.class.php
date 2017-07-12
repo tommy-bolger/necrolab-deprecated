@@ -4,8 +4,10 @@ namespace Modules\Necrolab\Models\SteamUsers;
 use \DateTime;
 use \Modules\Necrolab\Models\Leaderboards\Replays;
 use \Modules\Necrolab\Models\Leaderboards\Snapshots;
+use \Modules\Necrolab\Models\Necrolab;
 
-class Pbs {
+class Pbs
+extends Necrolab {
     protected static $pbs = array();
     
     protected static $pb_ids = array();
@@ -43,6 +45,14 @@ class Pbs {
         $steam_user_pb_id = (int)$steam_user_pb_id;
     
         static::$pb_ids[$leaderboard_id][$steam_user_id][$score] = $steam_user_pb_id;
+    }
+    
+    public static function getCacheQueueName() {
+        return 'steam_user_pbs_cache';
+    }
+    
+    public static function addToCacheQueue() {        
+        static::addDateToQueue(static::getCacheQueueName(), new DateTime());
     }
     
     public static function getFormattedApiRecord($data_row) {

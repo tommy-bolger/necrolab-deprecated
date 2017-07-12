@@ -38,6 +38,14 @@ use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
 class Home
 extends BasePbs {
     protected function getResultset() {
-        return SteamUserPbsModel::getApiSteamUserScoreResultset($this->release_name, $this->mode, $this->character_name, $this->steamid);
+        return SteamUserPbsModel::getApiSteamUserScoreResultset(
+            $this->release_id, 
+            $this->mode_id, 
+            $this->character_id, 
+            $this->seeded,
+            $this->co_op,
+            $this->custom,
+            $this->steamid
+        );
     }
 }

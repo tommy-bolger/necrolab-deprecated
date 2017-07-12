@@ -10,7 +10,6 @@ function process_ranking_daily_data(data, table) {
                 
                 processed_data.push([
                     row_data.date,
-                    row_data.mode.display_name,
                     row_data.rank,
                     row_data.first_place_ranks,
                     row_data.top_5_ranks,
@@ -38,8 +37,8 @@ function initialize_ranking_daily_table() {
     
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateRangeFields();
     table.enableNumberOfDaysField();
     
@@ -52,12 +51,6 @@ function initialize_ranking_daily_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'mode',
-            title: 'Mode',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'rank',

@@ -4,9 +4,9 @@ namespace Modules\Necrolab\Controllers\Cli\Rankings;
 use \DateTime;
 use \DateInterval;
 use \Framework\Core\Controllers\Cli;
-use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
-use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
-use \Modules\Necrolab\Models\Releases\Database\Releases;
+use \Modules\Necrolab\Models\Characters;
+use \Modules\Necrolab\Models\Modes;
+use \Modules\Necrolab\Models\Releases;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as DatabaseLeaderboardEntries;
 use \Modules\Necrolab\Models\Rankings\Database\Rankings as DatabaseRankings;
@@ -32,60 +32,79 @@ extends Cli {
     
     protected function generate() {
         $this->cache->clear();
+        
+        $database = db();
     
         $leaderboard_entries_resulset = DatabaseLeaderboardEntries::getPowerRankingsResultset($this->as_of_date);
         
-        $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
+        $leaderboard_entries_resulset->setAsCursor(10000);
+
+        $database->beginTransaction();
         
-        $database = db();
+        $leaderboard_entries_resulset->prepareExecuteQuery();
 
         $transaction = $this->cache->transaction();
         
-        while($leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {        
-            CacheEntry::saveFromLeaderboardEntry($leaderboard_entry, $transaction);
-        }
+        $leaderboard_entries = array();
         
-        $transaction->commit();    
+        do {
+            $leaderboard_entries = $leaderboard_entries_resulset->getNextCursorChunk();
+        
+            if(!empty($leaderboard_entries)) {
+                foreach($leaderboard_entries as $leaderboard_entry) {        
+                    CacheEntry::saveFromLeaderboardEntry($leaderboard_entry, $transaction);
+                }
+            }
+        }
+        while(!empty($leaderboard_entries));
+        
+        $transaction->commit();   
+        
+        $database->commit();
         
         $releases = Releases::getByDate($this->as_of_date);
-        $modes = DatabaseModes::getAll();
+        $modes = Modes::getAll();
         
         if(!empty($releases)) {
-            $characters = DatabaseCharacters::getActive();
+            $characters = Characters::getActive();
         
             $database->beginTransaction();
             
             DatabaseEntries::createTemporaryTable();
             
             $entries_insert_queue = DatabaseEntries::getTempInsertQueue();
+            
+            $seeded_flags = array(0, 1);
         
             foreach($releases as $release) {
                 $release_id = $release['release_id'];
                 
-                $modes_used = CachePowerRankings::getModesUsed($release_id, $this->cache);
-                
-                if(!empty($modes_used)) {
-                    foreach($modes_used as $mode_id) {
-                        $mode = DatabaseModes::getById($mode_id);
-                        
-                        if(!empty($mode)) {
-                            CacheSpeedRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $this->cache);
-                            CacheScoreRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $this->cache);
-                            CacheDeathlessRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $this->cache);
+                foreach($seeded_flags as $seeded) {
+                    $modes_used = CachePowerRankings::getModesUsed($release_id, $seeded, $this->cache);
 
-                            if(!empty($characters)) {
-                                foreach($characters as $character) {
-                                    CacheCharacterRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $character['name'], $this->cache);
+                    if(!empty($modes_used)) {
+                        foreach($modes_used as $mode_id) {                        
+                            $mode = Modes::getById($mode_id);
+                            
+                            if(!empty($mode)) {
+                                CacheSpeedRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $seeded, $this->cache);
+                                CacheScoreRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $seeded, $this->cache);
+                                CacheDeathlessRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $seeded, $this->cache);
+
+                                if(!empty($characters)) {
+                                    foreach($characters as $character) {
+                                        CacheCharacterRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $seeded, $character['name'], $this->cache);
+                                    }
                                 }
+
+                                CachePowerRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $seeded, $this->cache);
+                                
+                                $power_ranking_id = DatabaseRankings::save($release_id, $mode_id, $seeded, $this->as_of_date);
+                                
+                                DatabaseEntries::clear($power_ranking_id, $this->as_of_date);
+                            
+                                CacheEntries::saveToDatabase($power_ranking_id, $release_id, $mode_id, $seeded, $this->as_of_date, $this->cache, $entries_insert_queue);
                             }
-                            
-                            CachePowerRankings::generateRanksFromPoints($this->as_of_date, $release_id, $mode_id, $this->cache);
-                            
-                            $power_ranking_id = DatabaseRankings::save($release_id, $mode_id, $this->as_of_date);
-                            
-                            DatabaseEntries::clear($power_ranking_id, $this->as_of_date);
-                        
-                            CacheEntries::saveToDatabase($power_ranking_id, $release_id, $mode_id, $this->as_of_date, $this->cache, $entries_insert_queue);
                         }
                     }
                 }
@@ -108,6 +127,8 @@ extends Cli {
         
         DatabaseRankings::vacuum();
         DatabaseEntries::vacuum($this->as_of_date);
+        
+        DatabaseRankings::addToCacheQueue($this->as_of_date);
     }
     
     public function actionGenerate($date = NULL) {
@@ -139,6 +160,34 @@ extends Cli {
             'generateQueueMessageReceived'
         ));
     }
+    
+    public function actionLoadIntoCache($date = NULL) {        
+        DatabaseEntries::loadIntoCache(new DateTime($date));
+    }
+    
+    public function actionLoadRangeIntoCache($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->actionLoadIntoCache($current_date->format('Y-m-d'));
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        DatabaseRankings::runQueue(DatabaseRankings::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }    
     
     public function actionCreateEntriesParition($date = NULL) {
         $date = new DateTime($date);

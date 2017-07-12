@@ -129,7 +129,7 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/player/leaderboards/score?steamid=76561197987716503&release=original_release&mode=normal</code>
+                <code>https://api.necrolab.com/players/player/leaderboards/score?steamid=76561197987716503&release=original&mode=normal</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
@@ -137,7 +137,7 @@
                 <pre><code>{
     "request": {
         "steamid": 76561197987716503,
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "start": 0,
         "limit": 100,
@@ -421,7 +421,7 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/player/leaderboards/entries?steamid=76561198171801786&date=2017-03-07&release=amplified_dlc_early_access</code>
+                <code>https://api.necrolab.com/players/player/leaderboards/entries?steamid=76561198171801786&date=2017-03-07&release=amplified_dlc</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
@@ -430,7 +430,7 @@
     "request": {
         "steamid": 76561198171801800,
         "date": "2017-03-07",
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "start": 0,
         "limit": 100,
         "sort_by": null,
@@ -649,7 +649,7 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/player/leaderboards/daily/entries?steamid=76561198051520646&release=original_release&start_date=2016-02-01</code>
+                <code>https://api.necrolab.com/players/player/leaderboards/daily/entries?steamid=76561198051520646&release=original&start_date=2016-02-01</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
@@ -659,7 +659,7 @@
         "steamid": "76561198051520646",
         "start_date": "2016-02-01",
         "end_date": "2017-03-18",
-        "release": "original_release",
+        "release": "original",
         "start": 0,
         "limit": 100,
         "sort_by": null,
@@ -768,14 +768,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/player/leaderboards/replays?release=amplified_dlc_early_access&steamid=76561197979118640</code>
+                <code>https://api.necrolab.com/players/player/leaderboards/replays?release=amplified_dlc&steamid=76561197979118640</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "steamid": 76561197979118640,
         "start": 0,
         "limit": 100,

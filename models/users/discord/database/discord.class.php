@@ -74,16 +74,16 @@ extends BaseDiscord {
         db()->exec("VACUUM ANALYZE discord_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("discord_users site_user ON site_user.discord_user_id = su.discord_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.discord_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => '(site_user.username || site_user.discriminator)',
+                'field' => "(du.username || '#' || du.discriminator)",
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.discord_id',
+                'field' => 'du.discord_id',
                 'alias' => 'discord_id'
             )
         ));

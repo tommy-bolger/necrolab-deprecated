@@ -32,74 +32,30 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player;
 
-use \Modules\Necrolab\Models\Achievements\Database\Achievements as AchievementsModel;
-use \Modules\Necrolab\Models\SteamUsers\Database\Steamusers as SteamUsersModel;
 use \Modules\Necrolab\Models\SteamUsers\Database\Achievements as SteamUserAchievementsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Achievements
-extends Player {    
+extends Necrolab {    
     public function init() {
+        $this->cached_response_prefix_name = "achievements";
+    
         $this->setSteamidFromRequest();
     }
     
-    public function actionGet() {
-        $achievements = AchievementsModel::getAll();
-        
-        $steam_user = SteamUsersModel::get($this->steamid);
-        
-        $full_achievements = array();
-        
-        if(!empty($steam_user)) {
-            $steam_user_id = $steam_user['steam_user_id'];
-        
-            $player_achievements = SteamUserAchievementsModel::getForUser($steam_user_id);
-            
-            if(!empty($achievements)) {
-                foreach($achievements as $achievement) {
-                    $achievement_id = $achievement['achievement_id'];
-                    
-                    $full_achievement = array(
-                        'name' => $achievement['name'],
-                        'display_name' => $achievement['display_name'],
-                        'description' => $achievement['description']
-                    );
-                    
-                    $achivement_record = array();
-                
-                    if(!empty($player_achievements)) {
-                        foreach($player_achievements as $player_achievement) {
-                            $player_achievement_id = $player_achievement['achievement_id'];
-                        
-                            if($player_achievement_id == $achievement_id) {
-                                $achivement_record = $player_achievement;
-                                
-                                break;
-                            }
-                        }
-                    }
-                    
-                    if(!empty($achivement_record)) {
-                        $full_achievement['achieved'] = 1;
-                        $full_achievement['achieved_date'] = $achivement_record['achieved'];
-                        $full_achievement['icon_url'] = $achievement['icon_url'];
-                    }
-                    else {
-                        $full_achievement['achieved'] = 0;
-                        $full_achievement['achieved_date'] = NULL;
-                        $full_achievement['icon_url'] = $achievement['icon_gray_url'];
-                    }
-                    
-                    $full_achievements[] = $full_achievement;
-                }
+    protected function getResultset() {
+        return SteamUserAchievementsModel::getApiSteamUserResultset($this->steamid);
+    }
+    
+    public function formatResponse($data) {        
+        $processed_data = array();
+
+        if(!empty($data)) {        
+            foreach($data as $row) {
+                $processed_data[] = SteamUserAchievementsModel::getFormattedApiRecord($row);
             }
         }
         
-        return array(
-            'request' => array(
-                'steamid' => $this->steamid
-            ),
-            'record_count' => count($achievements),
-            'data' => $full_achievements
-        );
+        return $processed_data;
     }
 }

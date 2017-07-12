@@ -32,25 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
-use \Modules\Necrolab\Models\Releases\Database\Releases as ReleasesModel;
+use \Modules\Necrolab\Models\Releases as ReleasesModel;
 
 class Releases
 extends Necrolab {
     public function init() {}
-
-    protected function getResultSet() {
-        return ReleasesModel::getAllActiveBaseResultset();
-    }
     
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = ReleasesModel::getFormattedApiRecord($row);
+        $releases = ReleasesModel::getAll();
+        
+        if(!empty($releases)) {        
+            foreach($releases as $release) {
+                $processed_data[] = ReleasesModel::getFormattedApiRecord($release);
             }
         }
-        
-        return $processed_data;
+
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

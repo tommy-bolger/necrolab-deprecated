@@ -3,7 +3,7 @@ namespace Modules\Necrolab\Models\Dailies\Rankings\Database;
 
 use \DateTime;
 use \Framework\Data\ResultSet\SQL;
-use \Modules\Necrolab\Models\Releases\Database\Releases;
+use \Modules\Necrolab\Models\Releases;
 use \Modules\Necrolab\Models\Dailies\Rankings\Rankings as BaseRankings;
 
 class Rankings
@@ -74,58 +74,52 @@ extends BaseRankings {
         db()->exec("VACUUM ANALYZE daily_rankings;");
     }
     
-    public static function getAllBaseResultset($release_name, $mode_name, $number_of_days = NULL) {
-        if(empty($number_of_days)) {
-            $number_of_days = 0;
-        }
-    
+    public static function getAllBaseResultset($release_id, $mode_id, $daily_ranking_day_type_id) {    
         $resultset = new SQL('daily_rankings');
     
         $resultset->setBaseQuery("
             SELECT dr.*
             FROM daily_rankings dr
-            JOIN releases r ON r.release_id = dr.release_id
-            JOIN modes mo ON mo.mode_id = dr.mode_id
-            JOIN daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id
             {{WHERE_CRITERIA}}
         ");
         
-        $resultset->addFilterCriteria('r.name = :release_name', array(
-            ':release_name' => $release_name
+        $resultset->addFilterCriteria('dr.release_id = :release_id', array(
+            ':release_id' => $release_id
         ));
         
-        $resultset->addFilterCriteria('mo.name = :mode_name', array(
-            ':mode_name' => $mode_name
+        $resultset->addFilterCriteria('dr.mode_id = :mode_id', array(
+            ':mode_id' => $mode_id
         ));
         
-        $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
-            ':number_of_days' => $number_of_days
+        $resultset->addFilterCriteria('dr.daily_ranking_day_type_id = :daily_ranking_day_type_id', array(
+            ':daily_ranking_day_type_id' => $daily_ranking_day_type_id
         ));
         
-        $resultset->setSortCriteria('date', 'ASC'); 
+        $resultset->setSortCriteria('date', 'DESC'); 
         
         return $resultset;
     }
     
-    public static function getSteamUserBaseResultset($steamid, $release_name, $mode_name, $number_of_days = NULL) {
-        if(empty($number_of_days)) {
-            $number_of_days = 0;
-        }
+    public static function getDatesResultset($release_id, $mode_id, $daily_ranking_day_type_id) {
+        $resultset = static::getAllBaseResultset($release_id, $mode_id, $daily_ranking_day_type_id);
+        
+        $resultset->setSelectField('pr.date', 'date');
+        
+        return $resultset;
+    }
     
-        $resultset = new SQL('steam_user_power_ranking_entries');
+    public static function getSteamUserBaseResultset($steamid, $release_id, $mode_id, $daily_ranking_day_type_id) {    
+        $resultset = new SQL('steam_user_daily_ranking_entries');
     
         $resultset->setBaseQuery("
-            SELECT dr.*
+            SELECT dr.date
             FROM daily_rankings dr
-            JOIN releases r ON r.release_id = dr.release_id
-            JOIN modes mo ON mo.mode_id = dr.mode_id
-            JOIN daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id
             JOIN {{PARTITION_TABLE}} dre ON dre.daily_ranking_id = dr.daily_ranking_id
             JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
             {{WHERE_CRITERIA}}
         ");
         
-        $release = Releases::getByName($release_name);
+        $release = Releases::getById($release_id);
         
         $parition_table_names = static::getPartitionTableNames('daily_ranking_entries', new DateTime($release['start_date']), new DateTime($release['end_date']));
         
@@ -137,19 +131,27 @@ extends BaseRankings {
             $steamid
         ));
         
-        $resultset->addFilterCriteria('r.name = ?', array(
-            $release_name
+        $resultset->addFilterCriteria('dr.release_id = ?', array(
+            $release_id
         ));
         
-        $resultset->addFilterCriteria('mo.name = :mode_name', array(
-            ':mode_name' => $mode_name
+        $resultset->addFilterCriteria('dr.mode_id = ?', array(
+            $mode_id
         ));
         
-        $resultset->addFilterCriteria('drdt.number_of_days = ?', array(
-            $number_of_days
+        $resultset->addFilterCriteria('dr.daily_ranking_day_type_id = ?', array(
+            $daily_ranking_day_type_id
         ));
         
-        $resultset->setSortCriteria('date', 'ASC');
+        $resultset->setSortCriteria('date', 'DESC');
+        
+        return $resultset;
+    }
+    
+    public static function getSteamUserDatesResultset($steamid, $release_id, $mode_id, $daily_ranking_day_type_id) {
+        $resultset = static::getSteamUserBaseResultset($steamid, $release_id, $mode_id, $daily_ranking_day_type_id);
+        
+        $resultset->setSelectField('pr.date', 'date');
         
         return $resultset;
     }

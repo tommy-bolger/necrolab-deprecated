@@ -80,13 +80,13 @@ $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
     
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
     table.enableModeField();
+    table.enableSeededField();
     table.enableDateField();
     table.enableSiteField();
     table.enableCollapsibleRows(2);
@@ -177,8 +177,6 @@ $(document).ready(function() {
             type: 'num-fmt'
         }
     ]);
-    
-    table.enableSort('deathless_rank', 'asc');
     
     table.setDataProcessCallback(window, 'process_deathless_data');
     

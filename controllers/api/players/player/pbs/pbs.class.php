@@ -32,12 +32,12 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Pbs;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
+use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Pbs
-extends Player {    
+extends Necrolab {    
     public function init() {
         $this->setSteamidFromRequest();
         
@@ -47,11 +47,25 @@ extends Player {
         
         $this->setCharacterFromRequest();
         
+        $this->setSeededFromRequest();
+        
+        $this->setCoOpFromRequest();
+        
+        $this->setCustomFromRequest();
+        
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultset() {
-        return SteamUserPbsModel::getApiSteamUserResultset($this->release_name, $this->mode, $this->character_name, $this->steamid);
+        return SteamUserPbsModel::getApiSteamUserResultset(
+            $this->release_id, 
+            $this->mode_id, 
+            $this->character_id, 
+            $this->seeded,
+            $this->co_op,
+            $this->custom,
+            $this->steamid
+        );
     }
     
     public function formatResponse($data) {        
@@ -61,12 +75,12 @@ extends Player {
             foreach($data as $row) {  
             
                 $processed_data[] = array(
-                    'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
+                    'lbid' => $row['lbid'],
                     'pb' => SteamUserPbsModel::getFormattedApiRecord($row)
                 );
             }
         }
         
-        return array_values($processed_data);
+        return $processed_data;
     }
 }

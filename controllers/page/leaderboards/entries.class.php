@@ -58,11 +58,5 @@ extends Leaderboards {
         if(empty($this->lbid)) {
             Http::redirect('/leaderboards');
         }
-        
-        $this->leaderboard_record = LeaderboardsModel::get($this->lbid);
-        
-        if(empty($this->leaderboard_record)) {
-            Http::redirect('/leaderboards');
-        }
     }
 }

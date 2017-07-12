@@ -36,7 +36,7 @@ function NecroTable(dom_object) {
     
     this.enable_release_field = false;
     this.release_field;
-    this.release_field_value = 'amplified_dlc_early_access';
+    this.release_field_value = 'amplified_dlc';
     
     this.enable_mode_field = false;
     this.mode_field;
@@ -62,6 +62,18 @@ function NecroTable(dom_object) {
     
     this.enable_search_field = false;
     this.search_field_value = '';
+    
+    this.enable_seeded_field = false;
+    this.seeded_field;
+    this.seeded_field_value = 0;
+    
+    this.enable_co_op_field = false;
+    this.co_op_field;
+    this.co_op_field_value = 0;
+    
+    this.enable_custom_field = false;
+    this.custom_field;
+    this.custom_field_value = 0;
     
     this.enable_sort = false;
     this.sort_by;
@@ -173,42 +185,6 @@ NecroTable.number_of_days_field_values = [];
 
 NecroTable.prototype.getUrl = function() {
     return this.url;
-};
-
-NecroTable.prototype.enableLengthMenu = function() {  
-    this.has_length_menu = true;
-    
-    this.length_menu = [
-        100,
-        500,
-        1000
-    ];
-    
-    this.setLimitFromUrl();
-};
-
-NecroTable.prototype.setLimitFromUrl = function() {  
-    if(this.has_length_menu && this.enable_history) {
-        var url_limit = this.url.getValue('limit');
-        
-        if(url_limit != null) {
-            this.limit = parseInt(url_limit);
-        }
-    }
-};
-
-NecroTable.prototype.setDefaultLimit = function(limit) {  
-    limit = parseInt(limit);
-    
-    if(limit > 1000) {
-        limit = 1000;
-    }   
-    
-    if(limit <= 0) {
-        limit = 100;
-    } 
-    
-    this.limit = limit;
 };
 
 NecroTable.prototype.enableButtons = function() {  
@@ -426,6 +402,54 @@ NecroTable.prototype.setSearchFromUrl = function() {
     }
 };
 
+NecroTable.prototype.enableSeededField = function() {      
+    this.enable_seeded_field = true;
+    
+    this.setSeededFromUrl();
+};
+
+NecroTable.prototype.setSeededFromUrl = function() {  
+    if(this.enable_seeded_field && this.enable_history) {
+        var url_seeded = this.url.getValue('seeded');
+        
+        if(url_seeded != null) {
+            this.seeded_field_value = url_seeded;
+        }
+    }
+};
+
+NecroTable.prototype.enableCoOpField = function() {      
+    this.enable_co_op_field = true;
+    
+    this.setCoOpFromUrl();
+};
+
+NecroTable.prototype.setCoOpFromUrl = function() {  
+    if(this.enable_co_op_field && this.enable_history) {
+        var url_co_op = this.url.getValue('co_op');
+        
+        if(url_co_op != null) {
+            this.co_op_field_value = url_co_op;
+        }
+    }
+};
+
+NecroTable.prototype.enableCustomField = function() {      
+    this.enable_custom_field = true;
+    
+    this.setCustomFromUrl();
+};
+
+NecroTable.prototype.setCustomFromUrl = function() {  
+    if(this.enable_custom_field && this.enable_history) {
+        var url_custom = this.url.getValue('custom_music');
+        
+        if(url_custom != null) {
+            this.custom_field_value = url_custom;
+        }
+    }
+};
+
 NecroTable.prototype.enableCollapsibleRows = function(number_of_collapsible_rows) {      
     this.enable_collapsible_rows = true;
     
@@ -444,8 +468,6 @@ NecroTable.prototype.enableCollapsibleRows = function(number_of_collapsible_rows
 
 NecroTable.prototype.resumeFromHistoryState = function() {      
     this.url = new Url();    
-    
-    this.setLimitFromUrl();
     
     this.setStartFromUrl();
     
@@ -466,6 +488,12 @@ NecroTable.prototype.resumeFromHistoryState = function() {
     this.setNumberOfDaysFromUrl();
     
     this.setSearchFromUrl();
+    
+    this.setSeededFromUrl();
+    
+    this.setCoOpFromUrl();
+    
+    this.setCustomFromUrl();
     
     this.datatable.ajax.reload();
 };
@@ -815,7 +843,7 @@ NecroTable.prototype.render = function() {
     
     var top_fields = '';
     
-    if(instance.has_length_menu) {
+    if(instance.length_menu !== false) {
         top_fields += "<'col'l>";
     }
     
@@ -839,6 +867,18 @@ NecroTable.prototype.render = function() {
     
     if(instance.enable_mode_field) {
         custom_fields += "<'col' <'#" + instance.table_id + "_mode.top_menu_item'>>";
+    }
+    
+    if(instance.enable_seeded_field) {
+        custom_fields += "<'col' <'#" + instance.table_id + "_seeded.top_menu_item'>>";
+    }
+    
+    if(instance.enable_co_op_field) {
+        custom_fields += "<'col' <'#" + instance.table_id + "_co_op.top_menu_item'>>";
+    }
+    
+    if(instance.enable_custom_field) {
+        custom_fields += "<'col' <'#" + instance.table_id + "_custom.top_menu_item'>>";
     }
     
     if(instance.enable_site_field) {
@@ -987,13 +1027,11 @@ NecroTable.prototype.render = function() {
                 if(instance.paging) {                    
                     instance.start = table_state.start;
                     request.start = instance.start;
-                    request.limit = instance.limit;
                 }
                 
-                if(instance.has_length_menu) {                    
+                /*if(instance.has_length_menu) {                    
                     instance.limit = table_state.length;
-                    request.limit = instance.limit;
-                }
+                }*/
                 
                 if(instance.enable_sort) {                    
                     instance.setSortBy(instance.column_names[table_state.order[0].column]);
@@ -1035,6 +1073,18 @@ NecroTable.prototype.render = function() {
                 
                 if(instance.enable_search_field) {
                     request.search = instance.search_field_value;
+                }
+                
+                if(instance.enable_seeded_field) {
+                    request.seeded = instance.seeded_field_value;
+                }
+                
+                if(instance.enable_co_op_field) {
+                    request.co_op = instance.co_op_field_value;
+                }
+                
+                if(instance.enable_custom_field) {
+                    request.custom_music = instance.custom_field_value;
                 }
 
                 if(instance.enable_history) {
@@ -1325,6 +1375,9 @@ NecroTable.prototype.render = function() {
             else if(character_value.name == 'all') {
                 character_image_html = "<span class='menu_small'>" + character_value.display_name + "</span>";
             }
+            else if(character_value.name == 'all_dlc') {
+                character_image_html = "<span class='menu_small'>" + character_value.display_name + "</span>";
+            }
             else if(character_value.name == 'story') {
                 character_image_html = "<span class='menu_small'>Story</span>";
             }
@@ -1444,5 +1497,80 @@ NecroTable.prototype.render = function() {
         
         instance.initializeStartDateFieldPicker();
         instance.initializeEndDateFieldPicker();
+    }
+    
+    /* ---------- Render the seeded field if it's enabled ---------- */
+
+    if(instance.enable_seeded_field) {
+        var seeded_field_container = $('#' + instance.table_id + '_seeded');
+        
+        seeded_field_container.html('\
+            <label> \
+                <select class="form-control input-sm seeded"> \
+                    <option value="0">Unseeded</option> \
+                    <option value="1">Seeded</option> \
+                </select> \
+            </label> \
+        ');
+        
+        instance.seeded_field = seeded_field_container.children("label").children('select');
+
+        instance.seeded_field.bind('change', function(event) {
+            instance.seeded_field_value = $(this).val();
+            
+            instance.datatable.ajax.reload();
+        });
+        
+        instance.seeded_field.selectpicker();
+    }
+    
+    /* ---------- Render the co-op field if it's enabled ---------- */
+
+    if(instance.enable_co_op_field) {
+        var co_op_field_container = $('#' + instance.table_id + '_co_op');
+        
+        co_op_field_container.html('\
+            <label> \
+                <select class="form-control input-sm co_op"> \
+                    <option value="0">Single Player</option> \
+                    <option value="1">Co-Op</option> \
+                </select> \
+            </label> \
+        ');
+        
+        instance.co_op_field = co_op_field_container.children("label").children('select');
+
+        instance.co_op_field.bind('change', function(event) {
+            instance.co_op_field_value = $(this).val();
+            
+            instance.datatable.ajax.reload();
+        });
+        
+        instance.co_op_field.selectpicker();
+    }
+    
+    /* ---------- Render the custom field if it's enabled ---------- */
+
+    if(instance.enable_custom_field) {
+        var custom_field_container = $('#' + instance.table_id + '_custom');
+        
+        custom_field_container.html('\
+            <label> \
+                <select class="form-control input-sm custom"> \
+                    <option value="0">Default Music</option> \
+                    <option value="1">Custom Music</option> \
+                </select> \
+            </label> \
+        ');
+        
+        instance.custom_field = custom_field_container.children("label").children('select');
+
+        instance.custom_field.bind('change', function(event) {
+            instance.custom_field_value = $(this).val();
+            
+            instance.datatable.ajax.reload();
+        });
+        
+        instance.custom_field.selectpicker();
     }
 };

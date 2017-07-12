@@ -6,7 +6,6 @@ use \Framework\Core\Controllers\Cli;
 use \Framework\Api\Steam\ISteamUser;
 use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
-use \Modules\Necrolab\Models\SteamUsers\Cache\SteamUsers as CacheSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
 class SteamUsers
@@ -126,7 +125,18 @@ extends Cli {
         }
     }
     
-    public function actionPopulateCache() {
-        CacheSteamUsers::populate();
+    public function actionLoadIntoCache() {
+        DatabaseSteamUsers::loadIntoCache();
     }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        DatabaseSteamUsers::runQueue(DatabaseSteamUsers::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }  
 }

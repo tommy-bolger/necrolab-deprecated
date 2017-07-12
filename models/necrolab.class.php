@@ -15,6 +15,24 @@ class Necrolab {
     
     protected static $queue_server_connection;
     
+    public static function getFullClassName() {
+        return get_called_class();
+    }
+    
+    public static function getDatesFromRange(DateTime $start_date, DateTime $end_date) {
+        $current_date = clone $start_date;
+        
+        $dates = array();
+        
+        while($current_date <= $end_date) {
+            $dates[] = $current_date->format('Y-m-d');
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return $dates;
+    }
+    
     protected static function getPartitionTableNames($base_name, $start_date, $end_date) {
         $partition_table_names = array();
         
@@ -79,5 +97,13 @@ class Necrolab {
     
     public static function generateRankPoints($rank) {
         return 1.7 / (log($rank / 100 + 1.03) / log(10));
+    }
+    
+    public static function encodeRecord(array $record) {
+        return base64_encode(gzencode(json_encode($record, JSON_UNESCAPED_UNICODE), 4));
+    }
+    
+    public static function decodeRecord($encoded_record) {
+        return json_decode(gzdecode(base64_decode($encoded_record)), true);
     }
 }

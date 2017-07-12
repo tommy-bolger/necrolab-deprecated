@@ -44,6 +44,14 @@ extends BaseEntries {
     }
 
     protected function getResultSet() {
-        return PowerRankingEntriesModel::getAllCharacterResultset($this->character_name, $this->release_name, $this->mode, $this->date);
+        return PowerRankingEntriesModel::getAllCharacterResultset(
+            $this->character_id, 
+            $this->character_name, 
+            $this->release_id, 
+            $this->mode_id, 
+            $this->seeded, 
+            $this->external_site_id, 
+            $this->date
+        );
     }
 }

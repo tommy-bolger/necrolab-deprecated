@@ -29,7 +29,7 @@ extends BaseCacheNames {
     }
     
     public static function getRankingsName($release_id, $mode_id, $number_of_days) {
-        return self::getRankingsBaseName($release_id, $mode_id) . ":{$number_of_days}" . self::DAY_TYPE;
+        return self::getRankingsBaseName($release_id, $mode_id) . ":{$number_of_days}";
     }
 
     public static function getEntriesName($release_id, $mode_id, $number_of_days) {
@@ -42,5 +42,9 @@ extends BaseCacheNames {
     
     public static function getTotalPointsName($release_id, $mode_id, $number_of_days) {    
         return self::getRankingsName($release_id, $mode_id, $number_of_days) . ':' . self::TOTAL_POINTS;
+    }
+    
+    public static function getEntriesIndexName($release_id, $mode_id, $number_of_days, array $index_segments = array()) {
+        return parent::getIndexName(self::getEntriesName($release_id, $mode_id, $number_of_days) . ':' . BaseCacheNames::INDEX, $index_segments);
     }
 }

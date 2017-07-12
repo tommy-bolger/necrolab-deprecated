@@ -5,16 +5,32 @@ namespace Modules\Necrolab\Models;
 class CacheNames {    
     const ENTRIES = 'e';
     
-    const PROPERTIES = 'pr';
-
-    const FILTER = 'f';
+    const INDEX = 'idx';
     
-    const TEMP_NAME = 't';
+    const IDS = 'ids';
     
-    const LAST_UPDATED = 'lu';
+    const NO_ID = '0';
     
-    public static function addTempPrefix($key_name) {
-        return self::TEMP_NAME . ':' . $key_name;
+    const SCORE = 'sc';
+    
+    const SPEED = 'sp';
+    
+    const DEATHLESS = 'de';
+    
+    public static function getIndexName($base_name, array $index_segments) {
+        $index_name = implode(':', $index_segments);
+        
+        $cache_name = $base_name;
+        
+        if(!empty($index_segments)) {
+            $cache_name .= ":{$index_name}";
+        }
+    
+        return $cache_name;
+    }
+    
+    public static function getCharactersName() {
+        return 'characters';
     }
     
     public static function getFullClassName() {

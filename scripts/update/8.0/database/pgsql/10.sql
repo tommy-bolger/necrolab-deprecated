@@ -1,0 +1,11 @@
+ALTER TABLE leaderboards
+DROP COLUMN entries,
+DROP COLUMN sortmethod,
+DROP COLUMN displaytype,
+DROP COLUMN onlytrustedwrites,
+DROP COLUMN onlyfriendsreads,
+DROP COLUMN is_all_character,
+DROP COLUMN is_story_mode,
+DROP COLUMN is_dlc,
+DROP COLUMN is_hard_mode,
+DROP COLUMN is_no_return;

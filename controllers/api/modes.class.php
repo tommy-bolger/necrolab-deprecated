@@ -32,25 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
-use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
+use \Modules\Necrolab\Models\Modes as ModesModel;
 
 class Modes
 extends Necrolab {
     public function init() {}
-
-    protected function getResultSet() {
-        return ModesModel::getBaseResultset();
-    }
     
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = ModesModel::getFormattedApiRecord($row);
+        $modes = ModesModel::getAll();
+            
+        if(!empty($modes)) {        
+            foreach($modes as $mode) {
+                $processed_data[] = ModesModel::getFormattedApiRecord($mode);
             }
         }
         
-        return $processed_data;
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

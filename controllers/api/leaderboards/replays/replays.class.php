@@ -39,34 +39,18 @@ use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
 
 class Replays
 extends Necrolab {
-    protected $ugcid;
-    
-    protected function setUgcidFromRequest() {        
-        $ugcid = request()->get->ugcid;
-        
-        if(empty($ugcid)) {
-            $this->framework->outputManualError(400, "Required property 'ugcid' was not found in the request.");
-        }
-        
-        $ugcid = request()->get->getVariable('ugcid', 'integer');
-        
-        if(empty($ugcid)) {
-            $this->framework->outputManualError(400, "Property '{$ugcid}' is invalid. Please refer to /api/leaderboards/replays for a list of valid ugcids.");
-        }
-        
-        $this->ugcid = request()->get->ugcid;
-        
-        $this->request['ugcid'] = $this->ugcid;
-    }
+    protected $enable_search = true;
 
     public function init() {
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = ReplaysModel::getApiAllResultset($this->release_name);
+        $resultset = ReplaysModel::getApiAllResultset($this->release_id, $this->mode_id);
         
         return $resultset;
     }
@@ -78,9 +62,9 @@ extends Necrolab {
             foreach($data as $row) {
                 $processed_row = array(
                     'steamid' => $row['steamid'],
-                    'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
-                    'pb' => SteamUserPbsModel::getFormattedApiRecord($row),
-                    'replay' => ReplaysModel::getFormattedApiRecord($row),
+                    'lbid' => $row['lbid'],
+                    'date' => $row['date'],
+                    'replay' => ReplaysModel::getFormattedApiRecord($row)
                 );
             
                 $processed_data[] = $processed_row;

@@ -9,8 +9,10 @@ use \RecursiveRegexIterator;
 use \Framework\Modules\Module;
 use \Framework\Utilities\File;
 use \Modules\Necrolab\Models\Leaderboards\Leaderboards;
+use \Modules\Necrolab\Models\Necrolab;
 
-class SteamUsers {
+class SteamUsers
+extends Necrolab {
     protected static $users = array();
     
     protected static $user_ids = array();
@@ -98,6 +100,14 @@ class SteamUsers {
         }
         
         return $json_files;
+    }
+    
+    public static function getCacheQueueName() {
+        return 'steam_user_cache';
+    }
+    
+    public static function addToCacheQueue() {        
+        static::addDateToQueue(static::getCacheQueueName(), new DateTime());
     }
     
     public static function getFormattedApiRecord($data_row) {

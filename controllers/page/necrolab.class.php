@@ -44,6 +44,10 @@ extends PageController {
     
     protected $has_table_title = false;
     
+    protected $cache_page = false;
+    
+    protected $cache_name = 'necrolab';
+    
     protected $active_page_category;
 
     protected $active_page;
@@ -105,8 +109,8 @@ extends PageController {
         );
     }
     
-    public function setup() {        
-        $this->page = new ModulePage('necrolab', 'necrolab_home');
+    public function setup() {    
+        $this->page = new ModulePage('necrolab', $this->cache_name, $this->cache_page);
         
         $this->page->setTitle("NecroLab::{$this->title}");
 

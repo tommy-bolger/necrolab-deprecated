@@ -37,46 +37,26 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 
 class Leaderboards
 extends Necrolab {
-    protected $lbid;
-    
-    protected function setLbidFromRequest() {        
-        $lbid = request()->get->lbid;
-        
-        if(empty($lbid)) {
-            $this->framework->outputManualError(400, "Required property 'lbid' was not found in the request.");
-        }
-        
-        $this->lbid = request()->get->getVariable('lbid', 'integer');
-        
-        if(empty($this->lbid)) {
-            $this->framework->outputManualError(400, "Property '{$this->lbid}' is invalid. Please refer to /api/leaderboards for a list of valid lbids.");
-        }
-        
-        $this->request['lbid'] = $this->lbid;
-    }
-
     public function init() {
+        $this->cached_response_prefix_name = 'leaderboards';
+    
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-    
-        $this->getResultsetStateFromRequest();
     }
 
-    protected function getResultSet() {
-        $resultset = LeaderboardsModel::getAllResultset($this->release_name, $this->mode);
-        
-        return $resultset;
+    protected function getResultSet() {        
+        return LeaderboardsModel::getAllResultset($this->release_id, $this->mode_id);
     }
+    
+    protected function setResultsetSearch($resultset) {}
     
     public function formatResponse($data) {        
         $processed_data = array();
         
-        if(!empty($data)) {        
+        if(!empty($data)) {     
             foreach($data as $row) {
-                $processed_row = LeaderboardsModel::getFormattedApiRecord($row);
-            
-                $processed_data[] = $processed_row;
+                $processed_data[] = LeaderboardsModel::getFormattedApiRecord($row);
             }
         }
         

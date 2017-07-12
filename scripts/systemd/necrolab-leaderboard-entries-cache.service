@@ -1,0 +1,13 @@
+[Unit]
+Description=Necrolab Leaderboard Entries caching service.
+
+[Service]
+PIDFile=/var/run/necrolab-leaderboard-entries-cache.pid
+ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab steamimport RunCacheQueueListener > /dev/null 2>/dev/null
+Type=simple
+User=<your_user_name>
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

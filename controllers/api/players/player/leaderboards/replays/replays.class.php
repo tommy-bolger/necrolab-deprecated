@@ -32,25 +32,25 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards\Replays;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Leaderboards\Database\Replays as ReplaysModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
 
 class Replays
-extends Player {
-    public function init() {
-        $this->setReleaseFromRequest();
-    
+extends Necrolab {
+    public function init() {    
         $this->setSteamidFromRequest();
+        
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = ReplaysModel::getSteamUserResultset($this->release_name, $this->steamid);
-        
-        return $resultset;
+        return ReplaysModel::getSteamUserResultset($this->release_id, $this->mode_id, $this->steamid);
     }
     
     public function formatResponse($data) {        
@@ -59,9 +59,10 @@ extends Player {
         if(!empty($data)) {        
             foreach($data as $row) {
                 $processed_row = array(
-                    'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
-                    'pb' => SteamUserPbsModel::getFormattedApiRecord($row),
-                    'replay' => ReplaysModel::getFormattedApiRecord($row),
+                    'steamid' => $row['steamid'],
+                    'lbid' => $row['lbid'],
+                    'date' => $row['date'],
+                    'replay' => ReplaysModel::getFormattedApiRecord($row)
                 );
             
                 $processed_data[] = $processed_row;

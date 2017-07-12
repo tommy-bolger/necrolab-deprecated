@@ -33,11 +33,29 @@
 namespace Modules\Necrolab\Controllers\Api\Leaderboards\Daily;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
-use \Modules\Necrolab\Controllers\Api\Leaderboards\Leaderboards;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Home
-extends Leaderboards {
+extends Necrolab {        
+    public function init() {
+        $this->cached_response_prefix_name = 'leaderboards:daily';
+    
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
+    }
+
     protected function getResultSet() {
-        return LeaderboardsModel::getAllDailyResultset($this->release_name, $this->mode);
+        return LeaderboardsModel::getAllDailyDatesResultset($this->release_id, $this->mode_id);
+    }
+    
+    public function formatResponse($data) {        
+        $processed_data = array();
+        
+        if(!empty($data)) {     
+            $processed_data = array_column($data, 'daily_date');
+        }
+        
+        return $processed_data;
     }
 }

@@ -21,4 +21,20 @@ extends Necrolab {
     
         file_put_contents("{$snapshot_path}/page_{$page}.xml", $xml);
     }
+    
+    public static function getCacheQueueName() {
+        return 'leaderboard_entries_cache';
+    }
+    
+    public static function addToCacheQueue(DateTime $date) {        
+        static::addDateToQueue(static::getCacheQueueName(), $date);
+    }
+    
+    public static function getDailyCacheQueueName() {
+        return 'daily_leaderboard_entries_cache';
+    }
+    
+    public static function addToDailyCacheQueue(DateTime $date) {        
+        static::addDateToQueue(static::getDailyCacheQueueName(), $date);
+    }
 }

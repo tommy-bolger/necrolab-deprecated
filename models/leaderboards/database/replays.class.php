@@ -5,13 +5,14 @@ use \DateTime;
 use \Exception;
 use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis\Hybrid as HybridResultset;
 use \Modules\Necrolab\Models\Leaderboards\Replays as BaseReplays;
 use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
 use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
-use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
-use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
+use \Modules\Necrolab\Models\Characters;
+use \Modules\Necrolab\Models\Modes;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as DatabaseSteamUserPbs;
-use \Modules\Necrolab\Models\Leaderboards\Database\RecordModels\SteamReplay;
+use \Modules\Necrolab\Models\Leaderboards\CacheNames;
 
 class Replays
 extends BaseReplays {    
@@ -279,8 +280,8 @@ extends BaseReplays {
         DatabaseReplayVersions::setSelectFields($resultset);
         DatabaseSteamUserPbs::setSelectFields($resultset);
         Leaderboards::setSelectFields($resultset);
-        DatabaseCharacters::setSelectFields($resultset);
-        DatabaseModes::setSelectFields($resultset);
+        Characters::setSelectFields($resultset);
+        Modes::setSelectFields($resultset);
         Snapshots::setSelectFields($resultset);
         Details::setSelectFields($resultset);
         
@@ -302,22 +303,78 @@ extends BaseReplays {
         return $resultset;
     }
     
-    public static function getApiAllResultset($release_name) {
-        $resultset = static::getAllResultset();
+    public static function getApiAllSqlResultset() {
+        $resultset = new SQL('replays');
         
-        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
-        
-        $resultset->addFilterCriteria("r.name = :release_name", array(
-            ':release_name' => $release_name
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'l.lbid',
+                'alias' => 'lbid',
+            ),
+            array(
+                'field' => 'ls.date',
+                'alias' => 'date',
+            ),
+            array(
+                'field' => 'su.steamid',
+                'alias' => 'steamid',
+            ),
+            array(
+                'field' => 'sr.ugcid',
+                'alias' => 'ugcid'
+            ),
+            array(
+                'field' => 'sr.seed',
+                'alias' => 'seed'
+            ),
+            array(
+                'field' => 'sr.downloaded',
+                'alias' => 'downloaded'
+            ),
+            array(
+                'field' => 'srv.name',
+                'alias' => 'version'
+            ),
+            array(
+                'field' => 'rr.name',
+                'alias' => 'run_result'
+            )
         ));
+        
+        $resultset->setFromTable('steam_replays sr');
+        
+        $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_replay_id = sr.steam_replay_id');
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sr.steam_user_id');
+        
+        $resultset->addLeftJoinCriteria('run_results rr ON rr.run_result_id = sr.run_result_id');
+        $resultset->addLeftJoinCriteria('steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id');
         
         return $resultset;
     }
     
-    public static function getOneResultset($ugcid) {
-        $resultset = static::getAllResultset();
+    public static function getApiAllResultset($release_id, $mode_id) {
+        $resultset = new HybridResultset("replays", cache('database'), cache('local'));
         
-        $resultset->setName("replays:entries:{$ugcid}");
+        $sql_resultset = static::getApiAllSqlResultset();
+        
+        $sql_resultset->setSortCriteria('sr.steam_replay_id', 'ASC');
+        
+        $resultset->setSqlResultset($sql_resultset, 'sr.steam_replay_id');
+        
+        $resultset->setIndexName(CacheNames::getReplaysName());
+        
+        $resultset->setPartitionName(CacheNames::getReplaysIndexName(array(
+            $release_id,
+            $mode_id
+        )));
+        
+        return $resultset;
+    }
+    
+    public static function getOneResultset($ugcid) {        
+        $resultset = static::getApiAllSqlResultset();
         
         $resultset->addFilterCriteria("sr.ugcid = :ugcid", array(
             ':ugcid' => $ugcid
@@ -326,15 +383,206 @@ extends BaseReplays {
         return $resultset;
     }
     
-    public static function getSteamUserResultset($release_name, $steamid) {
-        $resultset = static::getApiAllResultset($release_name);
+    public static function getSteamUserResultset($release_id, $mode_id, $steamid) {
+        $resultset = static::getApiAllSqlResultset();
         
-        $resultset->setName("steam_users:{$steamid}:replays:entries");
+        $resultset->setName("steam_users_replay_entries");
         
         $resultset->addFilterCriteria("su.steamid = :steamid", array(
             ':steamid' => $steamid
         ));
         
+        $resultset->addFilterCriteria("l.release_id = :release_id", array(
+            ':release_id' => $release_id
+        ));
+        
+        $resultset->addFilterCriteria("l.mode_id = :mode_id", array(
+            ':mode_id' => $mode_id
+        ));
+        
+        $resultset->setSortCriteria('sr.steam_replay_id', 'DESC');
+        
+        $count_resultset = clone $resultset;
+        
+        $count_resultset->clearLeftJoinCriteria();
+        
+        $resultset->setCountResultset($count_resultset);
+        
         return $resultset;
     }
+    
+    public static function loadIntoCache() {
+        $resultset = new SQL('replay_cache_query');
+        
+        $resultset->setFromTable('steam_replays sr');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'sr.steam_replay_id',
+                'alias' => 'steam_replay_id',
+            ),
+            array(
+                'field' => 'l.release_id',
+                'alias' => 'release_id',
+            ),
+            array(
+                'field' => 'l.mode_id',
+                'alias' => 'mode_id',
+            )
+        ));
+        
+        $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_replay_id = sr.steam_replay_id');
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        
+        $resultset->addFilterCriteria('downloaded = 1');
+        $resultset->addFilterCriteria('invalid = 0');
+        
+        $resultset->addSortCriteria("sr.steam_replay_id", "ASC");
+        
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $transaction = cache('database')->transaction();
+        
+        $steam_replays = array();
+        $indexes = array();
+        
+        do {
+            $steam_replays = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_replays)) {
+                foreach($steam_replays as $steam_replay) {   
+                    $steam_replay_id = (int)$steam_replay['steam_replay_id'];
+                    $release_id = (int)$steam_replay['release_id'];
+                    $mode_id = (int)$steam_replay['mode_id'];
+                    
+                    $indexes[CacheNames::getReplaysIndexName(array(
+                        $release_id,
+                        $mode_id
+                    ))][] = $steam_replay_id;
+                }
+            }
+        }
+        while(!empty($steam_replays));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data), CacheNames::getReplaysName());
+            }
+        }
+        
+        unset($indexes);
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }
+    
+    /*public static function loadIntoCache() {
+        $resultset = new SQL('replay_cache_query');
+        
+        $resultset->setFromTable('steam_replays sr');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'sr.steam_replay_id',
+                'alias' => 'steam_replay_id',
+            ),
+            array(
+                'field' => 'sr.steam_user_id',
+                'alias' => 'steam_user_id',
+            ),
+            array(
+                'field' => 'sr.ugcid',
+                'alias' => 'ugcid',
+            ),
+            array(
+                'field' => 'sr.seed',
+                'alias' => 'seed',
+            ),
+            array(
+                'field' => 'sr.run_result_id',
+                'alias' => 'run_result_id',
+            ),
+            array(
+                'field' => 'sr.steam_replay_version_id',
+                'alias' => 'steam_replay_version_id',
+            ),
+            array(
+                'field' => 'l.release_id',
+                'alias' => 'release_id',
+            ),
+            array(
+                'field' => 'l.mode_id',
+                'alias' => 'mode_id',
+            ),
+            array(
+                'field' => 'l.character_id',
+                'alias' => 'character_id',
+            )
+        ));
+        
+        $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_replay_id = sr.steam_replay_id');
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        
+        $resultset->addFilterCriteria('downloaded = 1');
+        $resultset->addFilterCriteria('invalid = 0');
+        
+        $resultset->addSortCriteria("sr.steam_replay_id", "ASC");
+        
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $steam_replays_cache_name = CacheNames::getAllReplaysName();
+        
+        $transaction = cache()->transaction();
+        
+        $steam_replays = array();
+        $indexes = array();
+        
+        do {
+            $steam_replays = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_replays)) {
+                foreach($steam_replays as $steam_replay) {   
+                    $steam_replay_id = (int)$steam_replay['steam_replay_id'];
+                    $release_id = (int)$steam_replay['release_id'];
+                    $mode_id = (int)$steam_replay['mode_id'];
+                    $character_id = (int)$steam_replay['character_id'];
+                
+                    $transaction->hSet($steam_replays_cache_name, $steam_replay_id, static::encodeRecord(array(
+                        'steam_user_id' => $steam_replay['steam_user_id'],
+                        'ugcid' => $steam_replay['ugcid'],
+                        'seed' => $steam_replay['seed'],
+                        'run_result_id' => $steam_replay['run_result_id'],
+                        'steam_replay_version_id' => $steam_replay['steam_replay_version_id']
+                    )));
+                    
+                    $indexes[CacheNames::getReplaysIndexName(array(
+                        $release_id,
+                        $mode_id
+                    ))][] = $steam_replay_id;
+                }
+            }
+        }
+        while(!empty($steam_replays));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data));
+            }
+        }
+        
+        unset($indexes);
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }*/
 }

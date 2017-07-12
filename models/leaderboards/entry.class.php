@@ -2,7 +2,7 @@
 namespace Modules\Necrolab\Models\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Replays;
-use \Modules\Necrolab\Models\Leaderboards\Details;
+use \Modules\Necrolab\Models\Leaderboards\Database\Details;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Entry
@@ -50,11 +50,9 @@ extends Necrolab {
     
     public static function getFormattedApiRecord(array $data_row) {
         $processed_row = array();
-        
-        $ugcid = $data_row['ugcid'];
-        
+
         $processed_row['rank'] = $data_row['rank'];
-        $processed_row['details'] = Details::getFormattedApiRecord($data_row);
+        $processed_row['details'] = $data_row['details'];
         $processed_row['zone'] = $data_row['zone'];
         $processed_row['level'] = $data_row['level'];
         $processed_row['win'] = $data_row['is_win'];

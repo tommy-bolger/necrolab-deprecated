@@ -34,21 +34,24 @@ namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry as LeaderboardEntryModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Entries
-extends Leaderboards {    
+extends Necrolab {
+    protected $enable_search = true;
+
     public function init() {        
+        $this->setDateFromRequest();
+    
         $this->setLbidFromRequest();
         
         $this->setSiteFromRequest();
-        
-        $this->setDateFromRequest();
         
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiAllResultset($this->date, $this->lbid);
+        return LeaderboardEntriesModel::getApiAllResultset($this->date, $this->leaderboard_id, $this->external_site_id);
     }
     
     public function formatResponse($data) {        

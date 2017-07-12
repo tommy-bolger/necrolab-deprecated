@@ -32,24 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Pbs;
 
-use \modules\Necrolab\Controllers\Api\Players\Players;
-use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as SteamUserPbsModel;
 
 class Pbs
-extends Players {
+extends Necrolab {
+    protected $enable_search = true;
+
     public function init() {
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-        
-        $this->setCharacterFromRequest();
     
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultset() {
-        return SteamUserPbsModel::getAllApiResultset($this->release_name, $this->mode, $this->character_name);
+        return SteamUserPbsModel::getAllApiResultset($this->release_id, $this->mode_id);
     }
     
     public function formatResponse($data) {        
@@ -58,8 +57,8 @@ extends Players {
         if(!empty($data)) {        
             foreach($data as $row) {                 
                 $processed_data[] = array(
-                    'player' => $this->getPlayerData($row),
-                    'leaderboard' => LeaderboardsModel::getFormattedApiRecord($row),
+                    'steamid' => $row['steamid'],
+                    'lbid' => $row['lbid'],
                     'pb' => SteamUserPbsModel::getFormattedApiRecord($row)
                 );
             }

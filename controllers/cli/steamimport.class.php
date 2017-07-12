@@ -280,15 +280,21 @@ extends Cli {
             db()->commit();
             
             Leaderboards::vacuum();
-            Snapshots::vacuum();
-            Entries::vacuum($this->as_of_date);
-            DatabaseSteamUserPbs::vacuum();
             Details::vacuum();
+            Snapshots::vacuum();
+            DatabaseSteamUserPbs::vacuum();
+            Entries::vacuum($this->as_of_date);
             
             Leaderboards::deleteTempXml($this->as_of_date);
         
             Rankings::addToGenerateQueue($this->as_of_date);
             DailyRankings::addToGenerateQueue($this->as_of_date);
+            
+            DatabaseSteamUsers::addToCacheQueue();
+            DatabaseSteamUserPbs::addToCacheQueue();
+            Replays::addToCacheQueue();
+            Entries::addToCacheQueue($this->as_of_date);
+            Entries::addToDailyCacheQueue($this->as_of_date);
         }
     }
     
@@ -467,6 +473,62 @@ extends Cli {
             $current_date->add(new DateInterval('P1D'));
         }
     }
+    
+    public function actionLoadIntoCache($date = NULL) {        
+        Entries::loadIntoCache(new DateTime($date));
+    }
+    
+    public function actionLoadRangeIntoCache($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->actionLoadIntoCache($current_date->format('Y-m-d'));
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        Entries::runQueue(Entries::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }  
+    
+    public function actionLoadDailyIntoCache($date = NULL) {        
+        Entries::loadDailiesIntoCache(new DateTime($date));
+    }
+    
+    public function actionLoadDailyRangeIntoCache($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->actionLoadDailyIntoCache($current_date->format('Y-m-d'));
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
+    public function dailyCacheQueueMessageReceived($message) {
+        $this->actionLoadDailyIntoCache($message->body);
+    }
+    
+    public function actionRunDailyCacheQueueListener() {    
+        Entries::runQueue(Entries::getDailyCacheQueueName(), array(
+            $this,
+            'dailyCacheQueueMessageReceived'
+        ));
+    }      
     
     public function actionCreateEntriesParition($date = NULL) {
         $date = new DateTime($date);

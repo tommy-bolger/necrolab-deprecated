@@ -36,12 +36,12 @@ use \Exception;
 use \Framework\Html\Table\DataTable;
 use \Framework\Html\Misc\TemplateElement;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
-use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entry as LeaderboardEntryModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Entries
-extends Leaderboards {
+extends Necrolab {
     protected $limit = 30;
 
     public function init() {
@@ -51,11 +51,27 @@ extends Leaderboards {
         
         $this->setReleaseFromRequest();
         
+        $this->setModeFromRequest();
+        
+        $this->setSeededFromRequest();
+        
+        $this->setCoOpFromRequest();
+        
+        $this->setCustomFromRequest();
+        
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiSteamUserResultset($this->date, $this->steamid, $this->release_name);
+        return LeaderboardEntriesModel::getApiSteamUserResultset(
+            $this->date, 
+            $this->steamid, 
+            $this->release_id, 
+            $this->mode_id,
+            $this->seeded,
+            $this->co_op,
+            $this->custom
+        );
     }
     
     public function formatResponse($data) {        

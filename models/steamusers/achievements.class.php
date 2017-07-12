@@ -147,9 +147,24 @@ extends Necrolab {
         return $xml_files;
     }
     
-    public static function getFormattedApiRecord($data_row) {
+    public static function getFormattedApiRecord($data_row) {    
+        $achieved_date = $data_row['achieved'];
+        
+        $achieved = 0;
+        $icon_url = $data_row['icon_gray_url'];
+        
+        if(!empty($achieved_date)) {
+            $achieved = 1;
+            $icon_url = $data_row['icon_url'];
+        }
+    
         return array(
-            'achieved' => $data_row['achieved']
+            'name' => $data_row['name'],
+            'display_name' => $data_row['display_name'],
+            'description' => $data_row['description'],
+            'achieved' => $achieved,
+            'achieved_date' => $achieved_date,
+            'icon_url' => $icon_url
         );
     }
 }

@@ -33,17 +33,20 @@
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots as SnapshotsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Snapshots
-extends Leaderboards {
+extends Necrolab {
     public function init() {
+        $this->cached_response_prefix_name = "player:leaderboards:snapshots";
+    
         $this->setSteamidFromRequest();
     
         $this->setLbidFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = SnapshotsModel::getSteamUserBaseResultset($this->steamid, $this->lbid);
+        $resultset = SnapshotsModel::getSteamUserBaseResultset($this->steamid, $this->leaderboard_id);
         
         return $resultset;
     }
@@ -51,10 +54,8 @@ extends Leaderboards {
     public function formatResponse($data) {        
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = SnapshotsModel::getFormattedApiRecord($row);
-            }
+        if(!empty($data)) {
+            $processed_data = array_column($data, 'date');
         }
         
         return $processed_data;

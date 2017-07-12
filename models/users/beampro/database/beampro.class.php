@@ -84,16 +84,16 @@ extends BaseBeampro {
         db()->exec("VACUUM ANALYZE beampro_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("beampro_users site_user ON site_user.beampro_user_id = su.beampro_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.beampro_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => 'site_user.username',
+                'field' => 'bu.username',
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.beampro_id',
+                'field' => 'bu.beampro_id',
                 'alias' => 'beampro_id'
             )
         ));

@@ -15,6 +15,10 @@ extends BaseRunResults {
                     run_result_id
                 FROM run_results
             ");
+            
+            if(!empty(static::$run_results)) {
+                static::$run_results_by_id = array_flip(static::$run_results);
+            }
         }
     }
     

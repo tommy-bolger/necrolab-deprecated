@@ -4,10 +4,12 @@ namespace Modules\Necrolab\Models\Dailies\Rankings\Database;
 use \DateTime;
 use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
-use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
+use \Framework\Data\ResultSet\Redis\Hybrid as HyrbidResultset;
+use \Modules\Necrolab\Models\Modes;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DatabaseEntry;
-use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
+use \Modules\Necrolab\Models\ExternalSites;
 use \Modules\Necrolab\Models\Dailies\Rankings\Entries as BaseEntries;
+use \Modules\Necrolab\Models\Dailies\Rankings\Cache\CacheNames;
 
 class Entries
 extends BaseEntries {    
@@ -39,23 +41,34 @@ extends BaseEntries {
         $date_formatted = $date->format('Y_m');
         
         db()->exec("
-            DROP INDEX IF EXISTS idx_daily_ranking_entries_{$date_formatted}_daily_ranking_id;
             DROP INDEX IF EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id;
         ");
+        
+        /*db()->exec("
+            DROP INDEX IF EXISTS 
+                idx_daily_ranking_entries_{$date_formatted}_steam_user_id,
+                idx_daily_ranking_entries_{$date_formatted}_rank;
+        ");*/
     }
     
     public static function createPartitionTableIndexes(DateTime $date) {
         $date_formatted = $date->format('Y_m');
-    
+        
         db()->exec("
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_daily_ranking_id
-            ON daily_ranking_entries_{$date_formatted}
-            USING btree (daily_ranking_id);
-
-            CREATE INDEX idx_daily_ranking_entries_{$date_formatted}_steam_user_id
+            CREATE INDEX IF NOT EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id
             ON daily_ranking_entries_{$date_formatted}
             USING btree (steam_user_id);
         ");
+    
+        /*db()->exec("
+            CREATE INDEX IF NOT EXISTS idx_daily_ranking_entries_{$date_formatted}_steam_user_id
+            ON daily_ranking_entries_{$date_formatted}
+            USING btree (steam_user_id);
+            
+            CREATE INDEX IF NOT EXISTS idx_daily_ranking_entries_{$date_formatted}_rank
+            ON daily_ranking_entries_{$date_formatted}
+            USING btree (rank);
+        ");*/
     }
     
 
@@ -144,81 +157,57 @@ extends BaseEntries {
         ");
     }    
 
-    public static function getAllBaseResultset($release_name, $mode_name, DateTime $date, $number_of_days = NULL) {
-        if(empty($number_of_days)) {
-            $number_of_days = 0;
-        }
+    public static function getAllBaseResultset(DateTime $date, $release_id, $mode_id, $daily_ranking_day_type_id, $external_site_id) {            
+        $date_formatted = $date->format('Y-m-d');
     
-        $resultset = new SQL('daily_ranking_entries');
+        $sql_resultset = new SQL('daily_ranking_entries');
         
-        $resultset->addSelectFields(array(
-            array(
-                'field' => 'dr.date',
-                'alias' => 'date'
-            ),
-            array(
-                'field' => 'su.steamid',
-                'alias' => 'steamid'
-            ),
-            array(
-                'field' => 'su.personaname',
-                'alias' => 'personaname'
-            ),
-            array(
-                'field' => 'dr.daily_ranking_id',
-                'alias' => 'daily_ranking_id'
-            ),
-            array(
-                'field' => 'drdt.daily_ranking_day_type_id',
-                'alias' => 'daily_ranking_day_type_id'
-            ),
-            array(
-                'field' => 'drdt.number_of_days',
-                'alias' => 'number_of_days'
-            )
+        $sql_resultset->setBaseQuery("
+            {{SELECT_FIELDS}}
+            FROM daily_rankings dr
+            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
+            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
+            {{JOIN_CRITERIA}}
+            {{WHERE_CRITERIA}}
+            {{ORDER_CRITERIA}}
+        ");
+        
+        //These two calls need to be made in this order for optimal query speed
+        ExternalSites::addSiteUserLeftJoins($sql_resultset);
+        DatabaseEntry::setSelectFields($sql_resultset);
+        
+        $sql_resultset->addFilterCriteria("dr.date = ?", array(
+            $date_formatted
         ));
         
-        DatabaseEntry::setSelectFields($resultset);
-        
-        $resultset->setFromTable('daily_rankings dr');
-        
-        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
-        $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
-        $resultset->addJoinCriteria('modes mo ON mo.mode_id = dr.mode_id');
-        $resultset->addJoinCriteria("daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
-        $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
-        
-        
-        $resultset->addFilterCriteria("dr.date = :date", array(
-            ':date' => $date->format('Y-m-d')
+        $sql_resultset->addFilterCriteria('dr.release_id = ?', array(
+            $release_id
         ));
         
-        $resultset->addFilterCriteria('r.name = :release_name', array(
-            ':release_name' => $release_name
+        $sql_resultset->addFilterCriteria('dr.mode_id = ?', array(
+            $mode_id
         ));
         
-        $resultset->addFilterCriteria('mo.name = :mode_name', array(
-            ':mode_name' => $mode_name
+        $sql_resultset->addFilterCriteria('dr.daily_ranking_day_type_id = ?', array(
+            $daily_ranking_day_type_id
         ));
         
-        $resultset->addFilterCriteria('drdt.number_of_days = :number_of_days', array(
-            ':number_of_days' => $number_of_days
-        ));
+        $sql_resultset->setSortCriteria('dre.rank', 'ASC');
         
-        $resultset->addSortCriteria('dre.rank', 'ASC');
+        $resultset = new HyrbidResultset('daily_ranking_entries', cache('database'), cache('local'));
         
-        $resultset->setRowsPerPage(100);
+        $resultset->setSqlResultset($sql_resultset, 'dre.steam_user_id');
         
-        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
-    
+        $resultset->setIndexName(CacheNames::getEntriesIndexName($release_id, $mode_id, $daily_ranking_day_type_id, array(
+            $external_site_id
+        )));
+        
+        $resultset->setPartitionName($date_formatted);
+        
         return $resultset;
     }
     
-    public static function getSteamUserBaseResultset($release_name, $steamid, DateTime $start_date, DateTime $end_date, $number_of_days = NULL) {
-        if(empty($number_of_days)) {
-            $number_of_days = 0;
-        }
-    
+    public static function getSteamUserBaseResultset($release_id, $mode_id, $steamid, DateTime $start_date, DateTime $end_date, $daily_ranking_day_type_id) {    
         $resultset = new SQL('steam_user_daily_ranking_entries');
         
         $resultset->addSelectFields(array(
@@ -229,29 +218,13 @@ extends BaseEntries {
             array(
                 'field' => 'su.steamid',
                 'alias' => 'steamid'
-            ),
-            array(
-                'field' => 'dr.daily_ranking_id',
-                'alias' => 'daily_ranking_id'
-            ),
-            array(
-                'field' => 'drdt.daily_ranking_day_type_id',
-                'alias' => 'daily_ranking_day_type_id'
-            ),
-            array(
-                'field' => 'drdt.number_of_days',
-                'alias' => 'number_of_days'
             )
         ));
         
         DatabaseEntry::setSelectFields($resultset);
-        DatabaseModes::setSelectFields($resultset);
         
         $resultset->setFromTable('daily_rankings dr');
-        
-        $resultset->addJoinCriteria('releases r ON r.release_id = dr.release_id');
-        $resultset->addJoinCriteria('modes mo ON mo.mode_id = dr.mode_id');
-        $resultset->addJoinCriteria('daily_ranking_day_types drdt ON drdt.daily_ranking_day_type_id = dr.daily_ranking_day_type_id');
+
         $resultset->addJoinCriteria("{{PARTITION_TABLE}} dre ON dre.daily_ranking_id = dr.daily_ranking_id");
         $resultset->addJoinCriteria("steam_users su ON su.steam_user_id = dre.steam_user_id");
         
@@ -261,25 +234,251 @@ extends BaseEntries {
             $resultset->addPartitionTable($parition_table_name);
         }
         
-        $resultset->addFilterCriteria('su.steamid = ?', array(
-            $steamid
-        ));
-        
         $resultset->addFilterCriteria('dr.date BETWEEN ? AND ?', array(
             $start_date->format('Y-m-d'),
             $end_date->format('Y-m-d')
         ));
         
-        $resultset->addFilterCriteria('r.name = ?', array(
-            $release_name
+        $resultset->addFilterCriteria('dr.release_id = ?', array(
+            $release_id
         ));
         
-        $resultset->addFilterCriteria('drdt.number_of_days = ?', array(
-            $number_of_days
+        $resultset->addFilterCriteria('dr.mode_id = ?', array(
+            $mode_id
         ));
         
-        $resultset->setSortCriteria('date', 'ASC');
+        $resultset->addFilterCriteria('dr.daily_ranking_day_type_id = ?', array(
+            $daily_ranking_day_type_id
+        ));
+        
+        $resultset->addFilterCriteria('su.steamid = ?', array(
+            $steamid
+        ));
+        
+        $resultset->setSortCriteria('date', 'DESC');
+        
+        $resultset->setCountResultset(clone $resultset);
         
         return $resultset;
     }
+    
+    public static function loadIntoCache(DateTime $date) {    
+        $date_formatted = $date->format('Y-m-d');
+    
+        $resultset = new SQL("daily_ranking_entries_cache");
+        
+        $resultset->setBaseQuery("
+            {{SELECT_FIELDS}}
+            FROM daily_rankings dr 
+            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
+            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
+            {{WHERE_CRITERIA}}
+            ORDER BY dr.daily_ranking_id ASC
+        ");
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'dr.release_id',
+                'alias' => 'release_id'
+            ),
+            array(
+                'field' => 'dr.mode_id',
+                'alias' => 'mode_id'
+            ),
+            array(
+                'field' => 'dr.daily_ranking_day_type_id',
+                'alias' => 'daily_ranking_day_type_id'
+            ),
+            array(
+                'field' => 'dre.steam_user_id',
+                'alias' => 'steam_user_id'
+            ),
+            array(
+                'field' => 'dre.rank',
+                'alias' => 'rank'
+            )
+        ));
+        
+        ExternalSites::addSiteIdSelectFields($resultset);
+        
+        $resultset->addFilterCriteria("dr.date = :date", array(
+            ':date' => $date_formatted
+        ));
+
+        $resultset->setAsCursor(30000);
+        
+        db()->beginTransaction();
+        
+        $transaction = cache('database')->transaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $entries = array();
+        $indexes = array();
+        
+        do {
+            $entries = $resultset->getNextCursorChunk();
+        
+            if(!empty($entries)) {
+                foreach($entries as $entry) {
+                    $steam_user_id = (int)$entry['steam_user_id'];
+                    $release_id = (int)$entry['release_id'];
+                    $mode_id = (int)$entry['mode_id'];    
+                    $daily_ranking_day_type_id = (int)$entry['daily_ranking_day_type_id'];
+                    
+                    $rank = (int)$entry['rank']; 
+                    
+                    ExternalSites::addToSiteIdIndexes(
+                        $indexes, 
+                        $entry, 
+                        CacheNames::getEntriesIndexName($release_id, $mode_id, $daily_ranking_day_type_id, array()), 
+                        $steam_user_id,
+                        $rank
+                    );
+                }
+            }
+        }
+        while(!empty($entries));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                ksort($index_data);
+            
+                $transaction->set($date_formatted, static::encodeRecord($index_data), $key);
+            }
+        }
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }
+    
+    /*public static function loadIntoCache(DateTime $date) {    
+        $date_formatted = $date->format('Y-m-d');
+    
+        $resultset = new SQL("leaderboard_entries");
+        
+        $resultset->setBaseQuery("
+            SELECT 
+                dre.*,
+                dr.date,
+                dr.release_id,
+                dr.mode_id,
+                dr.daily_ranking_day_type_id,
+                su.beampro_user_id,
+                su.discord_user_id,
+                su.reddit_user_id,
+                su.twitch_user_id,
+                su.twitter_user_id,
+                su.youtube_user_id
+            FROM daily_rankings dr 
+            JOIN daily_ranking_entries_{$date->format('Y_m')} dre ON dre.daily_ranking_id = dr.daily_ranking_id
+            JOIN steam_users su ON su.steam_user_id = dre.steam_user_id
+            {{WHERE_CRITERIA}}
+            ORDER BY dr.daily_ranking_id ASC
+        ");
+        
+        $resultset->addFilterCriteria("dr.date = :date", array(
+            ':date' => $date_formatted
+        ));
+
+        $resultset->setAsCursor(10000);
+        
+        ExternalSites::loadAll();
+        
+        db()->beginTransaction();
+        
+        $transaction = cache()->transaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $current_daily_ranking_id = NULL;
+        $current_ranking_meta = array();
+        
+        $entries = array();
+        $daily_ranking_entries = array();
+        $indexes = array();
+        
+        do {
+            $entries = $resultset->getNextCursorChunk();
+        
+            if(!empty($entries)) {
+                foreach($entries as $entry) {
+                    $daily_ranking_id = (int)$entry['daily_ranking_id'];
+                    $steam_user_id = (int)$entry['steam_user_id'];
+                    $release_id = (int)$entry['release_id'];
+                    $mode_id = (int)$entry['mode_id'];    
+                    $daily_ranking_day_type_id = (int)$entry['daily_ranking_day_type_id'];
+                
+                    if($current_daily_ranking_id != $daily_ranking_id) {                        
+                        if(!empty($current_daily_ranking_id)) {
+                            static::saveIntoCache(
+                                $date, 
+                                $current_ranking_meta['release_id'],
+                                $current_ranking_meta['mode_id'], 
+                                $current_ranking_meta['daily_ranking_day_type_id'], 
+                                $transaction, 
+                                $daily_ranking_entries, 
+                                $indexes
+                            );
+                            
+                            $daily_ranking_entries = array();
+                            $indexes = array();
+                        }
+                        
+                        $current_daily_ranking_id = $daily_ranking_id;
+                        
+                        $current_ranking_meta = array(
+                            'release_id' => $release_id,
+                            'mode_id' => $mode_id,
+                            'daily_ranking_day_type_id' => $daily_ranking_day_type_id
+                        );
+                    }
+                    
+                    $rank = (int)$entry['rank']; 
+                    
+                    ExternalSites::addToSiteIdIndexes(
+                        $indexes, 
+                        $entry, 
+                        CacheNames::getEntriesIndexName($release_id, $mode_id, $daily_ranking_day_type_id, array()), 
+                        $steam_user_id,
+                        $rank
+                    );
+                    
+                    $daily_ranking_entries[$steam_user_id] = implode(',', array(
+                        $steam_user_id,
+                        (int)$entry['first_place_ranks'],
+                        (int)$entry['top_5_ranks'],
+                        (int)$entry['top_10_ranks'],
+                        (int)$entry['top_20_ranks'],
+                        (int)$entry['top_50_ranks'],
+                        (int)$entry['top_100_ranks'],
+                        (float)$entry['total_points'],
+                        (int)$entry['total_dailies'],
+                        (int)$entry['total_wins'],
+                        (int)$entry['sum_of_ranks'],
+                        (int)$entry['total_score'],
+                        $rank
+                    ));
+                }
+            }
+        }
+        while(!empty($entries));
+        
+        if(!empty($daily_ranking_entries)) {            
+            static::saveIntoCache(
+                $date, 
+                $current_ranking_meta['release_id'],
+                $current_ranking_meta['mode_id'], 
+                $current_ranking_meta['daily_ranking_day_type_id'], 
+                $transaction, 
+                $daily_ranking_entries, 
+                $indexes
+            );
+        }
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }*/
 }

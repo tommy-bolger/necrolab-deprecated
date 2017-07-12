@@ -10,7 +10,22 @@ use \Modules\Necrolab\Models\SteamUsers\Database\Pbs as DatabaseSteamUserPbs;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as DatabaseSteamUserPb;
 
 class SteamUserPbs
-extends Cli {   
+extends Cli {
+    public function actionLoadIntoCache() {
+        DatabaseSteamUserPbs::loadIntoCache();
+    }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        DatabaseSteamUserPbs::runQueue(DatabaseSteamUserPbs::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }  
+
     //TODO: Need to redo this function to work with the current steam_user_pbs table.
     public function actionFixEntryRecords($start_date, $end_date) {
         $start_date = new DateTime($start_date);

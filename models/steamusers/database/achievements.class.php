@@ -4,14 +4,13 @@ namespace Modules\Necrolab\Models\SteamUsers\Database;
 use \DateTime;
 use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
-use \Modules\Necrolab\Models\Achievements\Database\Achievements as DatabaseAllAchievements;
+use \Modules\Necrolab\Models\Achievements\Achievements as AllAchievements;
 use \Modules\Necrolab\Models\SteamUsers\Achievements as BaseAchievements;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserAchievement as SteamUserAchievementRecord;
 
 class Achievements
 extends BaseAchievements {
     protected static function loadUser($steam_user_id) {        
-
         if(empty(static::$achievements_by_user[$steam_user_id])) {        
             $user_achievements = db()->getAll("
                 SELECT *
@@ -44,6 +43,17 @@ extends BaseAchievements {
                 }
             }
         }
+    }
+    
+    public static function getBySteamid($steamid) {        
+        return db()->getAll("
+            SELECT sua.*
+            FROM steam_users su
+            JOIN steam_user_achievements sua ON sua.steam_user_id = su.steam_user_id
+            WHERE su.steamid = :steamid
+        ", array(
+            ':steamid' => $steamid
+        ));
     }
     
     public static function dropTableConstraints() {    
@@ -149,17 +159,28 @@ extends BaseAchievements {
         return $resultset;
     }
     
-    public static function getApiSteamUserResultset() {    
+    public static function getApiSteamUserResultset($steamid) {    
         $resultset = new SQL("steam_user_achievements");
         
-        DatabaseAllAchievements::setSelectFields($resultset);
+        AllAchievements::setSelectFields($resultset);
         static::setSelectFields($resultset);
         
         $resultset->setFromTable('achievements a');
         
         $resultset->addLeftJoinCriteria("
-            steam_user_achievements sua ON sua.achievement_id = a.achievement_id
-        ");
+            (
+                SELECT 
+                    sua.achievement_id,
+                    sua.achieved
+                FROM steam_users su
+                JOIN steam_user_achievements sua ON sua.steam_user_id = su.steam_user_id
+                WHERE su.steamid = :steamid
+            ) sua ON sua.achievement_id = a.achievement_id
+        ", array(
+            ':steamid' => $steamid
+        ));
+        
+        $resultset->addSortCriteria('a.achievement_id', 'ASC');
         
         return $resultset;
     }

@@ -291,9 +291,9 @@ extends Cli {
         
         $database->commit();
         
-        DatabaseReplays::vacuum();
         DatabaseRunResults::vacuum();
         DatabaseReplayVersions::vacuum();
+        DatabaseReplays::vacuum();
     }
     
     public function actionUploadFilesToS3() {   
@@ -355,4 +355,19 @@ extends Cli {
         
         db()->commit();
     }
+    
+    public function actionLoadIntoCache() {
+        DatabaseReplays::loadIntoCache();
+    }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        DatabaseSteamUsers::runQueue(Entries::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }  
 }

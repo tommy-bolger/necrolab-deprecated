@@ -34,17 +34,20 @@ namespace Modules\Necrolab\Controllers\Api\Players;
 
 use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as SteamUsersModel;
+use \Modules\Necrolab\Models\SteamUsers\CacheNames as SteamUsersCacheNamesModel;
 
 class Players
 extends Necrolab {
+    protected $enable_search = true;
+
     public function init() {
-        $this->getResultsetStateFromRequest();
-        
         $this->setSiteFromRequest();
+    
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultset() {
-        return SteamUsersModel::getAllDisplayResultset();
+        return SteamUsersModel::getAllDisplayResultset($this->external_site_id);
     }
     
     public function formatResponse($data) {        

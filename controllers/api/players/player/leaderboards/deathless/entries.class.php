@@ -38,6 +38,14 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntries
 class Entries
 extends BaseEntries {
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiSteamUserDeathlessResultset($this->date, $this->steamid, $this->release_name);
+        return LeaderboardEntriesModel::getApiSteamUserDeathlessResultset(
+            $this->date, 
+            $this->steamid, 
+            $this->release_id, 
+            $this->mode_id,
+            $this->seeded,
+            $this->co_op,
+            $this->custom
+        );
     }
 }

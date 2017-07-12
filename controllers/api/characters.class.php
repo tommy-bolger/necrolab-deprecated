@@ -32,25 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
-use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
+use \Modules\Necrolab\Models\Characters as CharactersModel;
 
 class Characters
 extends Necrolab {
     public function init() {}
 
-    protected function getResultSet() {
-        return CharactersModel::getAllActiveBaseResultset();
-    }
-    
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = CharactersModel::getFormattedApiRecord($row);
+        $characters = CharactersModel::getActive();
+        
+        if(!empty($characters)) {        
+            foreach($characters as $characters) {
+                $processed_data[] = CharactersModel::getFormattedApiRecord($characters);
             }
         }
-        
-        return $processed_data;
+
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

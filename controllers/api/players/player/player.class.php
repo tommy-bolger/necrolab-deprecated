@@ -37,40 +37,18 @@ use \Modules\Necrolab\Controllers\Api\Players\Players;
 
 class Player
 extends Players {
-    protected $steamid;
-
-    protected function setSteamidFromRequest() {  
-        $steamid = request()->get->steamid;
-    
-        if(empty($steamid)) {
-            $this->framework->outputManualError(400, "Required property 'steamid' was not found in the request.");
-        }
-    
-        $steamid = request()->get->getVariable('steamid', 'integer');
-        
-        if(empty($steamid)) {
-            $this->framework->outputManualError(400, "Required property 'steamid' is not a valid 64-bit integer.");
-        }
-        
-        $this->steamid = request()->get->steamid;
-        
-        $this->request['steamid'] = $this->steamid;
-    }
-    
     public function init() {
         $this->setSteamidFromRequest();
-        
-        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultset() {
-        return SteamUsersModel::getOneDisplayResultset($this->steamid);
+        return SteamUsersModel::getOneApiResultset($this->steamid);
     }
     
     public function formatResponse($data) {        
         $processed_data = array();
 
-        if(!empty($data[0])) {        
+        if(!empty($data)) {        
             $processed_data = $this->getPlayerData($data[0]);
         }
         

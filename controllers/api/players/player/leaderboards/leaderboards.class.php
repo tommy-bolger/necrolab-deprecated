@@ -32,41 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Player;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
 
 class Leaderboards
-extends Player {
-    protected $lbid;
-
-    protected function setLbidFromRequest() {
-        request()->setRequired(array(
-            'lbid'
-        ));
-        
-        $this->lbid = request()->get->getVariable('lbid', 'integer');
-        
-        if(empty($this->lbid)) {
-            throw new Exception("Specified lbid '{$this->lbid}' is invalid.");
-        }
-        
-        $this->request['lbid'] = $this->lbid;
-    }
-
+extends Necrolab {
     public function init() {
+        $this->cached_response_prefix_name = "player:leaderboards";
+    
         $this->setSteamidFromRequest();
     
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-    
-        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        $resultset = LeaderboardsModel::getSteamUserResultset($this->steamid, $this->release_name, $this->mode);
-        
-        return $resultset;
+        return LeaderboardsModel::getSteamUserResultset($this->steamid, $this->release_id, $this->mode_id);
     }
     
     public function formatResponse($data) {        

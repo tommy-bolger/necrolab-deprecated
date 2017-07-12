@@ -163,14 +163,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/leaderboards?release=amplified_dlc_early_access&mode=normal</code>
+                <code>https://api.necrolab.com/leaderboards?release=amplified_dlc&mode=normal</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "mode": "normal",
         "start": 0,
         "limit": 100,
@@ -321,9 +321,7 @@
             "is_daily": 0,
             "daily_date": null,
             "is_score_run": 1,
-            "is_all_character": 0,
             "is_deathless": 0,
-            "is_story_mode": 0,
             "is_power_ranking": 1,
             "is_daily_ranking": 0,
             "release_id": 4,
@@ -746,14 +744,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/leaderboards/daily/entries?release=original_release&mode=normal&date=2016-02-10</code>
+                <code>https://api.necrolab.com/leaderboards/daily/entries?release=original&mode=normal&date=2016-02-10</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "site": "",
         "date": "2016-02-10",
@@ -907,14 +905,14 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/leaderboards/replays?release=amplified_dlc_early_access</code>
+                <code>https://api.necrolab.com/leaderboards/replays?release=amplified_dlc</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
             <p>
                 <pre><code>{
     "request": {
-        "release": "amplified_dlc_early_access",
+        "release": "amplified_dlc",
         "start": 0,
         "limit": 100,
         "sort_by": null,

@@ -4,6 +4,7 @@ namespace Modules\Necrolab\Models\Dailies\Rankings;
 use \DateTime;
 use \DateInterval;
 use \Framework\Modules\Module;
+use \Framework\Data\ResultSet\SQL;
 use \Modules\Necrolab\Models\Necrolab;
 
 class DayTypes
@@ -12,7 +13,34 @@ extends Necrolab {
     
     protected static $active_day_types = array();
     
-    public static function loadAll() {}
+    protected static function loadAll() {   
+        if(empty(static::$day_types)) {
+            $day_types = array();
+            
+            $cache_key = 'day_types';
+            
+            $local_cache = cache('local');
+        
+            $day_types = $local_cache->get($cache_key);
+        
+            if(empty($day_types)) {
+                $day_types = db()->getAll("
+                    SELECT *
+                    FROM daily_ranking_day_types
+                ");
+                
+                if(!empty($day_types)) {
+                    $local_cache->set($cache_key, $day_types, NULL, 86400);
+                }
+            }
+            
+            if(!empty($day_types)) {
+                foreach($day_types as $day_type) {
+                    static::$day_types[$day_type['number_of_days']] = $day_type;
+                }
+            }
+        }
+    }
     
     public static function loadActive() {
         if(empty(static::$active_day_types)) {
@@ -64,5 +92,25 @@ extends Necrolab {
         }
         
         return $active_day_types; 
+    }
+    
+    public static function getAllBaseResultset() {    
+        $resultset = new SQL("daily_ranking_day_types");
+        
+        $resultset->setBaseQuery("
+            SELECT *
+            FROM daily_ranking_day_types
+            {{WHERE_CRITERIA}}
+        ");
+        
+        return $resultset;
+    }
+    
+    public static function getAllEnabledResultset() {    
+        $resultset = static::getAllBaseResultset();
+        
+        $resultset->addFilterCriteria('enabled = 1');
+        
+        return $resultset;
     }
 }

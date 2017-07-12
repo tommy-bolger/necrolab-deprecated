@@ -9,7 +9,7 @@ function process_leaderboard_speed_data(data, table) {
                 var row_data = data[index];
                 
                 var processed_row = [
-                    Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
+                    Formatting.getCharacterDisplay(row_data.leaderboard.character),
                     row_data.entry.rank,
                     Formatting.convertSecondsToTime(row_data.entry.time),
                     row_data.entry.replay.seed,
@@ -29,9 +29,11 @@ function initialize_leaderboard_speed_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('leaderboard_name', 'asc');
     table.enableReleaseField();
+    table.enableModeField();
+    table.enableSeededField();
+    table.enableCoOpField();
+    table.enableCustomField();
     table.enableDateField();
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/speed/entries'));
@@ -40,8 +42,8 @@ function initialize_leaderboard_speed_table() {
 
     table.addColumns([
         {
-            name: 'leaderboard_name',
-            title: 'Leaderboard',
+            name: 'character_name',
+            title: 'Character',
             type: 'string'
         },
         {

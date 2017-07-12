@@ -37,7 +37,6 @@ $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
     
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
     table.enableHistory();
@@ -127,8 +126,6 @@ $(document).ready(function() {
             type: 'num-fmt'
         }
     ]);
-    
-    table.enableSort('rank', 'asc');
     
     table.setDataProcessCallback(window, 'process_daily_data');
     

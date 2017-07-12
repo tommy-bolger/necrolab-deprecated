@@ -23,8 +23,8 @@ class Entries {
         }
     }
 
-    public static function saveToDatabase($power_ranking_id, $release_id, $mode_id, DateTime $date, $cache, $entries_insert_queue) {
-        $power_ranking_entries = CachePowerRankings::getTotalPointsByRank($date, $release_id, $mode_id, $cache);
+    public static function saveToDatabase($power_ranking_id, $release_id, $mode_id, $seeded, DateTime $date, $cache, $entries_insert_queue) {
+        $power_ranking_entries = CachePowerRankings::getTotalPointsByRank($date, $release_id, $mode_id, $seeded, $cache);
     
         $transaction = $cache->transaction();
             
@@ -35,7 +35,7 @@ class Entries {
         ));
     
         foreach($power_ranking_entries as $rank => $steam_user_id) {
-            $transaction->hGetAll(CacheNames::getPowerRankingEntryName($release_id, $mode_id, $steam_user_id));
+            $transaction->hGetAll(CacheNames::getPowerRankingEntryName($release_id, $mode_id, $seeded, $steam_user_id));
         }
         
         $transaction->commit();

@@ -38,24 +38,26 @@ use \Modules\Necrolab\Models\Dailies\Rankings\Database\Rankings as DailyRankings
 class Daily
 extends Necrolab {
     public function init() {
+        $this->cached_response_prefix_name = 'rankings:daily';
+    
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
     
         $this->setNumberOfDaysFromRequest();
-    }
-
+    }    
+    
     protected function getResultSet() {
-        return DailyRankingsModel::getAllBaseResultset($this->release_name, $this->mode, $this->number_of_days);
+        return DailyRankingsModel::getDatesResultset($this->release_id, $this->mode_id, $this->daily_ranking_day_type_id);
     }
     
     public function formatResponse($data) {        
         $processed_data = array();
-        
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = DailyRankingsModel::getFormattedApiRecord($row);
-            }
+
+        if(!empty($data)) {
+            $processed_data = array_column($data, 'date');
+            
+            rsort($processed_data);
         }
         
         return $processed_data;

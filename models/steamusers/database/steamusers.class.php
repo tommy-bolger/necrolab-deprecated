@@ -4,10 +4,12 @@ namespace Modules\Necrolab\Models\SteamUsers\Database;
 use \DateTime;
 use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis\Hybrid as HybridResultset;
 use \Modules\Necrolab\Models\SteamUsers\SteamUsers as BaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
-use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
+use \Modules\Necrolab\Models\ExternalSites as ExternalSites;
+use \Modules\Necrolab\Models\SteamUsers\CacheNames;
 
 class SteamUsers
 extends BaseSteamUsers {
@@ -38,40 +40,16 @@ extends BaseSteamUsers {
         }
     }
     
-    protected static function getBaseResultset() {
+    public static function getAllResultset() {
         $resultset = new SQL('steam_users');
-        
-        $resultset->addSelectFields(array(
-            array(
-                'field' => 'su.steamid',
-                'alias' => 'steamid'
-            ),
-            array(
-                'field' => 'su.personaname',
-                'alias' => 'personaname'
-            ),
-            array(
-                'field' => 'su.steam_user_id',
-                'alias' => 'steam_user_id'
-            ),
-            array(
-                'field' => 'su.updated',
-                'alias' => 'updated'
-                
-            )
-        ));
         
         $resultset->setFromTable('steam_users su');
         
-        return $resultset;
-    }
-    
-    public static function getAllResultset() {
-        $resultset = static::getBaseResultset();
-        
-        $resultset->setName('all_steam_users');
-        
         $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.steam_user_id',
+                'alias' => 'steam_user_id'
+            ),
             array(
                 'field' => 'su.steamid',
                 'alias' => 'steamid'
@@ -81,30 +59,34 @@ extends BaseSteamUsers {
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'su.steam_user_id',
-                'alias' => 'steam_user_id'
+                'field' => 'su.profileurl',
+                'alias' => 'profileurl'
             )
         ));
         
-        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        ExternalSites::addSiteUserLeftJoins($resultset);
+        
+        $resultset->setSortCriteria('su.personaname', 'ASC');
         
         return $resultset;
     }
     
-    public static function getAllDisplayResultset() {
-        $resultset = static::getAllResultset();
+    public static function getAllDisplayResultset($external_site_id) {
+        $resultset = new HybridResultset('all_steam_users', cache('database'), cache('local'));
         
-        $resultset->setRowsPerPage(100);
+        $resultset->setSqlResultset(static::getAllResultset(), 'su.steam_user_id');
         
-        $resultset->addSortCriteria('su.personaname', 'ASC');
+        $resultset->setIndexName(CacheNames::getBaseName());
+        
+        $resultset->setPartitionName(CacheNames::getUsersIndexName(array(
+            $external_site_id
+        )));
         
         return $resultset;
     }
     
-    public static function getOneDisplayResultset($steamid) {
+    public static function getOneApiResultset($steamid) {
         $resultset = static::getAllResultset();
-        
-        $resultset->addSelectField('profileurl');
         
         $resultset->addFilterCriteria("steamid = :steamid", array(
             ':steamid' => $steamid
@@ -225,6 +207,7 @@ extends BaseSteamUsers {
     public static function dropTableIndexes() {
         db()->exec("
             DROP INDEX IF EXISTS idx_steam_users_personaname;
+            DROP INDEX IF EXISTS idx_su_personaname_search;
             DROP INDEX IF EXISTS idx_steam_users_updated;
             DROP INDEX IF EXISTS idx_su_beampro_user_id;
             DROP INDEX IF EXISTS idx_su_discord_user_id;
@@ -240,6 +223,10 @@ extends BaseSteamUsers {
             CREATE INDEX idx_steam_users_personaname
             ON steam_users
             USING btree (personaname COLLATE pg_catalog.\"default\");
+            
+            CREATE INDEX IF NOT EXISTS idx_su_personaname_search
+            ON steam_users 
+            USING GIN (personaname gin_trgm_ops);
 
             CREATE INDEX idx_steam_users_updated
             ON steam_users
@@ -367,4 +354,143 @@ extends BaseSteamUsers {
             WHERE su.steam_user_id = sut.steam_user_id
         ");
     }
+    
+    public static function loadIntoCache() {                
+        $resultset = new SQL('steam_users_cache');
+        
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'su.steam_user_id',
+                'alias' => 'steam_user_id'
+            ),
+            array(
+                'field' => 'su.personaname',
+                'alias' => 'personaname'
+            )
+        ));
+        
+        ExternalSites::addSiteIdSelectFields($resultset);
+        
+        $resultset->setFromTable('steam_users su');
+        
+        $resultset->setSortCriteria('su.personaname', 'ASC');
+        
+        $resultset->setAsCursor(50000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $steam_users_names_cache_name = CacheNames::getUsersByName();
+        
+        $transaction = cache('database')->transaction();
+        
+        $steam_users = array();
+        $steam_user_names = array();
+        $indexes = array();
+        $users_index_base_name = CacheNames::getUsersIndexName();
+        
+        do {
+            $steam_users = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_users)) {
+                foreach($steam_users as $steam_user) {  
+                    $steam_user_id = (int)$steam_user['steam_user_id'];
+                    $personaname = $steam_user['personaname'];
+                    
+                    $steam_user_names[$steam_user_id] = $personaname;
+                    
+                    ExternalSites::addToSiteIdIndexes($indexes, $steam_user, $users_index_base_name, $steam_user_id);
+                }
+            }
+        }
+        while(!empty($steam_users));
+        
+        $transaction->set($steam_users_names_cache_name, static::encodeRecord($steam_user_names));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data), CacheNames::getBaseName());
+            }
+        }
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }
+    
+    /*public static function loadIntoCache() {
+        ExternalSites::loadAll();
+    
+        $resultset = static::getAllResultset();
+        
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $steam_users_cache_name = CacheNames::getAllRecordsName();
+        $steam_users_names_cache_name = CacheNames::getUsersByName();
+        
+        $transaction = cache()->transaction();
+        
+        $steam_users = array();
+        $steam_user_names = array();
+        $indexes = array();
+        $users_index_base_name = CacheNames::getUsersIndexName();
+        
+        do {
+            $steam_users = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_users)) {
+                foreach($steam_users as $steam_user) {  
+                    $steam_user_id = (int)$steam_user['steam_user_id'];
+                    $personaname = $steam_user['personaname'];
+                
+                    $transaction->hSet($steam_users_cache_name, $steam_user_id, static::encodeRecord(array(
+                        'steamid' => $steam_user['steamid'],
+                        'personaname' => $steam_user['personaname'],
+                        'steam_profile_url' => $steam_user['steam_profile_url'],
+                        'beampro_user_id' => $steam_user['beampro_user_id'],
+                        'beampro_id' => $steam_user['beampro_id'],
+                        'beampro_username' => $steam_user['beampro_username'],
+                        'discord_user_id' => $steam_user['discord_user_id'],
+                        'discord_id' => $steam_user['discord_id'],
+                        'discord_username' => $steam_user['discord_username'],
+                        'discord_discriminator' => $steam_user['discord_discriminator'],
+                        'reddit_user_id' => $steam_user['reddit_user_id'],
+                        'reddit_id' => $steam_user['reddit_id'],
+                        'reddit_username' => $steam_user['reddit_username'],
+                        'twitch_user_id' => $steam_user['twitch_user_id'],
+                        'twitch_id' => $steam_user['twitch_id'],
+                        'twitch_username' => $steam_user['twitch_username'],
+                        'twitter_user_id' => $steam_user['twitter_user_id'],
+                        'twitter_id' => $steam_user['twitter_id'],
+                        'twitter_nickname' => $steam_user['twitter_nickname'],
+                        'twitter_name' => $steam_user['twitter_name'],
+                        'youtube_user_id' => $steam_user['youtube_id'],
+                        'youtube_username' => $steam_user['youtube_username']
+                    )));
+                    
+                    $steam_user_names[$steam_user_id] = $personaname;
+                    
+                    ExternalSites::addToSiteIdIndexes($indexes, $steam_user, $users_index_base_name, $steam_user_id);
+                }
+            }
+        }
+        while(!empty($steam_users));
+        
+        $transaction->set($steam_users_names_cache_name, static::encodeRecord($steam_user_names));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data));
+            }
+        }
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }*/
 }

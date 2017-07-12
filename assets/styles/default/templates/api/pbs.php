@@ -127,7 +127,7 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/pbs?release=original_release&mode=normal&character=cadence</code>
+                <code>https://api.necrolab.com/players/pbs?release=original&mode=normal&character=cadence</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
@@ -138,7 +138,7 @@
         "limit": 100,
         "sort_by": null,
         "sort_direction": null,
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "character": "cadence"
     },
@@ -315,7 +315,7 @@
             <br />
             <span class="bold">Example Request</span>
             <p>
-                <code>https://api.necrolab.com/players/player/pbs?steamid=76561197987716503&release=original_release&mode=normal&character=all</code>
+                <code>https://api.necrolab.com/players/player/pbs?steamid=76561197987716503&release=original&mode=normal&character=all</code>
             </p>
             <br />
             <span class="bold">Example Response</span>
@@ -323,7 +323,7 @@
                 <pre><code>{
     "request": {
         "steamid": 76561197987716500,
-        "release": "original_release",
+        "release": "original",
         "mode": "normal",
         "character": "all",
         "start": 0,

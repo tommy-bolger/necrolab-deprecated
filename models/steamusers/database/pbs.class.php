@@ -4,17 +4,10 @@ namespace Modules\Necrolab\Models\SteamUsers\Database;
 use \DateTime;
 use \Framework\Data\Database\InsertQueue;
 use \Framework\Data\ResultSet\SQL;
+use \Framework\Data\ResultSet\Redis\Hybrid as HybridResultset;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUserPb as DatabaseSteamUserPb;
-use \Modules\Necrolab\Models\SteamUsers\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as DatabaseLeaderboards;
-use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots as DatabaseSnapshots;
-use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as DatabaseExternalSites;
-use \Modules\Necrolab\Models\Characters\Database\Characters as DatabaseCharacters;
-use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
-use \Modules\Necrolab\Models\Leaderboards\Database\Replays as DatabaseReplays;
-use \Modules\Necrolab\Models\Leaderboards\Database\Details as DatabaseDetails;
-use \Modules\Necrolab\Models\Leaderboards\Database\RunResults as DatabaseRunResults;
-use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions as DatabaseReplayVersions;
+use \Modules\Necrolab\Models\SteamUsers\CacheNames;
 use \Modules\Necrolab\Models\SteamUsers\Pbs as BasePbs;
 
 class Pbs
@@ -182,6 +175,14 @@ extends BasePbs {
     public static function setSelectFields($resultset) {
         $resultset->addSelectFields(array(
             array(
+                'field' => 'sup.steam_user_pb_id',
+                'alias' => 'steam_user_pb_id',
+            ),
+            array(
+                'field' => 'sup.steam_user_id',
+                'alias' => 'steam_user_id',
+            ),
+            array(
                 'field' => 'sup.leaderboard_id',
                 'alias' => 'leaderboard_id',
             ),
@@ -216,47 +217,20 @@ extends BasePbs {
             array(
                 'field' => 'sup.win_count',
                 'alias' => 'win_count',
+            ),
+            array(
+                'field' => 'sup.leaderboard_entry_details_id',
+                'alias' => 'leaderboard_entry_details_id',
+            ),
+            array(
+                'field' => 'sup.steam_replay_id',
+                'alias' => 'steam_replay_id',
             )
         ));
     }
     
-    protected static function getBaseResultset() {
-        $resultset = new SQL('steam_user_pbs');
-        
-        static::setSelectFields($resultset);
-        
-        $resultset->setFromTable('steam_user_pbs sup');
-        
-        return $resultset;
-    }
-    
-    public static function getAllResultset() {
-        $resultset = static::getBaseResultset();
-        
-        $resultset->setName('pbs');
-        
-        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
-        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
-        $resultset->addJoinCriteria('modes mo ON mo.mode_id = l.mode_id');
-        $resultset->addJoinCriteria('characters c ON c.character_id = l.character_id');
-        $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = sup.leaderboard_entry_details_id');
-        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
-        
-        $resultset->addJoinCriteria("
-            steam_replays sr ON sr.steam_replay_id = sup.steam_replay_id
-            LEFT JOIN run_results rr ON rr.run_result_id = sr.run_result_id
-            LEFT JOIN steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id
-        ");
-        
-        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sup.steam_user_id');
-        
-        return $resultset;
-    }
-    
-    public static function getAllApiResultset($release_name, $mode_name, $character_name) {
-        $resultset = static::getAllResultset();
-        
-        $resultset->setName('api:pbs');
+    public static function getApiSqlResultset() {
+        $resultset = new SQL('api_steam_user_pbs');
         
         $resultset->addSelectFields(array(
             array(
@@ -264,112 +238,434 @@ extends BasePbs {
                 'alias' => 'steamid'
             ),
             array(
-                'field' => 'su.personaname',
-                'alias' => 'personaname'
+                'field' => 'l.lbid',
+                'alias' => 'lbid'
+            ),
+            array(
+                'field' => 'l.is_speedrun',
+                'alias' => 'is_speedrun'
+            ),
+            array(
+                'field' => 'l.is_deathless',
+                'alias' => 'is_deathless'
+            ),
+            array(
+                'field' => 'ls.date',
+                'alias' => 'snapshot_date',
+            ),
+            array(
+                'field' => 'sup.first_rank',
+                'alias' => 'first_rank',
+            ),
+            array(
+                'field' => 'led.details',
+                'alias' => 'details'
+            ),
+            array(
+                'field' => 'sup.zone',
+                'alias' => 'zone'
+            ),
+            array(
+                'field' => 'sup.level',
+                'alias' => 'level'
+            ),
+            array(
+                'field' => 'sup.is_win',
+                'alias' => 'is_win'
+            ),
+            array(
+                'field' => 'sup.score',
+                'alias' => 'score'
+            ),
+            array(
+                'field' => 'sup.time',
+                'alias' => 'time'
+            ),
+            array(
+                'field' => 'sup.win_count',
+                'alias' => 'win_count'
+            ),
+            array(
+                'field' => 'sr.ugcid',
+                'alias' => 'ugcid'
+            ),
+            array(
+                'field' => 'sr.seed',
+                'alias' => 'seed'
+            ),
+            array(
+                'field' => 'sr.downloaded',
+                'alias' => 'downloaded'
+            ),
+            array(
+                'field' => 'srv.name',
+                'alias' => 'version'
+            ),
+            array(
+                'field' => 'rr.name',
+                'alias' => 'run_result'
             )
         ));
         
-        DatabaseLeaderboards::setSelectFields($resultset);
-        DatabaseCharacters::setSelectFields($resultset);
-        DatabaseModes::setSelectFields($resultset);
-        DatabaseSnapshots::setSelectFields($resultset);
-        DatabaseReplays::setSelectFields($resultset);
-        DatabaseDetails::setSelectFields($resultset);
-        DatabaseRunResults::setSelectFields($resultset);
-        DatabaseReplayVersions::setSelectFields($resultset);
+        $resultset->setFromTable('steam_user_pbs sup');
+    
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        $resultset->addJoinCriteria('leaderboard_entry_details led ON led.leaderboard_entry_details_id = sup.leaderboard_entry_details_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
+        $resultset->addJoinCriteria('steam_users su ON su.steam_user_id = sup.steam_user_id');
         
-        DatabaseExternalSites::addSiteUserLeftJoins($resultset);
+        $resultset->addLeftJoinCriteria("
+            steam_replays sr ON sr.steam_replay_id = sup.steam_replay_id
+                AND downloaded = 1
+                AND invalid = 0
+            LEFT JOIN run_results rr ON rr.run_result_id = sr.run_result_id
+            LEFT JOIN steam_replay_versions srv ON srv.steam_replay_version_id = sr.steam_replay_version_id
+        ");
         
-        $resultset->addFilterCriteria('r.name = :release_name', array(
-            ':release_name' => $release_name
-        ));
-        
-        $resultset->addFilterCriteria('mo.name = :mode_name', array(
-            ':mode_name' => $mode_name
-        ));
-        
-        $resultset->addFilterCriteria('c.name = :character_name', array(
-            ':character_name' => $character_name
-        ));
-        
-        $resultset->addSortCriteria('ls.date', 'DESC');
+        $resultset->setSortCriteria('sup.steam_user_pb_id', 'ASC');
         
         return $resultset;
     }
     
-    public static function getAllApiScoreResultset($release_name, $mode_name, $character_name) {
-        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+    public static function getAllApiResultset($release_id, $mode_id) {
+        $resultset = new HybridResultset("api_pbs", cache('database'), cache('local'));
         
-        $resultset->setName("api:pbs:score");
+        $resultset->setSqlResultset(static::getApiSqlResultset(), 'sup.steam_user_pb_id');
         
-        $resultset->addFilterCriteria("l.is_score_run = 1");
-        $resultset->addFilterCriteria("l.is_daily = 0");
-        $resultset->addFilterCriteria("l.is_deathless = 0");
+        $resultset->setIndexName(CacheNames::getAllPbsName());
         
-        return $resultset;
-    }
-    
-    public static function getAllApiSpeedResultset($release_name, $mode_name, $character_name) {
-        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
-        
-        $resultset->setName("api:pbs:speed");
-        
-        $resultset->addFilterCriteria("l.is_speedrun = 1");
+        $resultset->setPartitionName(CacheNames::getPbsIndexName(array(
+            $release_id,
+            $mode_id
+        )));
         
         return $resultset;
     }
     
-    public static function getAllApiDeathlessResultset($release_name, $mode_name, $character_name) {
-        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+    public static function getAllApiScoreResultset($release_id, $mode_id) {
+        $resultset = static::getAllApiResultset($release_id, $mode_id);
         
-        $resultset->setName("api:pbs:deathless");
-        
-        $resultset->addFilterCriteria("l.is_deathless = 1");
+        $resultset->setPartitionName(CacheNames::getPbsIndexName(array(
+            $release_id,
+            $mode_id,
+            CacheNames::SCORE
+        )));
         
         return $resultset;
     }
     
-    public static function getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid) {
-        $resultset = static::getAllApiResultset($release_name, $mode_name, $character_name);
+    public static function getAllApiSpeedResultset($release_id, $mode_id) {
+        $resultset = static::getAllApiResultset($release_id, $mode_id);
         
-        $resultset->setName("api:{$steamid}:pbs");
+        $resultset->setPartitionName(CacheNames::getPbsIndexName(array(
+            $release_id,
+            $mode_id,
+            CacheNames::SPEED
+        )));
+        
+        return $resultset;
+    }
+    
+    public static function getAllApiDeathlessResultset($release_id, $mode_id) {
+        $resultset = static::getAllApiResultset($release_id, $mode_id);
+        
+        $resultset->setPartitionName(CacheNames::getPbsIndexName(array(
+            $release_id,
+            $mode_id,
+            CacheNames::DEATHLESS
+        )));
+        
+        return $resultset;
+    }
+    
+    public static function getApiSteamUserResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid) {        
+        $resultset = static::getApiSqlResultset();
+        
+        $resultset->setName("steam_user_api_pbs");
         
         $resultset->addFilterCriteria('su.steamid = :steamid', array(
             ':steamid' => $steamid
         ));
         
+        $resultset->addFilterCriteria('l.release_id = :release_id', array(
+            ':release_id' => $release_id
+        ));
+        
+        $resultset->addFilterCriteria('l.mode_id = :mode_id', array(
+            ':mode_id' => $mode_id
+        ));
+        
+        $resultset->addFilterCriteria('l.character_id = :character_id', array(
+            ':character_id' => $character_id
+        ));
+        
+        $resultset->addFilterCriteria('l.is_seeded = :seeded', array(
+            ':seeded' => $seeded
+        ));
+        
+        $resultset->addFilterCriteria('l.is_co_op = :co_op', array(
+            ':co_op' => $co_op
+        ));
+        
+        $resultset->addFilterCriteria('l.is_custom = :custom', array(
+            ':custom' => $custom
+        ));
+        
+        $resultset->setSortCriteria('ls.date', 'DESC');
+        $resultset->addSortCriteria('sup.steam_user_pb_id', 'ASC');
+        
+        $count_resultset = clone $resultset;
+        
+        $count_resultset->clearLeftJoinCriteria();
+        
+        $resultset->setCountResultset($count_resultset);
+        
         return $resultset;
     }
     
-    public static function getApiSteamUserScoreResultset($release_name, $mode_name, $character_name, $steamid) {                       
-        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+    public static function getApiSteamUserScoreResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid) {
+        $resultset = static::getApiSteamUserResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid);
         
-        $resultset->setName("api:{$steamid}:pbs:score");
+        $resultset->setName("api_score_steam_user_pbs");
         
         $resultset->addFilterCriteria("l.is_score_run = 1");
         $resultset->addFilterCriteria("l.is_deathless = 0");
         $resultset->addFilterCriteria("l.is_daily = 0");
+        
+        $count_resultset = clone $resultset;
+        
+        $count_resultset->clearLeftJoinCriteria();
+        
+        $resultset->setCountResultset($count_resultset);
     
         return $resultset;
     }
     
-    public static function getApiSteamUserSpeedResultset($release_name, $mode_name, $character_name, $steamid) {                       
-        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+    public static function getApiSteamUserSpeedResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid) {                       
+        $resultset = static::getApiSteamUserResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid);
         
-        $resultset->setName("api:{$steamid}:pbs:speed");
+        $resultset->setName("api_speed_steam_user_pbs");
         
         $resultset->addFilterCriteria("l.is_speedrun = 1");
+        
+        $count_resultset = clone $resultset;
+        
+        $count_resultset->clearLeftJoinCriteria();
+        
+        $resultset->setCountResultset($count_resultset);
     
         return $resultset;
     }
     
-    public static function getApiSteamUserDeathlessResultset($release_name, $mode_name, $character_name, $steamid) {                       
-        $resultset = static::getApiSteamUserResultset($release_name, $mode_name, $character_name, $steamid);
+    public static function getApiSteamUserDeathlessResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid) {                       
+        $resultset = static::getApiSteamUserResultset($release_id, $mode_id, $character_id, $seeded, $co_op, $custom, $steamid);
         
-        $resultset->setName("api:{$steamid}:pbs:deathless");
+        $resultset->setName("api_deathless_steam_user_pbs");
         
         $resultset->addFilterCriteria("l.is_deathless = 1");
+        
+        $count_resultset = clone $resultset;
+        
+        $count_resultset->clearLeftJoinCriteria();
+        
+        $resultset->setCountResultset($count_resultset);
     
         return $resultset;
     }
+    
+    public static function loadIntoCache() {
+        $resultset = new SQL('pbs_cache');
+
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'sup.steam_user_pb_id',
+                'alias' => 'steam_user_pb_id',
+            ),
+            array(
+                'field' => 'l.release_id',
+                'alias' => 'release_id',
+            ),
+            array(
+                'field' => 'l.mode_id',
+                'alias' => 'mode_id',
+            ),
+            array(
+                'field' => 'l.is_deathless',
+                'alias' => 'is_deathless',
+            ),
+            array(
+                'field' => 'l.is_speedrun',
+                'alias' => 'is_speedrun',
+            )
+        ));
+        
+        $resultset->setFromTable('steam_user_pbs sup');
+        
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        $resultset->addJoinCriteria('leaderboard_snapshots ls ON ls.leaderboard_snapshot_id = sup.first_leaderboard_snapshot_id');
+        
+        $resultset->addFilterCriteria('l.is_daily = 0');
+        
+        $resultset->addSortCriteria("sup.leaderboard_id", "ASC");
+        $resultset->addSortCriteria("ls.date", "ASC");
+        $resultset->addSortCriteria("sup.steam_user_id", "ASC");
+        
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $transaction = cache('database')->transaction();
+        
+        $steam_user_pbs = array();
+        $indexes = array();
+        
+        do {
+            $steam_user_pbs = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_user_pbs)) {
+                foreach($steam_user_pbs as $steam_user_pb) {   
+                    $steam_user_pb_id = (int)$steam_user_pb['steam_user_pb_id'];
+                    $release_id = (int)$steam_user_pb['release_id'];
+                    $mode_id = (int)$steam_user_pb['mode_id'];
+                    
+                    $indexes[CacheNames::getPbsIndexName(array(
+                        $release_id,
+                        $mode_id
+                    ))][] = $steam_user_pb_id;
+                    
+                    if(!empty($steam_user_pb['is_deathless'])) {                        
+                        $indexes[CacheNames::getPbsIndexName(array(
+                            $release_id,
+                            $mode_id,
+                            CacheNames::DEATHLESS
+                        ))][] = $steam_user_pb_id;
+                    }
+                    else {
+                        if(!empty($steam_user_pb['is_speedrun'])) {
+                            $indexes[CacheNames::getPbsIndexName(array(
+                                $release_id,
+                                $mode_id,
+                                CacheNames::SPEED
+                            ))][] = $steam_user_pb_id;
+                        }
+                        else {
+                            $indexes[CacheNames::getPbsIndexName(array(
+                                $release_id,
+                                $mode_id,
+                                CacheNames::SCORE
+                            ))][] = $steam_user_pb_id;
+                        }
+                    }
+                }
+            }
+        }
+        while(!empty($steam_user_pbs));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data), CacheNames::getAllPbsName());
+            }
+        }
+        
+        unset($indexes);
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }
+    
+    /*public static function loadIntoCache() {
+        $resultset = static::getBaseResultset();
+
+        $resultset->addSelectFields(array(
+            array(
+                'field' => 'l.release_id',
+                'alias' => 'release_id',
+            ),
+            array(
+                'field' => 'l.mode_id',
+                'alias' => 'mode_id',
+            ),
+            array(
+                'field' => 'l.character_id',
+                'alias' => 'character_id',
+            )
+        ));
+        
+        $resultset->addJoinCriteria('leaderboards l ON l.leaderboard_id = sup.leaderboard_id');
+        
+        $resultset->addSortCriteria("sup.leaderboard_id", "ASC");
+        $resultset->addSortCriteria("sup.first_leaderboard_snapshot_id", "ASC");
+        $resultset->addSortCriteria("sup.steam_user_id", "ASC");
+        
+        $resultset->setAsCursor(100000);
+        
+        db()->beginTransaction();
+        
+        $resultset->prepareExecuteQuery();
+        
+        $steam_user_pbs_cache_name = CacheNames::getAllPbsName();
+        
+        $transaction = cache()->transaction();
+        
+        $steam_user_pbs = array();
+        $indexes = array();
+        
+        do {
+            $steam_user_pbs = $resultset->getNextCursorChunk();
+        
+            if(!empty($steam_user_pbs)) {
+                foreach($steam_user_pbs as $steam_user_pb) {   
+                    $steam_user_pb_id = (int)$steam_user_pb['steam_user_pb_id'];
+                    $release_id = $steam_user_pb['release_id'];
+                    $mode_id = $steam_user_pb['mode_id'];
+                    $character_id = $steam_user_pb['character_id'];
+                    
+                    $cached_record = array(
+                        'steam_user_id' => $steam_user_pb['steam_user_id'],
+                        'leaderboard_id' => $steam_user_pb['leaderboard_id'],
+                        'snapshot_id' => $steam_user_pb['first_leaderboard_snapshot_id'],
+                        'score' => $steam_user_pb['score'],
+                        'first_rank' => $steam_user_pb['first_rank'],
+                        'is_win' => $steam_user_pb['is_win'],
+                        'zone' => $steam_user_pb['zone'],
+                        'level' => $steam_user_pb['level'],
+                        'details_id' => $steam_user_pb['leaderboard_entry_details_id'],
+                        'steam_replay_id' => $steam_user_pb['steam_replay_id']
+                    );
+                    
+                    if(isset($steam_user_pb['time'])) {
+                        $cached_record['time'] = $steam_user_pb['time'];
+                    }
+                    
+                    if(isset($steam_user_pb['win_count'])) {
+                        $cached_record['win_count'] = $steam_user_pb['win_count'];
+                    }
+                
+                    $transaction->hSet($steam_user_pbs_cache_name, $steam_user_pb_id, static::encodeRecord($cached_record));
+                    
+                    $indexes[CacheNames::getPbsIndexName(array(
+                        $release_id,
+                        $mode_id,
+                        $character_id
+                    ))][] = $steam_user_pb_id;
+                }
+            }
+        }
+        while(!empty($steam_user_pbs));
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {
+                $transaction->set($key, static::encodeRecord($index_data));
+            }
+        }
+        
+        unset($indexes);
+        
+        $transaction->commit();
+        
+        db()->commit();
+    }*/
 }

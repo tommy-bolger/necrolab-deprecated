@@ -75,6 +75,18 @@
     background-position: -589px 0px;
 }
 
+.mary_header {
+    width: 43px;
+    height: 53px;
+    background-position: -643px 0px;
+}
+
+.tempo_header {
+    width: 43px;
+    height: 53px;
+    background-position: -697px 0px;
+}
+
 .sorting_asc .character_header,
 .sorting_desc .character_header {
     background-position-y: -53px;

@@ -74,16 +74,16 @@ extends BaseTwitter {
         db()->exec("VACUUM ANALYZE twitter_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("twitter_users site_user ON site_user.twitter_user_id = su.twitter_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.twitter_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => "(site_user.nickname || '@' || site_user.name)",
+                'field' => "(twu.nickname || '@' || twu.name)",
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.twitter_id',
+                'field' => 'twu.twitter_id',
                 'alias' => 'twitter_id'
             )
         ));

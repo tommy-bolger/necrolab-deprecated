@@ -33,28 +33,27 @@
 namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Snapshots as SnapshotsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Snapshots
 extends Leaderboards {
-    public function init() {        
+    public function init() {
+        $this->cached_response_prefix_name = 'leaderboard_snapshots';
+    
         $this->setLbidFromRequest();
     }
 
-    protected function getResultSet() {
-        $resultset = SnapshotsModel::getAllBaseResultset($this->lbid);
-        
-        return $resultset;
+    protected function getResultSet() {        
+        return SnapshotsModel::getAllBaseResultset($this->leaderboard_id);
     }
     
-    public function formatResponse($data) {        
+    public function formatResponse($data) {   
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = SnapshotsModel::getFormattedApiRecord($row);
-            }
+        if(!empty($data)) {
+            $processed_data = array_column($data, 'date');
         }
-        
+    
         return $processed_data;
     }
 }

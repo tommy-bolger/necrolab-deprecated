@@ -5,10 +5,10 @@ use \DateTime;
 use \DateInterval;
 use \Framework\Core\Controllers\Cli;
 use \Modules\Necrolab\Models\Necrolab;
-use \Modules\Necrolab\Models\Releases\Database\Releases as DatabaseReleases;
-use \Modules\Necrolab\Models\Modes\Database\Modes as DatabaseModes;
+use \Modules\Necrolab\Models\Releases;
+use \Modules\Necrolab\Models\Modes;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as DatabaseLeaderboardEntries;
-use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DatabaseDayTypes;
+use \Modules\Necrolab\Models\Dailies\Rankings\DayTypes;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Rankings as DatabaseDailyRankings;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entries as DatabaseDailyRankingEntries;
 use \Modules\Necrolab\Models\Dailies\Rankings\Cache\Rankings as CacheDailyRankings;
@@ -32,7 +32,7 @@ extends Cli {
         
         $release_id = $this->release['release_id'];
     
-        $day_types = DatabaseDayTypes::getActiveForDate($this->as_of_date);
+        $day_types = DayTypes::getActiveForDate($this->as_of_date);
         
         $transaction = $this->cache->transaction();
         
@@ -64,7 +64,7 @@ extends Cli {
             $entries_insert_queue = DatabaseDailyRankingEntries::getTempInsertQueue();
         
             foreach($modes_used as $mode_id) {
-                $mode = DatabaseModes::getById($mode_id);
+                $mode = Modes::getById($mode_id);
                 
                 if(!empty($mode)) {
                     $daily_ranking_day_types_used = CacheDailyRankings::getNumberOfDaysModesUsed($release_id, $mode_id, $this->cache);
@@ -109,7 +109,7 @@ extends Cli {
     public function actionGenerate($date = NULL) {        
         $this->as_of_date = new DateTime($date);
     
-        $releases = DatabaseReleases::getByDate($this->as_of_date);
+        $releases = Releases::getByDate($this->as_of_date);
         
         if(!empty($releases)) {
             foreach($releases as $release) {
@@ -117,6 +117,8 @@ extends Cli {
                 
                 $this->generate();
             }
+            
+            DatabaseDailyRankings::addToCacheQueue($this->as_of_date);
         }
     }
     
@@ -143,6 +145,34 @@ extends Cli {
             'generateQueueMessageReceived'
         ));
     }
+    
+    public function actionLoadIntoCache($date = NULL) {        
+        DatabaseDailyRankingEntries::loadIntoCache(new DateTime($date));
+    }
+    
+    public function actionLoadRangeIntoCache($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            $this->actionLoadIntoCache($current_date->format('Y-m-d'));
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
+    public function cacheQueueMessageReceived($message) {
+        $this->actionLoadIntoCache($message->body);
+    }
+    
+    public function actionRunCacheQueueListener() {    
+        DatabaseDailyRankings::runQueue(DatabaseDailyRankings::getCacheQueueName(), array(
+            $this,
+            'cacheQueueMessageReceived'
+        ));
+    }        
     
     public function actionCreateEntriesParition($date = NULL) {
         $date = new DateTime($date);

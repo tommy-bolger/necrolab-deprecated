@@ -36,7 +36,15 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 
 class Deathless
 extends Leaderboards {
+    public function init() {
+        $this->cached_response_prefix_name = 'leaderboards:deathless';
+    
+        $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
+    }
+
     protected function getResultSet() {
-        return LeaderboardsModel::getAllDeathlessResultset($this->release_name, $this->mode);
+        return LeaderboardsModel::getAllDeathlessResultset($this->release_id, $this->mode_id);
     }
 }

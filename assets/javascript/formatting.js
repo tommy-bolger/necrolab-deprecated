@@ -507,17 +507,30 @@ Formatting.getSocialMedia = function(steamid, social_media) {
 
 /* ---------- Table Titles ---------- */
 
-Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {    
-    var table_title = '';
-
-    if(leaderboard_record.character == 'all') {
-        table_title += 'All Chars';
+Formatting.getCharacterDisplay = function(character_name) {
+    var character_display = '';
+    
+    if(character_name == 'all') {
+        character_display += '<span class="menu_small">All Chars</span>';
     }
-    else if(leaderboard_record.character == 'story') {
-        table_title += 'Story';
+    else if(character_name == 'all_dlc') {
+        character_display += '<span class="menu_small">All Chars DLC</span>';
+    }
+    else if(character_name == 'story') {
+        character_display += '<span class="menu_small">Story</span>';
     }
     else {
-        table_title += Formatting.getCharacterImageHtml(leaderboard_record.character);
+        character_display += Formatting.getCharacterImageHtml(character_name);
+    }
+    
+    return character_display;
+}
+
+Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {    
+    var table_title = Formatting.getCharacterDisplay(leaderboard_record.character);
+    
+    if(leaderboard_record['release'] != null) {
+        table_title += ' ' + leaderboard_record.release.display_name;
     }
     
     if(leaderboard_record['mode'] != null) {
@@ -536,7 +549,13 @@ Formatting.getLeaderboardEntriesTitle = function(leaderboard_record) {
         table_title += 'Score'; 
     }
     
-    table_title += ' ';
+    table_title += ' ' + Formatting.getLeaderboardEntriesShortTitle(leaderboard_record);
+    
+    return table_title;
+};
+
+Formatting.getLeaderboardEntriesShortTitle = function(leaderboard_record, character_name) {    
+    var table_title = '';
     
     if(leaderboard_record.is_co_op == 0) {
         if(leaderboard_record.is_seeded == 0) {

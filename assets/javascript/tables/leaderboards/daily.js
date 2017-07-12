@@ -39,10 +39,8 @@ $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
 
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
-    table.enableSort('rank', 'asc');
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();

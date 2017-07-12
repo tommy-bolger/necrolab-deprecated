@@ -6,7 +6,7 @@ use \Modules\Necrolab\Models\SteamUsers\Cache\SteamUsers;
 
 class Rankings 
 extends BaseRankings {
-    public static function getModesUsed($release_id, $cache) {
-        return $cache->hGetAll(CacheNames::getPowerRankingModesName($release_id));
+    public static function getModesUsed($release_id, $seeded, $cache) {
+        return $cache->hGetAll(CacheNames::getPowerRankingModesName($release_id, $seeded));
     }
 }

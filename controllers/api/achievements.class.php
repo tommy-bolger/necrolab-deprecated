@@ -32,25 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
-use \Modules\Necrolab\Models\Achievements\Database\Achievements as AchievementsModel;
+use \Modules\Necrolab\Models\Achievements\Achievements as AchievementsModel;
 
 class Achievements
 extends Necrolab {
     public function init() {}
     
-    protected function getResultset() {
-        return AchievementsModel::getAllBaseResultset();
-    }
-    
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
-
-        if(!empty($data)) {        
-            foreach($data as $row) {  
-                $processed_data[] = AchievementsModel::getFormattedApiRecord($row);
+        
+        $achievements = AchievementsModel::getAll();
+        
+        if(!empty($achievements)) {        
+            foreach($achievements as $achievement) {
+                $processed_data[] = AchievementsModel::getFormattedApiRecord($achievement);
             }
         }
-        
-        return $processed_data;
+
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

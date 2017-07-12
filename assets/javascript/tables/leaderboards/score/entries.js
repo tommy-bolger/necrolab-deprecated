@@ -19,7 +19,7 @@ function process_data(data, table) {
                 if(row_data.win != 1) {
                     run_result = row_data.replay.run_result;
                 }
-                
+
                 var processed_row = [
                     row_data.rank,
                     Formatting.getSocialMedia(row_data.player.steamid, row_data.player.linked),
@@ -46,10 +46,8 @@ $(document).ready(function() {
 
     table.addRequestParameter('lbid');
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
-    table.enableSort('rank', 'asc');
     table.enableHistory();
     table.enableSearchField();
     table.enableDateField();

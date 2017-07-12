@@ -15,7 +15,7 @@ function process_leaderboard_daily_data(data, table) {
                 }
                 
                 var processed_row = [
-                    row_data.leaderboard.daily_date,
+                    row_data.date,
                     row_data.entry.rank,
                     row_data.entry.score,
                     row_data.entry.zone,
@@ -39,9 +39,8 @@ function initialize_leaderboard_daily_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('daily_date', 'desc');
     table.enableReleaseField();
+    table.enableModeField();
     table.enableDateRangeFields();
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/leaderboards/daily/entries'));

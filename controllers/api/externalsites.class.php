@@ -32,25 +32,23 @@
 */
 namespace Modules\Necrolab\Controllers\Api;
 
-use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as ExternalSitesModel;
+use \Modules\Necrolab\Models\ExternalSites as ExternalSitesModel;
 
 class ExternalSites
 extends Necrolab {
     public function init() {}
 
-    protected function getResultSet() {
-        return ExternalSitesModel::getAllActiveBaseResultset();
-    }
-    
-    public function formatResponse($data) {        
+    public function actionGet() { 
         $processed_data = array();
         
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = ExternalSitesModel::getFormattedApiRecord($row);
+        $external_sites = ExternalSitesModel::getActive();
+        
+        if(!empty($external_sites)) {        
+            foreach($external_sites as $external_site) {
+                $processed_data[] = ExternalSitesModel::getFormattedApiRecord($external_site);
             }
         }
-        
-        return $processed_data;
+
+        return $this->getResponse(count($processed_data), $processed_data);
     }
 }

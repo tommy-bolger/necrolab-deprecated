@@ -44,6 +44,14 @@ extends BaseEntries {
     }
 
     protected function getResultSet() {
-        return PowerRankingEntriesModel::getSteamUserCharacterResultset($this->character_name, $this->release_name, $this->steamid, $this->start_date, $this->end_date);
+        return PowerRankingEntriesModel::getSteamUserCharacterResultset(
+            $this->character_name, 
+            $this->release_id, 
+            $this->mode_id, 
+            $this->seeded, 
+            $this->steamid, 
+            $this->start_date, 
+            $this->end_date
+        );
     }
 }

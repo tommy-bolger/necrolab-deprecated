@@ -12,25 +12,41 @@ use \RecursiveRegexIterator;
 use \Framework\Data\XMLWrite;
 use \Framework\Utilities\File;
 use \Framework\Modules\Module;
-use \Modules\Necrolab\Models\Modes\Modes;
+use \Modules\Necrolab\Models\Releases;
+use \Modules\Necrolab\Models\Modes;
+use \Modules\Necrolab\Models\Characters;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Leaderboards
 extends Necrolab {
     protected static $leaderboards = array();
     
-    public static function loadAll() {}
+    protected static $ids = array();
+    
+    public static function load($leaderboard_id) {}
 
-    public static function get($lbid) {
-        static::loadAll();
+    public static function get($leaderboard_id) {
+        static::load($leaderboard_id);
         
         $leaderboard_record = array();
         
-        if(!empty(static::$leaderboards[$lbid])) {
-            $leaderboard_record = static::$leaderboards[$lbid];
+        if(!empty(static::$leaderboards[$leaderboard_id])) {
+            $leaderboard_record = static::$leaderboards[$leaderboard_id];
         }
         
         return $leaderboard_record;
+    }
+    
+    public static function getId($lbid) {
+        static::loadIds();
+        
+        $leaderboard_id = NULL;
+        
+        if(!empty(static::$ids[$lbid])) {
+            $leaderboard_id = static::$ids[$lbid];
+        }
+        
+        return $leaderboard_id;
     }
     
     public static function getSteamXml($leaderboards_url) {    
@@ -273,14 +289,16 @@ extends Necrolab {
         static::addDateToQueue(static::getXmlUploadQueueName(), $date);
     }
     
-    public static function getFormattedApiRecord($data_row) {
-        return array(
+    public static function getFormattedApiRecord($data_row) {    
+        $character = Characters::getById($data_row['character_id']);
+    
+        $formatted_record = array(
             'lbid' => (int)$data_row['lbid'],
-            'name' => $data_row['leaderboard_name'],
-            'display_name' => $data_row['leaderboard_display_name'],
+            'name' => $data_row['name'],
+            'display_name' => $data_row['display_name'],
             'entries_url' => $data_row['url'],
-            'character' => $data_row['character_name'],
-            'character_number' => $data_row['character_number'],
+            'character' => $character['name'],
+            'character_number' => $character['sort_order'],
             'is_daily' => (int)$data_row['is_daily'],
             'daily_date' => $data_row['daily_date'],
             'is_score_run' => (int)$data_row['is_score_run'],
@@ -290,8 +308,21 @@ extends Necrolab {
             'is_co_op' => (int)$data_row['is_co_op'],
             'is_custom' => (int)$data_row['is_custom'],
             'is_power_ranking' => (int)$data_row['is_power_ranking'],
-            'is_daily_ranking' => (int)$data_row['is_daily_ranking'],
-            'mode' => Modes::getFormattedApiRecord($data_row)
+            'is_daily_ranking' => (int)$data_row['is_daily_ranking']
         );
+        
+        if(!empty($data_row['mode_id'])) {
+            $mode = Modes::getById($data_row['mode_id']);
+        
+            $formatted_record['mode'] = Modes::getFormattedApiRecord($mode);
+        }
+        
+        if(!empty($data_row['release_id'])) {
+            $release = Releases::getById($data_row['release_id']);
+            
+            $formatted_record['release'] = Releases::getFormattedApiRecord($release);
+        }
+        
+        return $formatted_record;
     }
 }

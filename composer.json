@@ -22,6 +22,7 @@
         "league/oauth1-client": "^1.7",
         "ezyang/htmlpurifier": "^4.8",
         "aws/aws-sdk-php-resources": "^0.3.0",
-        "php-amqplib/php-amqplib": "^2.6"
+        "php-amqplib/php-amqplib": "^2.6",
+        "team-reflex/discord-php": "^4.0"
     }
 }

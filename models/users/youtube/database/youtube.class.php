@@ -74,16 +74,16 @@ extends BaseYoutube {
         db()->exec("VACUUM ANALYZE youtube_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("youtube_users site_user ON site_user.youtube_user_id = su.youtube_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.youtube_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => "site_user.youtube_id",
+                'field' => "yu.youtube_id",
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.youtube_id',
+                'field' => 'yu.youtube_id',
                 'alias' => 'youtube_id'
             )
         ));

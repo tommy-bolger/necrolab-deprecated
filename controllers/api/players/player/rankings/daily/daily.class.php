@@ -32,36 +32,36 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Daily;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Rankings\Rankings;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Rankings as DailyRankingsModel;
 
 class Daily
-extends Rankings {
+extends Necrolab {
     protected $number_of_days;
 
     public function init() {    
+        $this->cached_response_prefix_name = "player:rankings:daily";
+    
         $this->setSteamidFromRequest();
     
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-    
-        $this->getResultsetStateFromRequest();
-    
+        
         $this->setNumberOfDaysFromRequest();
     }
-
+    
     protected function getResultSet() {
-        return DailyRankingsModel::getSteamUserBaseResultset($this->steamid, $this->release_name, $this->mode, $this->number_of_days);
+        return DailyRankingsModel::getSteamUserDatesResultset($this->steamid, $this->release_id, $this->mode_id, $this->daily_ranking_day_type_id);
     }
     
     public function formatResponse($data) {        
         $processed_data = array();
-        
-        if(!empty($data)) {        
-            foreach($data as $row) {
-                $processed_data[] = DailyRankingsModel::getFormattedApiRecord($row);
-            }
+
+        if(!empty($data)) {
+            $processed_data = array_column($data, 'date');
+            
+            rsort($processed_data);
         }
         
         return $processed_data;

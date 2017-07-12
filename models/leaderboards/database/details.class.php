@@ -14,6 +14,10 @@ extends BaseDetails {
                     leaderboard_entry_details_id
                 FROM leaderboard_entry_details
             ");
+            
+            if(!empty(static::$details_records)) {
+                static::$details_records_by_id = array_flip(static::$details_records);
+            }
         }
     }
     

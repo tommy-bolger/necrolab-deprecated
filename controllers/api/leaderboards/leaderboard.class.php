@@ -33,26 +33,21 @@
 namespace Modules\Necrolab\Controllers\Api\Leaderboards;
 
 use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsModel;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 
 class Leaderboard
-extends Leaderboards {
+extends Necrolab {
     public function init() {
+        $this->cached_response_prefix_name = 'leaderboard';
+    
         $this->setLbidFromRequest();
     }
-
-    protected function getResultSet() {
-        return LeaderboardsModel::getOneResultset($this->lbid);
-    }
     
-    public function formatResponse($data) {        
-        $processed_data = array();
+    public function actionGet() {         
+        $leaderboard = LeaderboardsModel::get($this->leaderboard_id);
         
-        if(!empty($data) && !empty($data[0])) {
-            $row = $data[0];
-        
-            $processed_data = LeaderboardsModel::getFormattedApiRecord($row);
-        }
-        
-        return $processed_data;
+        $response_data = LeaderboardsModel::getFormattedApiRecord($leaderboard);
+
+        return $this->getResponse(1, $response_data);
     }
 }

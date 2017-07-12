@@ -13,7 +13,6 @@ function process_power_data(data, table) {
                 processed_data.push([
                     null,
                     row_data.date,
-                    row_data.mode.display_name,
                     'Ranks',
                     row_data.rank,
                     row_data.score.rank,
@@ -24,7 +23,6 @@ function process_power_data(data, table) {
                 processed_data.push([
                     '&nbsp;',
                     null,
-                    null,
                     'Points',
                     Formatting.roundNumber(row_data.total_points),
                     Formatting.roundNumber(row_data.score.rank_points),
@@ -34,7 +32,6 @@ function process_power_data(data, table) {
                 
                 processed_data.push([
                     '&nbsp;',
-                    null,
                     null,
                     'Score/Time/Wins',
                     null,
@@ -54,9 +51,9 @@ function initialize_power_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('date', 'desc');
     table.enableReleaseField();
+    table.enableModeField();
+    table.enableSeededField();
     table.enableDateRangeFields();
     table.enableCollapsibleRows(2);    
     
@@ -69,12 +66,6 @@ function initialize_power_table() {
             name: 'date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'mode',
-            title: 'Mode',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'type',

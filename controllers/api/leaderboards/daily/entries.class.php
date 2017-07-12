@@ -41,15 +41,15 @@ extends BaseEntries {
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-        
-        $this->setSiteFromRequest();
     
         $this->setDateFromRequest();
+        
+        $this->setSiteFromRequest();
         
         $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiAllDailyResultset($this->release_name, $this->mode, $this->date);
+        return LeaderboardEntriesModel::getApiAllDailyResultset($this->release_id, $this->mode_id, $this->external_site_id, $this->date);
     }
 }

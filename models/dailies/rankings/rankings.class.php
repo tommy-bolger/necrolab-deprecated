@@ -32,6 +32,14 @@ extends Necrolab {
         static::addDateToQueue(static::getGenerateQueueName(), $date);
     }
     
+    public static function getCacheQueueName() {
+        return 'daily_ranking_cache';
+    }
+    
+    public static function addToCacheQueue(DateTime $date) {
+        static::addDateToQueue(static::getCacheQueueName(), $date);
+    }
+    
     public static function getFormattedApiRecord($data_row) {
         return $data_row['date'];
     }

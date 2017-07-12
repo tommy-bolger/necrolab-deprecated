@@ -33,27 +33,36 @@
 namespace Modules\Necrolab\Controllers\Api\Rankings\Power;
 
 use \Modules\Necrolab\Controllers\Api\Necrolab;
-use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
+use \Modules\Necrolab\Models\Characters as CharactersModel;
 use \Modules\Necrolab\Models\Rankings\Database\Entries as PowerRankingEntriesModel;
 use \Modules\Necrolab\Models\Rankings\Database\Entry as PowerRankingEntryModel;
 
+
 class Entries
 extends Necrolab {
+    protected $enable_search = true;
+
     public function init() {
-        parent::init();
-        
+        $this->setReleaseFromRequest();
+    
         $this->setModeFromRequest();
+        
+        $this->setSeededFromRequest();
     
         $this->setSiteFromRequest();
+        
+        $this->setDateFromRequest();
+        
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return PowerRankingEntriesModel::getAllBaseResultset($this->release_name, $this->mode, $this->date);
+        return PowerRankingEntriesModel::getAllBaseResultset($this->release_id, $this->mode_id, $this->seeded, $this->external_site_id, $this->date);
     }
     
     public function formatResponse($data) {        
         $processed_data = array();
-        
+
         if(!empty($data)) {
             $active_characters = CharactersModel::getActive();
         

@@ -72,16 +72,16 @@ extends BaseTwitch {
         db()->exec("VACUUM ANALYZE twitch_users;");
     }
     
-    public static function addSiteUserJoin($resultset) {    
-        $resultset->addJoinCriteria("twitch_users site_user ON site_user.twitch_user_id = su.twitch_user_id");
+    public static function addSiteUserFilter($resultset) {    
+        $resultset->addFilterCriteria("su.twitch_user_id IS NOT NULL");
         
         $resultset->addSelectFields(array(
             array(
-                'field' => 'site_user.username',
+                'field' => 'tu.username',
                 'alias' => 'personaname'
             ),
             array(
-                'field' => 'site_user.twitch_id',
+                'field' => 'tu.twitch_id',
                 'alias' => 'twitch_id'
             )
         ));

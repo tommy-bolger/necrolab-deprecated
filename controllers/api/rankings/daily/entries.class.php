@@ -32,27 +32,30 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Rankings\Daily;
 
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entries as DailyRankingEntriesModel;
 use \Modules\Necrolab\Models\Dailies\Rankings\Database\Entry as DailyRankingEntryModel;
 
 class Entries
-extends Daily {    
+extends Necrolab {
+    protected $enable_search = true;
+
     public function init() {
+        $this->setDateFromRequest();
+    
         $this->setReleaseFromRequest();
         
         $this->setModeFromRequest();
-    
-        $this->setDateFromRequest();
         
-        $this->getResultsetStateFromRequest();
+        $this->setNumberOfDaysFromRequest();
         
         $this->setSiteFromRequest();
         
-        $this->setNumberOfDaysFromRequest();
+        $this->getResultsetStateFromRequest();
     }
 
     protected function getResultSet() {
-        return DailyRankingEntriesModel::getAllBaseResultset($this->release_name, $this->mode, $this->date, $this->number_of_days);
+        return DailyRankingEntriesModel::getAllBaseResultset($this->date, $this->release_id, $this->mode_id, $this->daily_ranking_day_type_id, $this->external_site_id);
     }
     
     public function formatResponse($data) {        

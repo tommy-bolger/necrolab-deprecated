@@ -53,16 +53,15 @@ $(document).ready(function() {
     var table = new NecroTable($('#entries_table'));
 
     table.enableFixedHeader();
-    table.enableLengthMenu();
     table.enableButtons();
     table.enablePaging();
-    table.enableSort('rank', 'asc');
     table.enableHistory();
     table.enableSearchField();
     table.enableReleaseField();
     table.enableModeField();
     table.enableDateField();
     table.enableSiteField();
+    table.enableSeededField();
     table.enableCollapsibleRows(2);
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/rankings/power/entries'));

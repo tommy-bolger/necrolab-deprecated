@@ -16,7 +16,6 @@ function process_pbs_score_data(data, table) {
                 
                 var processed_row = [
                     row_data.pb.date,
-                    Formatting.getLeaderboardEntriesTitle(row_data.leaderboard),
                     row_data.pb.rank,
                     row_data.pb.score,
                     row_data.pb.zone,
@@ -40,10 +39,11 @@ function initialize_pbs_score_table() {
 
     table.enableButtons();
     table.enablePaging();
-    table.setDefaultLimit(30);
-    table.enableSort('snapshot_date', 'desc');
     table.enableReleaseField();
     table.enableModeField();
+    table.enableSeededField();
+    table.enableCoOpField();
+    table.enableCustomField();
     table.enableCharacterField();
     
     table.setAjaxUrl(Formatting.getNecrolabApiUrl('/players/player/pbs/score'));
@@ -55,12 +55,6 @@ function initialize_pbs_score_table() {
             name: 'snapshot_date',
             title: 'Date',
             type: 'string'
-        },
-        {
-            name: 'leaderboard_name',
-            title: 'Leaderboard',
-            type: 'string',
-            orderable: false
         },
         {
             name: 'first_rank',

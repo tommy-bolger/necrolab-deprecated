@@ -37,7 +37,13 @@ use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards as LeaderboardsM
 
 class Deathless
 extends Leaderboards {
+    public function init() {
+        parent::init();
+        
+        $this->cached_response_prefix_name = "player:leaderboards:deathless";
+    }
+
     protected function getResultSet() {
-        return LeaderboardsModel::getSteamUserDeathlessResultset($this->steamid, $this->release_name, $this->mode);
+        return LeaderboardsModel::getSteamUserDeathlessResultset($this->steamid, $this->release_id, $this->mode_id);
     }
 }

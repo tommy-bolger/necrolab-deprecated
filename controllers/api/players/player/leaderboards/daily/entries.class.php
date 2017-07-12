@@ -32,15 +32,18 @@
 */
 namespace Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards\Daily;
 
-use \Modules\Necrolab\Controllers\Api\Players\Player\Leaderboards\Entries as BaseEntries;
+use \Modules\Necrolab\Controllers\Api\Necrolab;
 use \Modules\Necrolab\Models\Leaderboards\Database\Entries as LeaderboardEntriesModel;
+use \Modules\Necrolab\Models\Leaderboards\Database\Entry as LeaderboardEntryModel;
 
 class Entries
-extends BaseEntries {
+extends Necrolab {
     public function init() {
         $this->setSteamidFromRequest();
         
         $this->setReleaseFromRequest();
+        
+        $this->setModeFromRequest();
         
         $this->setDateRangeFromRequest();
         
@@ -48,6 +51,24 @@ extends BaseEntries {
     }
 
     protected function getResultSet() {
-        return LeaderboardEntriesModel::getApiSteamUserDailyResultset($this->start_date, $this->end_date, $this->steamid, $this->release_name);
+        return LeaderboardEntriesModel::getApiSteamUserDailyResultset($this->start_date, $this->end_date, $this->steamid, $this->release_id, $this->mode_id);
+    }
+    
+    public function formatResponse($data) {        
+        $processed_data = array();
+        
+        if(!empty($data)) {        
+            foreach($data as $row) {
+                $processed_row = array();
+            
+                $processed_row['date'] = $row['daily_date'];
+                
+                $processed_row['entry'] = LeaderboardEntryModel::getFormattedApiRecord($row);
+                
+                $processed_data[] = $processed_row;
+            }
+        }
+        
+        return $processed_data;
     }
 }

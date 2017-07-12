@@ -8,6 +8,8 @@ class RunResults
 extends Necrolab {
     protected static $run_results = array();
     
+    protected static $run_results_by_id = array();
+    
     public static function loadAll() {}
     
     public static function get($run_result) {
@@ -20,6 +22,18 @@ extends Necrolab {
         }
         
         return $run_result_id;
+    }
+    
+    public static function getById($run_result_id) {
+        static::loadAll();
+        
+        $run_result = NULL;
+        
+        if(isset(static::$run_results_by_id[$run_result_id])) {
+            $run_result = static::$run_results_by_id[$run_result_id];
+        }
+        
+        return $run_result;
     }
     
     public static function getFormattedApiRecord($data_row) {

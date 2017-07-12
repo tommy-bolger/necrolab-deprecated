@@ -2,14 +2,15 @@
 namespace Modules\Necrolab\Models\Leaderboards;
 
 use \Exception;
+use \DateTime;
 use \RecursiveDirectoryIterator;
 use \RecursiveIteratorIterator;
 use \RegexIterator;
 use \RecursiveRegexIterator;
 use \Framework\Modules\Module;
 use \Framework\Utilities\File;
-use \Modules\Necrolab\Models\Leaderboards\ReplayVersions;
-use \Modules\Necrolab\Models\Leaderboards\RunResults;
+use \Modules\Necrolab\Models\Leaderboards\Database\ReplayVersions;
+use \Modules\Necrolab\Models\Leaderboards\Database\RunResults;
 use \Modules\Necrolab\Models\Necrolab;
 
 class Replays
@@ -238,23 +239,40 @@ extends Necrolab {
         return static::getS3QueueZippedFilePath($ugcid);
     }
     
+    public static function getCacheQueueName() {
+        return 'steam_replays_cache';
+    }
+    
+    public static function addToCacheQueue() {        
+        static::addDateToQueue(static::getCacheQueueName(), new DateTime());
+    }
+    
     public static function getFormattedApiRecord($data_row) {
         $processed_row = array();
         
-        $ugcid = $data_row['ugcid'];
-        
-        $processed_row['ugcid'] = $ugcid;
-        $processed_row['version'] = ReplayVersions::getFormattedApiRecord($data_row);
-        $processed_row['seed'] = $data_row['seed'];
-        $processed_row['run_result'] = RunResults::getFormattedApiRecord($data_row);
-        
-        $replay_url = NULL;
-        
-        if(!empty($ugcid) && !empty($data_row['uploaded_to_s3'])) {
-            $replay_url = "https://necrolab.s3.amazonaws.com/replays/{$ugcid}.zip";
+        if(!empty($data_row['downloaded'])) {            
+            $processed_row['ugcid'] = $data_row['ugcid'];
+            $processed_row['version'] = $data_row['version'];
+            $processed_row['seed'] = $data_row['seed'];
+            $processed_row['run_result'] = $data_row['run_result'];
+            
+            $replay_url = NULL;
+            
+            if(!empty($ugcid) && !empty($data_row['uploaded_to_s3'])) {
+                $replay_url = "https://necrolab.s3.amazonaws.com/replays/{$ugcid}.zip";
+            }
+            
+            $processed_row['file_url'] = $replay_url;
         }
-        
-        $processed_row['file_url'] = $replay_url;
+        else {
+            $processed_row = array(
+                'ugcid' => NULL,
+                'version' => NULL,
+                'seed' => NULL,
+                'run_result' => NULL,
+                'file_url' => NULL
+            );
+        }
 
         return $processed_row;
     }

@@ -35,41 +35,69 @@ namespace Modules\Necrolab\Controllers\Api;
 use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Web as WebController;
-use \Modules\Necrolab\Models\Releases\Database\Releases as ReleasesModel;
-use \Modules\Necrolab\Models\Modes\Database\Modes as ModesModel;
-use \Modules\Necrolab\Models\Characters\Database\Characters as CharactersModel;
-use \Modules\Necrolab\Models\ExternalSites\Database\ExternalSites as ExternalSitesModel;
-use \Modules\Necrolab\Models\Dailies\Rankings\Database\DayTypes as DayTypesModel;
+use \Modules\Necrolab\Models\Releases as ReleasesModel;
+use \Modules\Necrolab\Models\Modes as ModesModel;
+use \Modules\Necrolab\Models\Characters as CharactersModel;
+use \Modules\Necrolab\Models\ExternalSites as ExternalSitesModel;
+use \Modules\Necrolab\Models\Dailies\Rankings\DayTypes as DayTypesModel;
+use \Modules\Necrolab\Models\Leaderboards\Database\Leaderboards;
+use \Modules\Necrolab\Models\SteamUsers\CacheNames as SteamUsersCacheNames;
 
 class Necrolab
 extends WebController {
+    protected $cached_response_prefix_name;
+    
+    protected $cached_response_store_time = 60;
+
     protected $request = array();
 
     protected $release_name;
     
+    protected $release_id;
+    
     protected $mode;
+    
+    protected $mode_id;
 
     protected $date;
     
     protected $number_of_days;
     
+    protected $daily_ranking_day_type_id;
+    
     protected $site;
     
+    protected $external_site_id;
+    
     protected $character_name;
+    
+    protected $character_id;
     
     protected $start_date;
     
     protected $end_date;
     
+    protected $lbid;
+    
+    protected $leaderboard_id;
+    
+    protected $seeded;
+    
+    protected $co_op;
+    
+    protected $custom;
+    
+    protected $ugcid;
+    
+    protected $steamid;
+    
     protected $start;
     
-    protected $limit = 100;
-    
-    protected $sort_by;
-    
-    protected $sort_direction;
+    protected $limit;
     
     protected $search;
+    
+    protected $enable_search = false;
     
     public function __construct() {
         parent::__construct('necrolab');
@@ -88,6 +116,8 @@ extends WebController {
             $this->framework->outputManualError(400, "Specified release '{$this->release_name}' is invalid. Please refer to the /api/releases endpoint for a list of valid releases.");
         }
         
+        $this->release_id = $release_record['release_id'];
+        
         $this->request['release'] = $this->release_name;
     }
     
@@ -105,6 +135,8 @@ extends WebController {
         if(empty($mode_record)) {
             $this->framework->outputManualError(400, "Specified property 'mode' is not a valid mode. Please refer to /api/modes for a list of valid values.");
         }
+        
+        $this->mode_id = $mode_record['mode_id'];
         
         $this->request['mode'] = $this->mode;
     }
@@ -140,20 +172,18 @@ extends WebController {
         
         $this->limit = request()->get->getVariable('limit', 'integer');
         
-        if(empty($this->limit) || $this->limit < 0 || $this->limit > 1000) {
+        if(empty($this->limit)) {
             $this->limit = 100;
         }
-        
-        $this->sort_by = request()->sort_by;
-        
-        $this->sort_direction = request()->sort_direction;
         
         $this->search = request()->search;
         
         $this->request['start'] = $this->start;
         $this->request['limit'] = $this->limit;
-        $this->request['sort_by'] = $this->sort_by;
-        $this->request['sort_direction'] = $this->sort_direction;
+        
+        if(strlen($this->search) > 0) {
+            $this->request['search'] = $this->search;
+        }
     }
     
     protected function setNumberOfDaysFromRequest() {
@@ -175,6 +205,8 @@ extends WebController {
             $this->framework->outputManualError(400, "Specified property 'number_of_days' is not valid. Please refer to /api/rankings/daily/number_of_days for a list of valid values.");
         }
         
+        $this->daily_ranking_day_type_id = $active_day_types[$this->number_of_days]['daily_ranking_day_type_id'];
+        
         $this->request['number_of_days'] = $this->number_of_days;
     }
     
@@ -187,6 +219,12 @@ extends WebController {
             if(empty($external_site_record)) {
                 $this->framework->outputManualError(400, "Specified site '{$this->site}' is invalid. Please refer to the /api/external_sites endpoint for a list of valid sites.");
             }
+            
+            $this->external_site_id = $external_site_record['external_site_id'];
+        }
+        
+        if(empty($this->external_site_id)) {
+            $this->external_site_id = 0;
         }
         
         $this->request['site'] = $this->site;
@@ -206,6 +244,8 @@ extends WebController {
         if(empty($character_record)) {
             $this->framework->outputManualError(400, "Specified property 'character' is not a valid character name. Please refer to /api/characters for a list of valid values.");
         }
+        
+        $this->character_id = $character_record['character_id'];
         
         $this->request['character'] = $this->character_name;
     }
@@ -246,6 +286,102 @@ extends WebController {
         $this->request['start_date'] = $this->start_date->format('Y-m-d');
         $this->request['end_date'] = $this->end_date->format('Y-m-d');
     }
+    
+    protected function setLbidFromRequest() {        
+        $lbid = request()->get->lbid;
+        
+        if(empty($lbid)) {
+            $this->framework->outputManualError(400, "Required property 'lbid' was not found in the request.");
+        }
+        
+        $this->lbid = request()->get->getVariable('lbid', 'integer');
+        
+        $this->leaderboard_id = Leaderboards::getId($this->lbid);
+        
+        if(empty($this->lbid)) {
+            $this->framework->outputManualError(400, "Property '{$this->lbid}' is invalid. Please refer to /api/leaderboards for a list of valid lbids.");
+        }
+        
+        $this->request['lbid'] = $this->lbid;
+    }
+    
+    protected function setSeededFromRequest() {        
+        $seeded = request()->get->seeded;
+        
+        if(strlen($seeded) == 0) {
+            $this->framework->outputManualError(400, "Required property 'seeded' was not found in the request.");
+        }
+        
+        $this->seeded = request()->get->getVariable('seeded', 'integer');
+        
+        if($this->seeded != 0 && $this->seeded != 1) {
+            $this->framework->outputManualError(400, "Specified seeded value of '{$this->seeded}' is invalid. It can only be either 0 or 1.");
+        }
+        
+        $this->request['seeded'] = $this->seeded;
+    }
+    
+    protected function setCoOpFromRequest() {        
+        $co_op = request()->get->co_op;
+        
+        if(strlen($co_op) == 0) {
+            $this->framework->outputManualError(400, "Required property 'co-op' was not found in the request.");
+        }
+        
+        $this->co_op = request()->get->getVariable('co_op', 'integer');
+        
+        if($this->co_op != 0 && $this->co_op != 1) {
+            $this->framework->outputManualError(400, "Specified co_op value of '{$this->co_op}' is invalid. It can only be either 0 or 1.");
+        }
+        
+        $this->request['co_op'] = $this->co_op;
+    }
+    
+    protected function setCustomFromRequest() {        
+        $custom = request()->get->custom_music;
+        
+        if(strlen($custom) == 0) {
+            $this->framework->outputManualError(400, "Required property 'custom_music' was not found in the request.");
+        }
+        
+        $this->custom = request()->get->getVariable('custom_music', 'integer');
+        
+        if($this->custom != 0 && $this->custom != 1) {
+            $this->framework->outputManualError(400, "Specified custom_music value of '{$this->custom}' is invalid. It can only be either 0 or 1.");
+        }
+        
+        $this->request['custom_music'] = $this->custom;
+    }
+    
+    protected function setUgcidFromRequest() {        
+        $ugcid = request()->get->ugcid;
+        
+        if(empty($ugcid)) {
+            $this->framework->outputManualError(400, "Required property 'ugcid' was not found in the request.");
+        }
+        
+        $this->ugcid = $ugcid;
+        
+        $this->request['ugcid'] = $this->ugcid;
+    }
+    
+    protected function setSteamidFromRequest() {  
+        $steamid = request()->get->steamid;
+    
+        if(empty($steamid)) {
+            $this->framework->outputManualError(400, "Required property 'steamid' was not found in the request.");
+        }
+    
+        $steamid = request()->get->getVariable('steamid', 'integer');
+        
+        if(empty($steamid)) {
+            $this->framework->outputManualError(400, "Required property 'steamid' is not a valid 64-bit integer.");
+        }
+        
+        $this->steamid = request()->get->steamid;
+        
+        $this->request['steamid'] = $this->steamid;
+    }
  
     public function init() {        
         $this->setReleaseFromRequest();
@@ -257,7 +393,7 @@ extends WebController {
     
     protected function getResultset() {}
     
-    protected function getPlayerData($row) {
+    protected function getPlayerData($row) {        
         $steamid = (string)$row['steamid'];
         
         $discord_discriminator = NULL;
@@ -268,7 +404,7 @@ extends WebController {
     
         return array(
             'steamid' => $steamid,
-            'personaname' => $row['personaname'],
+            'personaname' => $row['steam_personaname'],
             'linked' => array(
                 'steam' => array(
                     'id' => $steamid,
@@ -289,7 +425,7 @@ extends WebController {
                     'username' => $row['reddit_username']
                 ),
                 'youtube' => array(
-                    'id' => $row['youtube_id'],
+                    'id' => $row['youtube_username'],
                     'username' => $row['youtube_username']
                 ),
                 'twitter' => array(
@@ -303,50 +439,73 @@ extends WebController {
                 )
             )
         );
+    
+        return $player_data;
     }
     
     public function formatResponse($data) {
         return $data;
     }
     
-    public function actionGet() {        
-        $resultset = $this->getResultset();
+    public function actionGet() {
+        $cache = cache('local');
         
-        if(!empty($this->site)) {
-            ExternalSitesModel::addSiteUserJoin($resultset, $this->site);
+        $cached_response = array();
+        
+        $cached_response_unique_name = md5(implode('_', $this->request));
+    
+        if(isset($this->cached_response_prefix_name)) {  
+            $cached_response = $cache->get($cached_response_unique_name, $this->cached_response_prefix_name);
         }
         
-        $resultset->enableTotalRecordCount();
-        
-        $resultset->setOffset($this->start);
-        
-        $resultset->setRowsPerPage($this->limit);
-        
-        if(!empty($this->sort_by) && !empty($this->sort_direction)) {
-            $resultset->setSortCriteriaFromAlias($this->sort_by, $this->sort_direction);
+        $response_data_count = 0;
+        $response_data = array();
+    
+        if(!empty($cached_response)) {
+            $response_data_count = $cached_response['count'];
+            $response_data = $cached_response['data'];
         }
-        
-        if(!empty($this->search)) {
-            $search_select_field = $resultset->getSelectField('personaname');
+        else {
+            $resultset = $this->getResultset();
+
+            if(isset($this->start) && isset($this->limit)) {
+                $resultset->enableTotalRecordCount();
+                
+                $resultset->setOffset($this->start);
+                
+                $resultset->setRowsPerPage($this->limit);
+            }
             
-            if(!empty($search_select_field)) {
-                $resultset->addFilterCriteria("{$search_select_field} ILIKE :search", array(
-                    ':search' => "%{$this->search}%"
-                ));
+            if(!empty($this->enable_search) && !empty($this->search)) {                
+                $resultset->setSearch(SteamUsersCacheNames::getUsersByName(), $this->search);
+            }
+            
+            $resultset->addProcessorFunction(array(
+                $this,
+                'formatResponse'
+            ));
+            
+            $resultset->process();
+            
+            $response_data_count = $resultset->getTotalNumberOfRecords();
+            $response_data = $resultset->getData();
+            
+            if(isset($this->cached_response_prefix_name)) {        
+                $cache->set($cached_response_unique_name, array(
+                    'data' => $response_data,
+                    'count' => $response_data_count
+                ), $this->cached_response_prefix_name, $this->cached_response_store_time);
             }
         }
-        
-        $resultset->addProcessorFunction(array(
-            $this,
-            'formatResponse'
-        ));
-        
-        $resultset->process();
 
+        return $this->getResponse($response_data_count, $response_data);
+    }
+    
+    protected function getResponse($record_count, $data) {
         return array(
             'request' => $this->request,
-            'record_count' => $resultset->getTotalNumberOfRecords(),
-            'data' => $resultset->getData()
+            'record_count' => $record_count,
+            'data' => $data
         );
     }
 }

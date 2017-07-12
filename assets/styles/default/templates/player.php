@@ -26,13 +26,16 @@
 <div id="player_tabs" class="tab-content">
     <div role="tabpanel" class="tab-pane active" id="pbs">
         <br />
+        <br />
         <div class="menu_smaller">Score</div>
         <br />
         <table id="player_score_pbs_table"></table>
         <br />
+        <br />
         <div class="menu_smaller">Speed</div>
         <br />
         <table id="player_speed_pbs_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Deathless</div>
         <br />
@@ -40,25 +43,31 @@
     </div>
     <div role="tabpanel" class="tab-pane" id="rankings">
         <br />
+        <br />
         <div class="menu_smaller">Power</div>
         <br />
         <table id="player_power_rankings_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Score</div>
         <br />
         <table id="player_score_rankings_table"></table>
         <br />
+        <br />
         <div class="menu_smaller">Speed</div>
         <br />
         <table id="player_speed_rankings_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Deathless</div>
         <br />
         <table id="player_deathless_rankings_table"></table>
         <br />
+        <br />
         <div class="menu_smaller">Character</div>
         <br />
         <table id="player_character_rankings_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Daily</div>
         <br />
@@ -66,17 +75,21 @@
     </div>
     <div role="tabpanel" class="tab-pane" id="leaderboards">
         <br />
+        <br />
         <div class="menu_smaller">Score</div>
         <br />
         <table id="player_score_leaderboards_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Speed</div>
         <br />
         <table id="player_speed_leaderboards_table"></table>
         <br />
+        <br />
         <div class="menu_smaller">Deathless</div>
         <br />
         <table id="player_deathless_leaderboards_table"></table>
+        <br />
         <br />
         <div class="menu_smaller">Daily</div>
         <br />
