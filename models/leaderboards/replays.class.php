@@ -251,7 +251,7 @@ extends Necrolab {
         $processed_row = array();
         
         if(!empty($data_row['downloaded'])) {
-            $ugcid = $processed_row['ugcid'];
+            $ugcid = $data_row['version'];
         
             $processed_row['ugcid'] = $ugcid;
             $processed_row['version'] = $data_row['version'];
