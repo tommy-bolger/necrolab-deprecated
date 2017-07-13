@@ -86,8 +86,6 @@ extends Cli {
         if(!empty($steam_user_files)) {            
             db()->beginTransaction();
             
-            DatabaseSteamUsers::clearTemp();
-            
             $temp_insert_queue = DatabaseSteamUsers::getTempInsertQueue();
             
             foreach($steam_user_files as $steam_user_file) {
@@ -113,8 +111,6 @@ extends Cli {
             $temp_insert_queue->commit();
             
             DatabaseSteamUsers::saveTemp();
-            
-            DatabaseSteamUsers::clearTemp();
             
             db()->commit();
             
