@@ -86,6 +86,8 @@ extends Cli {
         if(!empty($steam_user_files)) {            
             db()->beginTransaction();
             
+            DatabaseSteamUsers::createTemporaryTable();
+            
             $temp_insert_queue = DatabaseSteamUsers::getTempInsertQueue();
             
             foreach($steam_user_files as $steam_user_file) {
