@@ -117,7 +117,6 @@ extends Cli {
             db()->commit();
             
             DatabaseSteamUsers::vacuum();
-            DatabaseSteamUsers::vacuumTemp();
             
             DatabaseSteamUsers::deleteJson($this->date);
         }
