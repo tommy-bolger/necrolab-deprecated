@@ -179,8 +179,15 @@ extends RecordModel {
             $is_dlc = 1;
         }
         
-        if(substr_count($leaderboard_name, 'hard') > 1) {
-            $mode = Modes::getByName('hard');
+        if(!empty($is_score_run)) {
+            if(substr_count($leaderboard_name, 'hard') > 1) {
+                $mode = Modes::getByName('hard');
+            }
+        }
+        else {
+            if(strpos($leaderboard_name, 'hard') !== false) {            
+                $mode = Modes::getByName('hard');
+            }
         }
         
         if(strpos($leaderboard_name, 'no return') !== false) {            
