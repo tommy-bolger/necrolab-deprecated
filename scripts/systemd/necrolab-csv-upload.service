@@ -3,7 +3,7 @@ Description=Necrolab Leaderboard CSV upload service.
 
 [Service]
 PIDFile=/var/run/necrolab-upload-csv.pid
-ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab steamimport RunCsvUploadQueueListener > /dev/null 2>/dev/null
+ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab steamclientimport RunCsvUploadQueueListener > /dev/null 2>/dev/null
 Type=simple
 User=<your_user_name>
 KillMode=process

@@ -151,12 +151,12 @@ extends RecordModel {
             $is_score_run = 1;
         }
         
-        if(strpos($leaderboard_name, 'all chars dlc') !== false) {
-            $character_name = 'all_alc';
-        }
-        
         if(strpos($leaderboard_name, 'all chars') !== false) {
             $character_name = 'all';
+        }
+        
+        if(strpos($leaderboard_name, 'all chars dlc') !== false) {
+            $character_name = 'all_dlc';
         }
         
         if(strpos($leaderboard_name, 'deathless') !== false) {
@@ -179,7 +179,7 @@ extends RecordModel {
             $is_dlc = 1;
         }
         
-        if(strpos($leaderboard_name, 'hard mode') !== false) {            
+        if(substr_count($leaderboard_name, 'hard') > 1) {
             $mode = Modes::getByName('hard');
         }
         
