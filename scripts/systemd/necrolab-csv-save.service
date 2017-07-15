@@ -1,0 +1,13 @@
+[Unit]
+Description=Necrolab Leaderboard Csv saving service.
+
+[Service]
+PIDFile=/var/run/necrolab-save-csv.pid
+ExecStart=/usr/bin/php /<base_path>/necrolab/flow_cli necrolab steamimport RunCsvSaveQueueListener > /dev/null 2>/dev/null
+Type=simple
+User=<your_user_name>
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

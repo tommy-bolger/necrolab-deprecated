@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1;net46</TargetFramework>
+  </PropertyGroup>
+
+<ItemGroup>
+    <Reference Include="System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+    <Reference Include="SteamKit2">
+      <HintPath>./SteamKit2.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

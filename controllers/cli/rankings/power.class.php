@@ -187,7 +187,7 @@ extends Cli {
             $this,
             'cacheQueueMessageReceived'
         ));
-    }    
+    }
     
     public function actionCreateEntriesParition($date = NULL) {
         $date = new DateTime($date);

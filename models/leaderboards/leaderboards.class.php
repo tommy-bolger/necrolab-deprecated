@@ -11,6 +11,7 @@ use \RegexIterator;
 use \RecursiveRegexIterator;
 use \Framework\Data\XMLWrite;
 use \Framework\Utilities\File;
+use \Framework\Utilities\Encryption;
 use \Framework\Modules\Module;
 use \Modules\Necrolab\Models\Releases;
 use \Modules\Necrolab\Models\Modes;
@@ -287,6 +288,375 @@ extends Necrolab {
     
     public static function addToXmlUploadQueue(DateTime $date) {        
         static::addDateToQueue(static::getXmlUploadQueueName(), $date);
+    }
+    
+    public static function isValidLeaderboard($release_name, $mode_name, $character_name, $type, $seeded, $is_co_op, $is_custom) {
+        $is_valid = true;
+        
+        if($release_name == 'original' && $mode_name != 'normal') {
+            $is_valid = false;
+        }
+        
+        if($type == 'deathless' && !empty($seeded)) {
+            $is_valid = false;
+        }
+        
+        if($type == 'deathless' && $mode_name != 'normal') {
+            $is_valid = false;
+        }
+        
+        if($release_name == 'original' && !Characters::isOriginalCharacter($character_name)) {
+            $is_valid = false;
+        }
+        
+        if($release_name == 'amplified_dlc' && !Characters::isAmplifiedDlcCharacter($character_name)) {
+            $is_valid = false;
+        }        
+        
+        if($mode_name != 'normal' && !Characters::isModeCharacter($character_name)) {
+            $is_valid = false;
+        }
+        
+        if($type == 'deathless' && !Characters::isDeathlessCharacter($character_name)) {
+            $is_valid = false;
+        }
+        
+        if(!empty($seeded) && !Characters::isSeededCharacter($character_name)) {
+            $is_valid = false;
+        }
+        
+        if(!empty($is_co_op) && !Characters::isCoOpCharacter($character_name)) {
+            $is_valid = false;
+        }
+        
+        return $is_valid;
+    }
+    
+    public static function generateName($release, $mode, $character, $type, $seeded, $is_co_op, $is_custom) {
+        $leaderboard_name = '';
+        
+        $release_name = $release['name'];
+        $mode_name = $mode['name'];
+        $character_name = $character['name'];
+                                        
+        if(static::isValidLeaderboard($release_name, $mode_name, $character_name, $type, $seeded, $is_co_op, $is_custom)) {
+            $character_display_name = $character['display_name'];
+            
+            if($character_name == 'dove') {
+                $character_display_name = strtoupper($character_display_name);
+            }
+        
+            $leaderboard_name_segments = array();
+            
+            if($release_name == 'amplified_dlc') {
+                $leaderboard_name_segments[] = 'DLC';
+            }
+        
+            switch($type) {
+                case 'score':
+                case 'deathless':
+                    $leaderboard_name_segments[] = 'HARDCORE';
+                    
+                    if(!empty($seeded)) {
+                        $leaderboard_name_segments[] = 'SEEDED';
+                    }
+                    break;
+                case 'speed':
+                    if(!empty($seeded)) {
+                        $leaderboard_name_segments[] = 'SEEDED';
+                    }
+                
+                    $leaderboard_name_segments[] = 'SPEEDRUN';
+                    break;
+            }
+            
+            if($character_name != 'cadence') {
+                $leaderboard_name_segments[] = $character_display_name;
+            }
+            
+            if(!empty($is_co_op)) {
+                $leaderboard_name_segments[] = 'CO-OP';
+            }
+            
+            if($type == 'deathless') {
+                $leaderboard_name_segments[] = 'DEATHLESS';
+            }
+            elseif($mode_name != 'normal') {
+                $mode_segment = strtoupper($mode_name);
+            
+                $leaderboard_name_segments[] = $mode_segment;
+            }
+            
+            if(!empty($is_custom)) {
+                $leaderboard_name_segments[] = 'CUSTOM MUSIC';
+            }
+            
+            $leaderboard_name = implode(' ', $leaderboard_name_segments) . '_PROD';
+        }
+        
+        return $leaderboard_name;
+    }
+    
+    public static function generateAllNames(DateTime $date) {
+        $characters = Characters::getActive();
+        
+        $releases = Releases::getByDate($date);
+        
+        $modes = Modes::getAll();
+        
+        $leaderboard_types = array(
+            'score',
+            'speed',
+            'deathless'
+        );
+        
+        $seeded_types = array(
+            0, 
+            1
+        );
+        
+        $co_op_types = array(
+            0,
+            1
+        );
+        
+        $custom_types = array(
+            0,
+            1
+        );
+        
+        $leaderboard_names = array();
+
+        if(!empty($releases)) {
+            foreach($releases as $release) {
+                if(!empty($modes)) {
+                    foreach($modes as $mode) {
+                        if(!empty($characters)) {
+                            foreach($characters as $character) {
+                                if(!empty($leaderboard_types)) {
+                                    foreach($leaderboard_types as $leaderboard_type) {
+                                        foreach($seeded_types as $seeded) {
+                                            foreach($co_op_types as $is_co_op) {
+                                                foreach($custom_types as $is_custom) {
+                                                    $leaderboard_name = Leaderboards::generateName($release, $mode, $character, $leaderboard_type, $seeded, $is_co_op, $is_custom);
+                                                    
+                                                    if(!empty($leaderboard_name)) {
+                                                        $leaderboard_names[] = $leaderboard_name;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        return $leaderboard_names;
+    }
+    
+    public static function generateDailyNames(DateTime $date) {        
+        $releases = Releases::getByDate($date);
+        
+        $leaderboard_names = array();
+
+        if(!empty($releases)) {
+            foreach($releases as $release) {
+                $release_name = $release['name'];
+                
+                $leaderboard_name = "{$date->format('j/n/Y')}_PROD";
+            
+                if($release_name == 'amplified_dlc') {
+                    $leaderboard_name = "DLC {$leaderboard_name}";
+                }
+                
+                $leaderboard_names[] = $leaderboard_name;
+            }
+        }
+        
+        return $leaderboard_names;
+    }
+    
+    public static function getCsvFilePath(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        
+        return "{$installation_path}/assets/files/leaderboard_csv/{$date->format('Y-m-d')}";
+    }
+    
+    public static function getTempCsvFilePath(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        
+        return "{$installation_path}/assets/files/leaderboard_csv/temp/{$date->format('Y-m-d')}";
+    }
+    
+    public static function getS3CsvFilePath(DateTime $date) {
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        
+        return "{$installation_path}/assets/files/leaderboard_csv/s3_queue/{$date->format('Y-m-d')}";
+    }
+    
+    public static function getNamesPath(DateTime $date) {
+        return static::getCsvFilePath($date) . '/leaderboards.txt';
+    }
+    
+    public static function getTempNamesPath(DateTime $date) {
+        return static::getTempCsvFilePath($date) . '/leaderboards.txt';
+    }
+    
+    public static function saveTempNames(DateTime $date, array $names) {
+        $temp_csv_path = static::getTempCsvFilePath($date);
+        
+        if(!is_dir($temp_csv_path)) {
+            mkdir($temp_csv_path);
+        }
+        
+        $names_path = "{$temp_csv_path}/leaderboards.txt";
+        
+        file_put_contents($names_path, implode("\n", $names));
+        
+        return $names_path;
+    }
+    
+    public static function deleteTempCsv(DateTime $date) {
+        $temp_csv_path = static::getTempCsvFilePath($date);
+        
+        if(is_dir($temp_csv_path)) {
+            File::deleteDirectoryRecursive($temp_csv_path);
+        }
+    }
+    
+    public static function runClientDownloader($names_path) {
+        $module_configuration = Module::getInstance('necrolab')->configuration;
+    
+        $installation_path = Module::getInstance('necrolab')->getInstallationPath();
+        
+        $downloader_path = "{$installation_path}/external/SteamLeaderboardsDownloader3/SteamLB.exe";
+        
+        $plaintext_password = Encryption::decrypt($module_configuration->steam_client_password);
+        
+        $save_path = dirname($names_path);
+        
+        exec("cd {$save_path} && /usr/bin/mono {$downloader_path} {$module_configuration->steam_client_username} {$plaintext_password} {$module_configuration->steam_original_appid} {$names_path}");
+        
+        unset($plaintext_password);
+    }
+    
+    public static function compressTempToSavedCsv(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+    
+        $temp_path = static::getTempCsvFilePath($date);
+        $temp_parent_path = dirname($temp_path);
+        
+        $zip_snapshot_path = static::getCsvFilePath($date) . ".zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to compress an entire folder.
+            TODO: Implement a method in the File utility to recursively compress all files in a file using ZipArchive.
+        */
+        exec("cd {$temp_parent_path} ; zip -r {$date_formatted}.zip {$date_formatted}; rm -rf {$zip_snapshot_path}; mv {$date_formatted}.zip {$zip_snapshot_path}");
+    
+        return $zip_snapshot_path;
+    }
+    
+    public static function decompressToTempCsv(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+        
+        $temp_path = static::getTempCsvFilePath($date);
+        $temp_parent_path = dirname($temp_path);
+        
+        $zip_snapshot_path = static::getCsvFilePath($date) . ".zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to decompress an entire folder.
+            TODO: Implement a method in the File utility to recursively decompress all files in a file using ZipArchive.
+        */
+        exec("unzip {$zip_snapshot_path} -d {$temp_parent_path}");
+    }
+    
+    public static function getTempCsvFiles(DateTime $date) {  
+        $snapshot_path = static::getTempCsvFilePath($date);
+        
+        $csv_files = array();
+        
+        if(is_dir($snapshot_path)) {
+            $directory_iterator = new RecursiveDirectoryIterator($snapshot_path);
+            $file_iterator = new RecursiveIteratorIterator($directory_iterator);
+            $matched_files = new RegexIterator($file_iterator, "/^.+\.csv$/i", RecursiveRegexIterator::GET_MATCH);
+            
+            foreach($matched_files as $matched_file) {
+                $file_name = $matched_file[0];
+                $file_name_split = explode('/', $matched_file[0]);
+                
+                $csv_file_name = array_pop($file_name_split);
+                $csv_file_name_split = explode('.', $csv_file_name);
+                
+                $lbid = (int)$csv_file_name_split[0];
+                    
+                $csv_files[$lbid] = $matched_file[0];
+            }
+        }
+        
+        return $csv_files;
+    }
+
+    public static function copyZippedCsvToS3(DateTime $date) {
+        $date_formatted = $date->format('Y-m-d');
+    
+        $s3_zip_path = static::getS3CsvFilePath($date) . 'zip';
+        
+        $zip_snapshot_path = static::getCsvFilePath($date) . ".zip";
+    
+        /* 
+            Since this will only run on the backend this would be simplest way to decompress an entire folder.
+            TODO: Implement a method in the File utility to copy this file over.
+        */
+        exec("cp {$zip_snapshot_path} {$s3_zip_path}");
+        
+        return $s3_zip_path;
+    }
+    
+    public static function deleteS3ZippedCsv(DateTime $date) {
+        $snapshot_path = static::getS3CsvFilePath($date) . 'zip';
+    
+        if(is_file($snapshot_path)) {
+            unlink($snapshot_path);
+        }
+    }
+    
+    public static function getCsvUrls() {
+        $start_date = new DateTime('2017-01-01');
+        $end_date = new DateTime(date('Y-m-d'));
+        
+        $current_date = clone $start_date;
+        
+        $csv_urls = array();
+        
+        while($current_date <= $end_date) {
+            $csv_urls[] = "https://necrolab.s3.amazonaws.com/leaderboard_csv/{$current_date->format('Y-m-d')}.zip";
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return $csv_urls;
+    }
+    
+    public static function getCsvSaveQueueName() {
+        return "save_csv";
+    }
+    
+    public static function addToCsvSaveQueue(DateTime $date) {
+        static::addDateToQueue(static::getCsvSaveQueueName(), $date);
+    }
+    
+    public static function getCsvUploadQueueName() {
+        return "upload_csv";
+    }
+    
+    public static function addToCsvUploadQueue(DateTime $date) {        
+        static::addDateToQueue(static::getCsvUploadQueueName(), $date);
     }
     
     public static function getFormattedApiRecord($data_row) {    

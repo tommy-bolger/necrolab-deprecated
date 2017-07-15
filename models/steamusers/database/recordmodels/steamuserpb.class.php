@@ -45,11 +45,19 @@ extends RecordModel {
             $this->time = (float)Entry::getTime($this->score);
         }
         
-        $highest_zone_level = Entry::getHighestZoneLevel($steam_object->details);
+        //This logic path is for importing XML.
+        if(!empty($steam_object->details)) {
+            $highest_zone_level = Entry::getHighestZoneLevel($steam_object->details);
         
-        if(!empty($highest_zone_level)) {
-            $this->zone = (int)$highest_zone_level['highest_zone'];
-            $this->level = (int)$highest_zone_level['highest_level'];
+            if(!empty($highest_zone_level)) {
+                $this->zone = (int)$highest_zone_level['highest_zone'];
+                $this->level = (int)$highest_zone_level['highest_level'];
+            }
+        }
+        //And this logic path is for importing from Marukyu's importer.
+        else {
+            $this->zone = (int)$steam_object->zone;
+            $this->level = (int)$steam_object->level;
         }
 
         if(empty($leaderboard->is_speedrun)) {

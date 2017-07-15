@@ -75,7 +75,7 @@ extends BaseLeaderboards {
     public static function save(DatabaseLeaderboard $leaderboard_record) {
         $lbid = $leaderboard_record->lbid;
         
-        $leaderboard_fields = $leaderboard_record->toArray(false);
+        $leaderboard_fields = $leaderboard_record->toArray();
         
         $leaderboard_id = static::getId($lbid);
         
