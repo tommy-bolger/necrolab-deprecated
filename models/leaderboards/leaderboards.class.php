@@ -382,7 +382,14 @@ extends Necrolab {
                 $leaderboard_name_segments[] = 'DEATHLESS';
             }
             elseif($mode_name != 'normal') {
-                $mode_segment = strtoupper($mode_name);
+                $mode_segment = '';
+            
+                if($mode_name == 'no_return') {
+                    $mode_segment = 'NO RETURN';
+                }
+                else {
+                    $mode_segment = strtoupper($mode_name);
+                }                
             
                 $leaderboard_name_segments[] = $mode_segment;
             }
@@ -456,6 +463,16 @@ extends Necrolab {
         }
         
         return $leaderboard_names;
+    }
+    
+    public static function getLeaderboardNameChunks(array $leaderboard_names) {
+        $leaderboard_name_chunks = array();
+        
+        if(!empty($leaderboard_names)) {
+            $leaderboard_name_chunks = array_chunk($leaderboard_names, 100);
+        }
+        
+        return $leaderboard_name_chunks;
     }
     
     public static function generateDailyNames(DateTime $date) {        
