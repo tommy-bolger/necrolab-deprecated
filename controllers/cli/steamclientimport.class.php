@@ -36,48 +36,17 @@ class SteamClientImport
 extends Cli {
     protected $as_of_date; 
     
-    public function importCsvChunk($chunk_number, $names_path) {
-        Leaderboards::runClientDownloader($names_path, $chunk_number);
-        
-        exit;
-    }
-    
     protected function importCsv(DateTime $date) {    
         $leaderboard_names = Leaderboards::generateAllNames($date);
         $daily_leaderboard_names = Leaderboards::generateDailyNames($date);
         
         $leaderboard_names = array_merge($leaderboard_names, $daily_leaderboard_names);
         
-        $leaderboard_name_chunks = Leaderboards::getNameChunks($leaderboard_names);
-        
         Leaderboards::deleteTempCsv($date);
-
-        /*$leaderboard_chunk_paths = array();
-        
-        foreach($leaderboard_name_chunks as $chunk_number => $leaderboard_name_chunk) {
-            $leaderboard_chunk_paths[$chunk_number] = Leaderboards::saveTempNames($date, $leaderboard_names, $chunk_number);
-        }*/
         
         $names_path = Leaderboards::saveTempNames($date, $leaderboard_names);
         
-        /*if(!empty($leaderboard_chunk_paths)) {
-            $csv_import_job_queue = new ParallelProcessQueue();
-        
-            foreach($leaderboard_chunk_paths as $chunk_number => $leaderboard_chunk_path) {                
-                $csv_import_job_queue->setMaxParallelProcesses(2);
-    
-                $csv_import_job_queue->addProcessToQueue(array($this, 'importCsvChunk'), array(
-                    'chunk_number' => $chunk_number,
-                    'names_path' => $leaderboard_chunk_path
-                ));
-            }
-            
-            $csv_import_job_queue->run();
-        }*/
-        
         Leaderboards::runClientDownloader($names_path);
-        
-        //Leaderboards::deleteTempChunks($date);
         
         Leaderboards::compressTempToSavedCsv($date);
         
