@@ -41,6 +41,7 @@ function process_ranking_character_data(data, table) {
                 
                 switch(character_name) {
                     case 'all':
+                    case 'all_dlc':
                     case 'story':
                         rank_row.push(null);
                         points_row.push(null);
