@@ -42,9 +42,10 @@ function process_character_data(data, table) {
                     Formatting.convertSecondsToTime(character_rankings.speed.time)
                 ];
                 
-                switch(character_name) {
-                    case 'all':
+                switch(character_name) {                    
                     case 'story':
+                    case 'all':
+                    case 'all_dlc':
                         rank_row.push(null);
                         points_row.push(null);
                         score_row.push(null);
