@@ -112,12 +112,10 @@ extends Cli {
             
             $entries_insert_queue->commit();
             
-            DatabaseEntries::dropPartitionTableConstraints($this->as_of_date);
             DatabaseEntries::dropPartitionTableIndexes($this->as_of_date);
             
             DatabaseEntries::saveTempEntries($this->as_of_date);
             
-            DatabaseEntries::createPartitionTableConstraints($this->as_of_date);
             DatabaseEntries::createPartitionTableIndexes($this->as_of_date);
             
             $database->commit();

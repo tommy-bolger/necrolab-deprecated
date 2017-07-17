@@ -116,11 +116,9 @@ extends Cli {
             $temp_insert_queue->commit();
             
             DatabaseSteamUserAchievements::dropTableIndexes();
-            DatabaseSteamUserAchievements::dropTableConstraints();
             
             DatabaseSteamUserAchievements::saveTemp();
             
-            DatabaseSteamUserAchievements::createTableConstraints();
             DatabaseSteamUserAchievements::createTableIndexes();
             
             db()->commit();

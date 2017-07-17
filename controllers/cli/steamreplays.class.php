@@ -163,11 +163,9 @@ extends Cli {
             $temp_insert_queue->commit();
             
             DatabaseReplays::dropTableIndexes();
-            DatabaseReplays::dropTableConstraints();
             
             DatabaseReplays::saveDownloadedTemp();
             
-            DatabaseReplays::createTableConstraints();
             DatabaseReplays::createTableIndexes();
             
             db()->commit();

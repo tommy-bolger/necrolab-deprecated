@@ -89,12 +89,10 @@ extends Cli {
             
             $entries_insert_queue->commit();
             
-            DatabaseDailyRankingEntries::dropPartitionTableConstraints($this->as_of_date);
             DatabaseDailyRankingEntries::dropPartitionTableIndexes($this->as_of_date);
             
             DatabaseDailyRankingEntries::saveTempEntries($this->as_of_date);
             
-            DatabaseDailyRankingEntries::createPartitionTableConstraints($this->as_of_date);
             DatabaseDailyRankingEntries::createPartitionTableIndexes($this->as_of_date);
             
             $database->commit();

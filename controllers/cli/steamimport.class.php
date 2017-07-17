@@ -242,39 +242,31 @@ extends Cli {
             $leaderboard_entries_insert_queue->commit();
             
             //Save users
-            DatabaseSteamUsers::dropTableConstraints();
             DatabaseSteamUsers::dropTableIndexes();
             
             DatabaseSteamUsers::saveNewTemp();
             
-            DatabaseSteamUsers::createTableConstraints();
             DatabaseSteamUsers::createTableIndexes();
             
             //Save replays
-            Replays::dropTableConstraints();
             Replays::dropTableIndexes();
             
             Replays::saveNewTemp();
             
-            Replays::createTableConstraints();
             Replays::createTableIndexes();
             
             //Save user pbs
-            DatabaseSteamUserPbs::dropTableConstraints();
             DatabaseSteamUserPbs::dropTableIndexes();
             
             DatabaseSteamUserPbs::saveNewTemp();
             
-            DatabaseSteamUserPbs::createTableConstraints();
             DatabaseSteamUserPbs::createTableIndexes();
             
             //Save leaderboard entries
-            Entries::dropPartitionTableConstraints($date);
             Entries::dropPartitionTableIndexes($date);
             
             Entries::saveTempEntries($date);
             
-            Entries::createPartitionTableConstraints($date);
             Entries::createPartitionTableIndexes($date);
             
             db()->commit();

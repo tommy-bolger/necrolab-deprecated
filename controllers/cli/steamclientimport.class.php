@@ -36,17 +36,48 @@ class SteamClientImport
 extends Cli {
     protected $as_of_date; 
     
+    public function importCsvChunk($chunk_number, $names_path) {
+        Leaderboards::runClientDownloader($names_path, $chunk_number);
+        
+        exit;
+    }
+    
     protected function importCsv(DateTime $date) {    
         $leaderboard_names = Leaderboards::generateAllNames($date);
         $daily_leaderboard_names = Leaderboards::generateDailyNames($date);
         
         $leaderboard_names = array_merge($leaderboard_names, $daily_leaderboard_names);
         
+        $leaderboard_name_chunks = Leaderboards::getNameChunks($leaderboard_names);
+        
         Leaderboards::deleteTempCsv($date);
+
+        /*$leaderboard_chunk_paths = array();
+        
+        foreach($leaderboard_name_chunks as $chunk_number => $leaderboard_name_chunk) {
+            $leaderboard_chunk_paths[$chunk_number] = Leaderboards::saveTempNames($date, $leaderboard_names, $chunk_number);
+        }*/
         
         $names_path = Leaderboards::saveTempNames($date, $leaderboard_names);
         
+        /*if(!empty($leaderboard_chunk_paths)) {
+            $csv_import_job_queue = new ParallelProcessQueue();
+        
+            foreach($leaderboard_chunk_paths as $chunk_number => $leaderboard_chunk_path) {                
+                $csv_import_job_queue->setMaxParallelProcesses(2);
+    
+                $csv_import_job_queue->addProcessToQueue(array($this, 'importCsvChunk'), array(
+                    'chunk_number' => $chunk_number,
+                    'names_path' => $leaderboard_chunk_path
+                ));
+            }
+            
+            $csv_import_job_queue->run();
+        }*/
+        
         Leaderboards::runClientDownloader($names_path);
+        
+        //Leaderboards::deleteTempChunks($date);
         
         Leaderboards::compressTempToSavedCsv($date);
         
@@ -65,7 +96,7 @@ extends Cli {
         Leaderboards::decompressToTempCsv($date);
         
         $csv_files = Leaderboards::getTempCsvFiles($date, true);
-        
+
         if(!empty($csv_files)) {
             db()->beginTransaction();
             
@@ -159,45 +190,36 @@ extends Cli {
             $leaderboard_entries_insert_queue->commit();
             
             //Save users
-            DatabaseSteamUsers::dropTableConstraints();
             DatabaseSteamUsers::dropTableIndexes();
             
             DatabaseSteamUsers::saveNewTemp();
             
-            DatabaseSteamUsers::createTableConstraints();
             DatabaseSteamUsers::createTableIndexes();
             
             //Save replays
-            Replays::dropTableConstraints();
             Replays::dropTableIndexes();
             
             Replays::saveNewTemp();
             
-            Replays::createTableConstraints();
             Replays::createTableIndexes();
             
             //Save user pbs
-            DatabaseSteamUserPbs::dropTableConstraints();
             DatabaseSteamUserPbs::dropTableIndexes();
             
             DatabaseSteamUserPbs::saveNewTemp();
             
-            DatabaseSteamUserPbs::createTableConstraints();
             DatabaseSteamUserPbs::createTableIndexes();
             
             //Save leaderboard entries
-            Entries::dropPartitionTableConstraints($date);
             Entries::dropPartitionTableIndexes($date);
             
             Entries::saveTempEntries($date);
             
-            Entries::createPartitionTableConstraints($date);
             Entries::createPartitionTableIndexes($date);
             
             db()->commit();
             
             Leaderboards::vacuum();
-            Details::vacuum();
             Snapshots::vacuum();
             DatabaseSteamUserPbs::vacuum();
             Entries::vacuum($date);
