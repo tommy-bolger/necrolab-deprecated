@@ -36,7 +36,7 @@ class Necrolab {
     protected static function getPartitionTableNames($base_name, $start_date, $end_date) {
         $partition_table_names = array();
         
-        $current_date = clone $start_date;
+        $current_date = new DateTime($start_date->format('Y-m-01'));
         
         while($current_date <= $end_date) {
             $partition_table_names[] = "{$base_name}_{$current_date->format('Y_m')}";

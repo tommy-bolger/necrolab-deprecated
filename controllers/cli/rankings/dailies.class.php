@@ -21,8 +21,6 @@ extends Cli {
     
     protected $as_of_date;
     
-    protected $release;
-    
     public function init() {
         $this->cache = cache('daily_rankings');
     }
@@ -30,57 +28,88 @@ extends Cli {
     protected function generate() {
         $this->cache->clear();
         
-        $release_id = $this->release['release_id'];
-    
-        $day_types = DayTypes::getActiveForDate($this->as_of_date);
-        
-        $transaction = $this->cache->transaction();
-        
-        $leaderboard_entries_resulset = DatabaseLeaderboardEntries::getDailyRankingsResultset($this->as_of_date, $this->release);
-        
-        $leaderboard_entries = $leaderboard_entries_resulset->prepareExecuteQuery();
-            
         $database = db();
         
-        while($leaderboard_entry = $database->getStatementRow($leaderboard_entries)) {
-            foreach($day_types as $day_type) {
-                $current_date = new DateTime($leaderboard_entry['date']);
-            
-                if($current_date >= $day_type['start_date']) {
-                    CacheDailyRankingEntry::saveFromLeaderboardEntry($leaderboard_entry, $day_type['daily_ranking_day_type_id'], $transaction);
+        $releases = Releases::getByDate($this->as_of_date);
+        
+        $day_types = DayTypes::getActiveForDate($this->as_of_date);
+        
+        $earliest_start_date = NULL;
+        
+        if(!empty($releases)) {
+            foreach($releases as $release) {
+                $start_date = new DateTime($release['start_date']);
+                
+                if(empty($earliest_start_date) || $start_date < $earliest_start_date) {
+                    $earliest_start_date = $start_date;
                 }
             }
         }
         
-        $transaction->commit(); 
+        $leaderboard_entries_resulset = DatabaseLeaderboardEntries::getDailyRankingsResultset($earliest_start_date, $this->as_of_date);
         
-        $modes_used = CacheDailyRankings::getModesUsed($release_id, $this->cache);
+        $leaderboard_entries_resulset->setAsCursor(20000);
         
-        if(!empty($modes_used)) {
-            $database->beginTransaction();
-            
+        $database->beginTransaction();
+        
+        $leaderboard_entries_resulset->prepareExecuteQuery();
+        
+        $transaction = $this->cache->transaction();
+        
+        $leaderboard_entries = array();
+        
+        do {
+            $leaderboard_entries = $leaderboard_entries_resulset->getNextCursorChunk();
+        
+            if(!empty($leaderboard_entries)) {
+                foreach($leaderboard_entries as $leaderboard_entry) {
+                    foreach($day_types as $day_type) {
+                        $current_date = new DateTime($leaderboard_entry['daily_date']);
+                    
+                        if($current_date >= $day_type['start_date']) {
+                            CacheDailyRankingEntry::saveFromLeaderboardEntry($leaderboard_entry, $day_type['daily_ranking_day_type_id'], $transaction);
+                        }
+                    }
+                }
+            }
+        }
+        while(!empty($leaderboard_entries));
+        
+        $transaction->commit();       
+
+        if(!empty($releases)) {
             DatabaseDailyRankingEntries::createTemporaryTable();
             
             $entries_insert_queue = DatabaseDailyRankingEntries::getTempInsertQueue();
         
-            foreach($modes_used as $mode_id) {
-                $mode = Modes::getById($mode_id);
+            foreach($releases as $release) {
+                $release_id = $release['release_id'];
+            
+                $modes_used = CacheDailyRankings::getModesUsed($release_id, $this->cache);
                 
-                if(!empty($mode)) {
-                    $daily_ranking_day_types_used = CacheDailyRankings::getNumberOfDaysModesUsed($release_id, $mode_id, $this->cache);
-                
-                    if(!empty($daily_ranking_day_types_used)) {
-                        foreach($daily_ranking_day_types_used as $daily_ranking_day_type_id) {
-                            if(isset($day_types[$daily_ranking_day_type_id])) {
-                                $day_type = $day_types[$daily_ranking_day_type_id];
-                                
-                                CacheDailyRankings::generateRanksFromPoints($release_id, $mode_id, $daily_ranking_day_type_id, $this->cache);
+                if(!empty($modes_used)) {
                     
-                                $daily_ranking_id = DatabaseDailyRankings::save($release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date);
-                                
-                                DatabaseDailyRankingEntries::clear($daily_ranking_id, $this->as_of_date);
+                
+                    foreach($modes_used as $mode_id) {
+                        $mode = Modes::getById($mode_id);
+                        
+                        if(!empty($mode)) {
+                            $daily_ranking_day_types_used = CacheDailyRankings::getNumberOfDaysModesUsed($release_id, $mode_id, $this->cache);
+                        
+                            if(!empty($daily_ranking_day_types_used)) {
+                                foreach($daily_ranking_day_types_used as $daily_ranking_day_type_id) {
+                                    if(isset($day_types[$daily_ranking_day_type_id])) {
+                                        $day_type = $day_types[$daily_ranking_day_type_id];
+                                        
+                                        CacheDailyRankings::generateRanksFromPoints($release_id, $mode_id, $daily_ranking_day_type_id, $this->cache);
                             
-                                CacheDailyRankingEntries::saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date, $this->cache, $entries_insert_queue);
+                                        $daily_ranking_id = DatabaseDailyRankings::save($release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date);
+                                        
+                                        DatabaseDailyRankingEntries::clear($daily_ranking_id, $this->as_of_date);
+                                    
+                                        CacheDailyRankingEntries::saveToDatabase($daily_ranking_id, $release_id, $mode_id, $daily_ranking_day_type_id, $this->as_of_date, $this->cache, $entries_insert_queue);
+                                    }
+                                }
                             }
                         }
                     }
@@ -88,36 +117,30 @@ extends Cli {
             }
             
             $entries_insert_queue->commit();
-            
+                    
             DatabaseDailyRankingEntries::dropPartitionTableIndexes($this->as_of_date);
             
             DatabaseDailyRankingEntries::saveTempEntries($this->as_of_date);
             
             DatabaseDailyRankingEntries::createPartitionTableIndexes($this->as_of_date);
-            
-            $database->commit();
         }
+        
+        $database->commit();
         
         $this->cache->clear();
         
         DatabaseDailyRankings::vacuum();
         DatabaseDailyRankingEntries::vacuum($this->as_of_date);
+        
+        DatabaseDailyRankings::addToCacheQueue($this->as_of_date);
     }
     
     public function actionGenerate($date = NULL) {        
-        $this->as_of_date = new DateTime($date);
+        $date = new DateTime($date);
     
-        $releases = Releases::getByDate($this->as_of_date);
+        $this->as_of_date = new DateTime($date->format('Y-m-d'));
         
-        if(!empty($releases)) {
-            foreach($releases as $release) {
-                $this->release = $release;
-                
-                $this->generate();
-            }
-            
-            DatabaseDailyRankings::addToCacheQueue($this->as_of_date);
-        }
+        $this->generate();
     }
     
     public function actionGenerateRange($start_date, $end_date) {        

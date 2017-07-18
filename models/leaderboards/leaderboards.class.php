@@ -465,7 +465,7 @@ extends Necrolab {
         return $leaderboard_names;
     }
     
-    public static function getLeaderboardNameChunks(array $leaderboard_names) {
+    public static function getNameChunks(array $leaderboard_names) {
         $leaderboard_name_chunks = array();
         
         if(!empty($leaderboard_names)) {
@@ -523,18 +523,43 @@ extends Necrolab {
         return static::getTempCsvFilePath($date) . '/leaderboards.txt';
     }
     
-    public static function saveTempNames(DateTime $date, array $names) {
+    public static function getTempChunksPath(DateTime $date) {
+        return static::getTempCsvFilePath($date) . '/chunks';
+    }
+    
+    public static function saveTempNames(DateTime $date, array $names, $chunk_number = NULL) {
         $temp_csv_path = static::getTempCsvFilePath($date);
         
         if(!is_dir($temp_csv_path)) {
             mkdir($temp_csv_path);
         }
         
-        $names_path = "{$temp_csv_path}/leaderboards.txt";
+        $names_path = $temp_csv_path;
+        $file_name = "leaderboards";
+        
+        if(isset($chunk_number)) {
+            $names_path .= "/chunks";
+            
+            if(!is_dir($names_path)) {
+                mkdir($names_path);
+            }
+            
+            $file_name = $chunk_number;
+        }
+        
+        $names_path .= "/{$file_name}.txt";
         
         file_put_contents($names_path, implode("\n", $names));
         
         return $names_path;
+    }
+    
+    public static function deleteTempChunks(DateTime $date) {
+        $chunks_path = static::getTempChunksPath($date);
+        
+        if(is_dir($chunks_path)) {
+            File::deleteDirectoryRecursive($chunks_path);
+        }
     }
     
     public static function deleteTempCsv(DateTime $date) {
@@ -545,7 +570,7 @@ extends Necrolab {
         }
     }
     
-    public static function runClientDownloader($names_path) {
+    public static function runClientDownloader($names_path, $chunk_number = NULL) {
         $module_configuration = Module::getInstance('necrolab')->configuration;
     
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
@@ -555,6 +580,10 @@ extends Necrolab {
         $plaintext_password = Encryption::decrypt($module_configuration->steam_client_password);
         
         $save_path = dirname($names_path);
+        
+        if(isset($chunk_number)) {
+            $save_path = dirname($save_path);
+        }
         
         exec("cd {$save_path} && /usr/bin/mono {$downloader_path} {$module_configuration->steam_client_username} {$plaintext_password} {$module_configuration->steam_original_appid} {$names_path}");
         

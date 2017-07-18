@@ -233,8 +233,8 @@ extends BaseEntries {
         return $resultset;
     }
     
-    public static function getDailyRankingsResultset(DateTime $date, $release) {                
-        $resultset = new SQL("leaderboards_entries_daily_{$date->format('Y_m_d')}");
+    public static function getDailyRankingsResultset(DateTime $start_date, DateTime $end_date) {                
+        $resultset = new SQL("leaderboards_entries_daily");
         
         $resultset->addSelectFields(array(
             array(
@@ -246,8 +246,8 @@ extends BaseEntries {
                 'alias' => 'mode_id'
             ),
             array(
-                'field' => 'ls.date',
-                'alias' => 'date'
+                'field' => 'l.daily_date',
+                'alias' => 'daily_date'
             ),
             array(
                 'field' => 'sup.steam_user_id',
@@ -269,8 +269,6 @@ extends BaseEntries {
         
         $resultset->setFromTable('leaderboards l');
         
-        $resultset->addJoinCriteria('releases r ON r.release_id = l.release_id');
-        
         $resultset->addJoinCriteria("
             leaderboard_snapshots ls ON ls.leaderboard_id = l.leaderboard_id
             AND ls.date = l.daily_date
@@ -279,21 +277,16 @@ extends BaseEntries {
         $resultset->addJoinCriteria("{{PARTITION_TABLE}} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id");
         $resultset->addJoinCriteria('steam_user_pbs sup ON sup.steam_user_pb_id = le.steam_user_pb_id');
         
-        $resultset->addFilterCriteria('r.release_id = ?', array(
-            $release['release_id']
+        $resultset->addFilterCriteria("
+            l.daily_date BETWEEN ? AND ?
+        ", array(
+            $start_date->format('Y-m-d'),
+            $end_date->format('Y-m-d')
         ));
         
         $resultset->addFilterCriteria('l.is_daily_ranking = 1');
         
-        $resultset->addFilterCriteria("
-            ls.date BETWEEN r.start_date AND COALESCE(r.end_date, ?)
-            AND ls.date <= ?
-        ", array(
-            $date->format('Y-m-d'),
-            $date->format('Y-m-d')
-        ));
-        
-        $parition_table_names = static::getPartitionTableNames('leaderboard_entries', new DateTime($release['start_date']), new DateTime($release['end_date']));
+        $parition_table_names = static::getPartitionTableNames('leaderboard_entries', $start_date, $end_date);
         
         foreach($parition_table_names as $parition_table_name) {
             $resultset->addPartitionTable($parition_table_name);

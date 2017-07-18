@@ -74,18 +74,20 @@ extends Necrolab {
         $active_day_types = array();
         
         if(!empty(static::$active_day_types)) {
+            $steam_live_launch_date = Module::getInstance('necrolab')->configuration->steam_live_launch_date;
+        
             foreach(static::$active_day_types as $active_day_type) {
                 $number_of_days = $active_day_type['number_of_days'];
                 
                 if($number_of_days == 0) {
-                    $number_of_days = $date->diff(new DateTime(Module::getInstance('necrolab')->configuration->steam_live_launch_date))->format('%a');
+                    $number_of_days = $date->diff(new DateTime($steam_live_launch_date))->format('%a');
                 }
             
                 $day_type_start_date = clone $date;
                 
                 $day_type_start_date->sub(new DateInterval("P{$number_of_days}D"));
                 
-                $active_day_type['start_date'] = $day_type_start_date;
+                $active_day_type['start_date'] = new DateTime($day_type_start_date->format('Y-m-d'));
             
                 $active_day_types[$active_day_type['daily_ranking_day_type_id']] = $active_day_type;
             }
