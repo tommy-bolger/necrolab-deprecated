@@ -13,6 +13,7 @@ function NecroTable(dom_object) {
     this.init_requests = [];
     this.default_request = {};
     this.header_row_html = [];
+    this.timezone = 'America/Los_Angeles';
     
     this.fixed_header = false;
     
@@ -661,7 +662,7 @@ NecroTable.prototype.initialize = function() {
 };
 
 NecroTable.prototype.getDatepickerOptions = function() {
-    var latest_date = moment(NecroTable.current_date, 'YYYY-MM-DD');
+    var latest_date = moment(NecroTable.current_date, 'YYYY-MM-DD').tz(this.timezone);
     var datepicker_options = {
         autoclose: true,
         todayHighlight: true,
@@ -672,15 +673,15 @@ NecroTable.prototype.getDatepickerOptions = function() {
         if(this.release_field_value.length > 0 && NecroTable.release_field_values.length > 0) {
             var release_record = this.getReleaseRecord();
             
-            datepicker_options.startDate = moment(release_record.start_date).format('YYYY-MM-DD');
+            datepicker_options.startDate = moment(release_record.start_date).tz(this.timezone).format('YYYY-MM-DD');
             
             var end_date;
             
             if(release_record['end_date'] != null) {
-                end_date = moment(release_record.end_date, 'YYYY-MM-DD');
+                end_date = moment(release_record.end_date, 'YYYY-MM-DD').tz(this.timezone);
             }
             else {
-                end_date = moment();
+                end_date = moment().tz(this.timezone);
             }
             
             if(end_date.isBefore(latest_date)) {
@@ -705,14 +706,14 @@ NecroTable.prototype.initializeDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.date_field_value != null) {
-        var date_field_value = moment(this.date_field_value, 'YYYY-MM-DD');
+        var date_field_value = moment(this.date_field_value, 'YYYY-MM-DD').tz(this.timezone);
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startDate, 'YYYY-MM-DD');
-            var end_date = moment(datepicker_options.endDate, 'YYYY-MM-DD');
+            var start_date = moment(datepicker_options.startDate, 'YYYY-MM-DD').tz(this.timezone);
+            var end_date = moment(datepicker_options.endDate, 'YYYY-MM-DD').tz(this.timezone);
             
             if(!date_field_value.isBetween(start_date, end_date)) {
-                date_field_value = moment(datepicker_options.defaultViewDate);
+                date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
             }
         }
         
@@ -742,14 +743,14 @@ NecroTable.prototype.initializeStartDateFieldPicker = function(destroy = false) 
     var datepicker_options = this.getDatepickerOptions();    
     
     if(this.start_date_field_value != null) {
-        var start_date_field_value = moment(this.start_date_field_value);
+        var start_date_field_value = moment(this.start_date_field_value).tz(this.timezone);
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startdate);
-            var end_date = moment(datepicker_options.endDate);
+            var start_date = moment(datepicker_options.startdate).tz(this.timezone);
+            var end_date = moment(datepicker_options.endDate).tz(this.timezone);
             
             if(!start_date_field_value.isBetween(start_date, end_date)) {
-                start_date_field_value = moment(datepicker_options.defaultViewDate);
+                start_date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
             }
         }
         
@@ -779,14 +780,14 @@ NecroTable.prototype.initializeEndDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.end_date_field_value != null) {
-        var end_date_field_value = moment(this.end_date_field_value);
+        var end_date_field_value = moment(this.end_date_field_value).tz(this.timezone);
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startdate);
-            var end_date = moment(datepicker_options.endDate);
+            var start_date = moment(datepicker_options.startdate).tz(this.timezone);
+            var end_date = moment(datepicker_options.endDate).tz(this.timezone);
             
             if(!end_date_field_value.isBetween(start_date, end_date)) {
-                end_date_field_value = moment(datepicker_options.defaultViewDate);
+                end_date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
             }
         }
         
@@ -1063,12 +1064,12 @@ NecroTable.prototype.render = function() {
                 }
                 
                 if(instance.enable_date_field) {
-                    request.date = moment(instance.date_field_value).format('YYYY-MM-DD');
+                    request.date = moment(instance.date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
                 }
                 
                 if(instance.enable_date_range_fields) {
-                    request.start_date = moment(instance.start_date_field_value).format('YYYY-MM-DD');
-                    request.end_date = moment(instance.end_date_field_value).format('YYYY-MM-DD');
+                    request.start_date = moment(instance.start_date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
+                    request.end_date = moment(instance.end_date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
                 }
                 
                 if(instance.enable_search_field) {

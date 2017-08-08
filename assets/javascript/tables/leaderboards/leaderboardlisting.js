@@ -229,16 +229,26 @@ LeaderboardListing.prototype.process_data = function(data, players_table) {
                 }
             }
             
-            processed_data = [
-                all_zones_row,
-                seeded_row,
-                custom_music_row,
-                seed_custom_music_row,
-                co_op_row,
-                seeded_co_op_row,
-                co_op_custom_music_row,
-                seeded_co_op_custom_music_row
-            ];
+            if(this.type != 'deathless') {
+                processed_data = [
+                    all_zones_row,
+                    seeded_row,
+                    custom_music_row,
+                    seed_custom_music_row,
+                    co_op_row,
+                    seeded_co_op_row,
+                    co_op_custom_music_row,
+                    seeded_co_op_custom_music_row
+                ];
+            }
+            else {
+                processed_data = [
+                    all_zones_row,
+                    custom_music_row,
+                    co_op_row,
+                    co_op_custom_music_row,
+                ];
+            }
         }
     }
     

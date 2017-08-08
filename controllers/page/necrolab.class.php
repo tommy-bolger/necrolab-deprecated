@@ -92,6 +92,7 @@ extends PageController {
     
         $this->page->addJavascriptFiles(array(
             'moment.min.js',
+            'moment-timezone-with-data.js',
             'bootstrap-datepicker.min.js',
             'bootstrap-select.min.js',
             'datatables.min.js',
