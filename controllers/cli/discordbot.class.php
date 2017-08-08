@@ -16,7 +16,7 @@ extends Cli {
     
     public function actionRun() {
         $discord = new DiscordCommandClient([
-            'token' => 'MzExMDUxNzE4OTE1Nzg0NzE1.C_G5Dw.XMuUosr-2e5RtxAbrIYYc1Z4p6g',
+            'token' => '',
             'prefix' => '!nb '
         ]);
 
