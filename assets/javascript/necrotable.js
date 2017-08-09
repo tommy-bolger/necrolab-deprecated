@@ -581,14 +581,6 @@ NecroTable.prototype.characterRequestCallback = function(request, response) {
     this.render();
 };
 
-NecroTable.prototype.currentDateRequestCallback = function(request, response) {      
-    NecroTable.current_date = response.data;
-
-    this.removeInitRequest('current_date');
-    
-    this.render();
-};
-
 NecroTable.prototype.numberOfDaysRequestCallback = function(request, response) {      
     NecroTable.number_of_days_field_values = response.data;
     
@@ -642,15 +634,6 @@ NecroTable.prototype.initialize = function() {
         }, true);
     }
     
-    if((this.enable_date_field || this.enable_date_range_fields) && NecroTable.current_date == null) {
-        this.init_requests.push('current_date');
-        
-        Request.get(Formatting.getNecrolabApiUrl('/current_date'), {}, {
-            context: this,
-            method: 'currentDateRequestCallback'
-        }, true);
-    }
-    
     if(this.enable_number_of_days_field && NecroTable.number_of_days_field_values.length == 0) {
         this.init_requests.push('number_of_days');
         
@@ -662,7 +645,7 @@ NecroTable.prototype.initialize = function() {
 };
 
 NecroTable.prototype.getDatepickerOptions = function() {
-    var latest_date = moment(NecroTable.current_date, 'YYYY-MM-DD').tz(this.timezone);
+    var latest_date = moment().tz(this.timezone);
     var datepicker_options = {
         autoclose: true,
         todayHighlight: true,
@@ -673,12 +656,12 @@ NecroTable.prototype.getDatepickerOptions = function() {
         if(this.release_field_value.length > 0 && NecroTable.release_field_values.length > 0) {
             var release_record = this.getReleaseRecord();
             
-            datepicker_options.startDate = moment(release_record.start_date).tz(this.timezone).format('YYYY-MM-DD');
+            datepicker_options.startDate = moment(release_record.start_date).format('YYYY-MM-DD');
             
             var end_date;
             
             if(release_record['end_date'] != null) {
-                end_date = moment(release_record.end_date, 'YYYY-MM-DD').tz(this.timezone);
+                end_date = moment(release_record.end_date, 'YYYY-MM-DD');
             }
             else {
                 end_date = moment().tz(this.timezone);
@@ -706,14 +689,14 @@ NecroTable.prototype.initializeDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.date_field_value != null) {
-        var date_field_value = moment(this.date_field_value, 'YYYY-MM-DD').tz(this.timezone);
+        var date_field_value = moment(this.date_field_value, 'YYYY-MM-DD');
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startDate, 'YYYY-MM-DD').tz(this.timezone);
-            var end_date = moment(datepicker_options.endDate, 'YYYY-MM-DD').tz(this.timezone);
+            var start_date = moment(datepicker_options.startDate, 'YYYY-MM-DD');
+            var end_date = moment(datepicker_options.endDate, 'YYYY-MM-DD');
             
             if(!date_field_value.isBetween(start_date, end_date)) {
-                date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
+                date_field_value = moment(datepicker_options.defaultViewDate);
             }
         }
         
@@ -743,14 +726,14 @@ NecroTable.prototype.initializeStartDateFieldPicker = function(destroy = false) 
     var datepicker_options = this.getDatepickerOptions();    
     
     if(this.start_date_field_value != null) {
-        var start_date_field_value = moment(this.start_date_field_value).tz(this.timezone);
+        var start_date_field_value = moment(this.start_date_field_value);
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startdate).tz(this.timezone);
-            var end_date = moment(datepicker_options.endDate).tz(this.timezone);
+            var start_date = moment(datepicker_options.startdate);
+            var end_date = moment(datepicker_options.endDate);
             
             if(!start_date_field_value.isBetween(start_date, end_date)) {
-                start_date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
+                start_date_field_value = moment(datepicker_options.defaultViewDate);
             }
         }
         
@@ -780,14 +763,14 @@ NecroTable.prototype.initializeEndDateFieldPicker = function(destroy = false) {
     var datepicker_options = this.getDatepickerOptions();
     
     if(this.end_date_field_value != null) {
-        var end_date_field_value = moment(this.end_date_field_value).tz(this.timezone);
+        var end_date_field_value = moment(this.end_date_field_value);
         
         if(datepicker_options['startDate'] != null && datepicker_options['endDate'] != null) {
-            var start_date = moment(datepicker_options.startdate).tz(this.timezone);
-            var end_date = moment(datepicker_options.endDate).tz(this.timezone);
+            var start_date = moment(datepicker_options.startdate);
+            var end_date = moment(datepicker_options.endDate);
             
             if(!end_date_field_value.isBetween(start_date, end_date)) {
-                end_date_field_value = moment(datepicker_options.defaultViewDate).tz(this.timezone);
+                end_date_field_value = moment(datepicker_options.defaultViewDate);
             }
         }
         
@@ -1064,12 +1047,12 @@ NecroTable.prototype.render = function() {
                 }
                 
                 if(instance.enable_date_field) {
-                    request.date = moment(instance.date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
+                    request.date = moment(instance.date_field_value).format('YYYY-MM-DD');
                 }
                 
                 if(instance.enable_date_range_fields) {
-                    request.start_date = moment(instance.start_date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
-                    request.end_date = moment(instance.end_date_field_value).tz(instance.timezone).format('YYYY-MM-DD');
+                    request.start_date = moment(instance.start_date_field_value).format('YYYY-MM-DD');
+                    request.end_date = moment(instance.end_date_field_value).format('YYYY-MM-DD');
                 }
                 
                 if(instance.enable_search_field) {
