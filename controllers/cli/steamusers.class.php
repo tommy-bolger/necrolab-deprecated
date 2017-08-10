@@ -5,41 +5,26 @@ use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Api\Steam\ISteamUser;
 use \Framework\Utilities\Encryption;
+use \Framework\Api\AsyncMultiRestQueue;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
 class SteamUsers
-extends Cli { 
-    protected $steam_api;
-    
+extends Cli {     
     protected $date;
-
-    protected function importJsonChildProcess(array $request_steam_ids, $group_number) {        
-        $retrieval_attempts = 1;
-        $retrieval_successful = false;
-        $steam_users_data = NULL;
-        
-        while($retrieval_successful == false && $retrieval_attempts <= 5) {
-            try {
-                $steam_users_data = $this->steam_api->getPlayerSummaries($request_steam_ids);
-
-                $retrieval_successful = true;
-            }
-            catch(Exception $exception) {
-                $retrieval_attempts += 1;
-                $retrieval_successful = false;
-                
-                $this->framework->coutLine("Failed retrieval, making attempt {$retrieval_attempts}.");
-                
-                sleep(1);
+    
+    protected $group_number;
+    
+    public function processUsersChunk(array $user_data_groups) {
+        if(!empty($user_data_groups)) {
+            foreach($user_data_groups as $user_data_group) {
+                if(!empty($user_data_group)) {                
+                    DatabaseSteamUsers::saveJson($this->date, $this->group_number, $user_data_group);
+                    
+                    $this->group_number += 1;
+                }
             }
         }
-        
-        if($retrieval_successful == false) {
-            throw new Exception("Retrieval for steam user group {$group_number} has failed.");
-        }
-        
-        DatabaseSteamUsers::saveJson($this->date, $group_number, $steam_users_data);
     }
     
     public function actionImportJson() {
@@ -47,34 +32,30 @@ extends Cli {
     
         $users_to_update = DatabaseSteamUsers::getOutdatedIds();
         
-        if(!empty($users_to_update)) {            
-            $this->steam_api = new ISteamUser(); 
-            $this->steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
+        if(!empty($users_to_update)) {
+            $this->group_number = 1;
+        
+            $steam_api = new ISteamUser(); 
+            $steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
             
             DatabaseSteamUsers::deleteJson($this->date);
-        
-            $steamids_group = array();
-            $group_counter = 1;
-            $group_number = 1;
-        
-            foreach($users_to_update as $steam_user_id => $steamid) {
-                if($group_counter == 101) {
-                    $this->importJsonChildProcess($steamids_group, $group_number);
-                    
-                    $group_counter = 1;
-                    $steamids_group = array();
-                    
-                    $group_number += 1;
-                }
-                
-                $steamids_group[] = $steamid;
             
-                $group_counter += 1;
+            $request_queue = new AsyncMultiRestQueue();
+            
+            $request_queue->setCommitCallback(array(
+                $this,
+                'processUsersChunk'
+            ));
+            
+            $steamid_groups = array_chunk($users_to_update, 100);
+        
+            foreach($steamid_groups as $steamids_group) {
+                $steam_api->getPlayerSummaries($steamids_group);
+                    
+                $request_queue->addRequest($steam_api->getRequest());
             }
             
-            if(!empty($steamids_group)) {
-                $this->importJsonChildProcess($steamids_group, $group_number);
-            }
+            $request_queue->commit();
         }
     }
     

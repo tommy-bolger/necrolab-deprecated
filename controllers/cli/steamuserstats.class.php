@@ -5,6 +5,8 @@ use \Exception;
 use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Api\Steam\ISteamUserStats;
+use \Framework\Api\Steam\UserAchievements;
+use \Framework\Api\AsyncMultiRestQueue;
 use \Framework\Utilities\Encryption;
 use \Modules\Necrolab\Models\Achievements\Achievements as AllAchievements;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
@@ -12,23 +14,33 @@ use \Modules\Necrolab\Models\SteamUsers\Database\Achievements as DatabaseSteamUs
 use \Modules\Necrolab\Models\Achievements\Achievement as AchievementRecord;
 
 class SteamUserStats
-extends Cli { 
-    protected $steam_api;
-    
+extends Cli {     
     protected $app_id;
     
-    protected $date;
+    protected $steam_user_ids = array();
     
     public function init() {
-        $this->steam_api = new ISteamUserStats(); 
-        $this->steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
-        
         $this->app_id = $this->module->configuration->steam_original_appid;
     }
     
-    public function actionImportAchievements() {
-        $game_stats = $this->steam_api->getSchemaForGame($this->app_id);
+    protected function getSteamUserStatsApi() {
+        $steam_api = new ISteamUserStats(); 
+        $steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
         
+        return $steam_api;
+    }
+    
+    public function actionImportAchievements() {
+        $steam_api = $this->getSteamUserStatsApi();
+    
+        $steam_api->getSchemaForGame($this->app_id);
+        
+        $steam_api->submitRequest();
+        
+        $game_stats = $steam_api->getParsedResponse();
+        
+        $steam_api->closeRequest();
+
         if(!empty($game_stats->game) && !empty($game_stats->game->availableGameStats) && !empty($game_stats->game->availableGameStats->achievements)) {
             $achievements = $game_stats->game->availableGameStats->achievements;
         
@@ -46,22 +58,44 @@ extends Cli {
         }
     }
     
-    public function actionImportUserAchievements() {    
-        $steam_users = DatabaseSteamUsers::getAllIds();
-        
-        if(!empty($steam_users)) {
-            foreach($steam_users as $steamid => $steam_user_id) {
-                $steam_user_achievements_xml = NULL;
-            
-                try {
-                    $steam_user_achievements_xml = DatabaseSteamUserAchievements::getSteamXml($steamid, $this->app_id);
-                }
-                catch(Exception $exception) {}
+    public function processUserAchievementsChunk($achievements_xml) {
+        if(!empty($achievements_xml)) {        
+            foreach($achievements_xml as $achievement_xml) {
+                if(UserAchievements::responseIsValid($achievement_xml)) {
+                    $steamid_start_position = strpos($achievement_xml, '<steamID64>') + strlen('<steamID64>');
+                    $steamid_end_position = strpos($achievement_xml, '</steamID64>');
                 
-                if(!empty($steam_user_achievements_xml)) {                
-                    DatabaseSteamUserAchievements::saveXml($steam_user_id, $steam_user_achievements_xml);
+                    $steamid = substr($achievement_xml, $steamid_start_position, ($steamid_end_position - $steamid_start_position));
+                    
+                    $steam_user_id = $this->steam_user_ids[$steamid];
+                    
+                    DatabaseSteamUserAchievements::saveXml($steam_user_id, $achievement_xml);
                 }
             }
+        }
+    }
+    
+    public function actionImportUserAchievements() {    
+        $this->steam_user_ids = DatabaseSteamUsers::getAllIds();
+        
+        if(!empty($this->steam_user_ids)) {
+            $steam_api = new UserAchievements(); 
+            $steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
+            
+            $request_queue = new AsyncMultiRestQueue();
+            
+            $request_queue->setCommitCallback(array(
+                $this,
+                'processUserAchievementsChunk'
+            ));
+        
+            foreach($this->steam_user_ids as $steamid => $steam_user_id) {
+                $steam_api->getUserAchievements($steamid, $this->app_id);
+
+                $request_queue->addRequest($steam_api->getRequest());
+            }
+            
+            $request_queue->commit();
         }
     }
     
@@ -128,14 +162,16 @@ extends Cli {
     }
     
     public function actionImportUserStats() {        
-        $steam_users = DatabaseSteamUsers::getAllIds();
+        $this->steam_user_ids = DatabaseSteamUsers::getAllIds();
         
         if(!empty($steam_users)) {
+            $steam_api = $this->getSteamUserStatsApi();
+        
             foreach($steam_users as $steamid => $steam_user_id) {
                 $steam_user_achievements = NULL;
             
                 try {
-                    $steam_user_achievements = $this->steam_api->getUserStatsForGame($steamid, $this->app_id);
+                    $steam_user_achievements = $steam_api->getUserStatsForGame($steamid, $this->app_id);
                 }
                 catch(Exception $exception) {
                     $steam_user_achievements = NULL;

@@ -40,7 +40,11 @@ extends Cli {
         
         while($retrieval_successful == false && $retrieval_attempts <= 5) {
             try {
-                $replay_meta_data = $this->steam_api->getUGCFileDetails($this->appid, $ugcid);
+                $this->steam_api->getUGCFileDetails($this->appid, $ugcid);
+                
+                $this->steam_api->submitRequest();
+                
+                $replay_meta_data = $this->steam_api->getParsedResponse();
 
                 $retrieval_successful = true;
             }

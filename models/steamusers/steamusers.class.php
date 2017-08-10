@@ -59,7 +59,7 @@ extends Necrolab {
     
     public static function deleteJson(DateTime $date) {
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/steam_user_json/{$date->format('Y-m-d')}";
+        $snapshot_path = "{$installation_path}/assets/files/steam_user_json/{$date->format('Y-m-d')}";
         
         if(is_dir($snapshot_path)) {
             File::deleteDirectoryRecursive("{$snapshot_path}");
@@ -68,13 +68,13 @@ extends Necrolab {
     
     public static function saveJson(DateTime $date, $group_number, $data) {
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/steam_user_json/{$date->format('Y-m-d')}";
+        $snapshot_path = "{$installation_path}/assets/files/steam_user_json/{$date->format('Y-m-d')}";
         
         if(!is_dir($snapshot_path)) {
             mkdir($snapshot_path);
         }
     
-        file_put_contents("{$snapshot_path}/{$group_number}.json", json_encode($data, JSON_UNESCAPED_UNICODE));
+        file_put_contents("{$snapshot_path}/{$group_number}.json", $data);
     }
     
     public static function getJson($file_path) {    
@@ -83,7 +83,7 @@ extends Necrolab {
     
     public static function getJsonFiles(DateTime $date) {  
         $installation_path = Module::getInstance('necrolab')->getInstallationPath();
-        $snapshot_path = "{$installation_path}/steam_user_json/{$date->format('Y-m-d')}";
+        $snapshot_path = "{$installation_path}/assets/files/steam_user_json/{$date->format('Y-m-d')}";
         
         $json_files = array();
         
