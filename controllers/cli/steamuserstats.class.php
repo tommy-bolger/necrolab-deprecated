@@ -112,7 +112,7 @@ extends Cli {
             foreach($xml_files as $steam_user_id => $xml_file) {
                 $unparsed_xml = DatabaseSteamUserAchievements::getXml($xml_file);
             
-                $parsed_xml = DatabaseSteamUserAchievements::getParsedXml($unparsed_xml);
+                $parsed_xml = UserAchievements::getParsedXml($unparsed_xml);
                     
                 unset($unparsed_xml);
             
