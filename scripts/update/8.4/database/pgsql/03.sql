@@ -1,0 +1,1 @@
+VACUUM ANALYZE steam_user_achievements;
