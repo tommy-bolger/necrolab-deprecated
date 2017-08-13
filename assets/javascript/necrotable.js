@@ -31,9 +31,11 @@ function NecroTable(dom_object) {
     this.enable_history = false;
     this.state_changed = false;
     
+    var current_date = moment().tz(this.timezone).format('YYYY-MM-DD');
+    
     this.enable_date_field = false;
     this.date_field;
-    this.date_field_value;
+    this.date_field_value = current_date;
     
     this.enable_release_field = false;
     this.release_field;
@@ -57,9 +59,9 @@ function NecroTable(dom_object) {
     
     this.enable_date_range_fields = false;
     this.start_date_field;
-    this.start_date_field_value;
+    this.start_date_field_value = current_date;
     this.end_date_field;
-    this.end_date_field_value;
+    this.end_date_field_value = current_date;
     
     this.enable_search_field = false;
     this.search_field_value = '';
