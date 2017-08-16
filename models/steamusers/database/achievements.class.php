@@ -132,6 +132,7 @@ extends BaseAchievements {
             INSERT INTO steam_user_achievements
             SELECT *
             FROM steam_user_achievements_temp
+            ON CONFLICT (steam_user_id, achievement_id) DO NOTHING
         ");
     }
     

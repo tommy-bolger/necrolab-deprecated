@@ -77,6 +77,12 @@ extends Necrolab {
         return $achievement_id;
     }
     
+    public static function getAllIdsByName() {
+        static::loadAll();
+        
+        return static::$ids_by_name;
+    }
+    
     public static function getByName($name) {
         static::loadAll();
         
