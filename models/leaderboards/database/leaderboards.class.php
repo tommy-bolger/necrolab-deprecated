@@ -263,6 +263,7 @@ extends BaseLeaderboards {
         $resultset = static::getAllResultset($release_id, $mode_id);
     
         $resultset->addFilterCriteria("l.is_speedrun = 1");
+        $resultset->addFilterCriteria("l.is_deathless = 0");
         
         return $resultset;
     }
@@ -271,6 +272,7 @@ extends BaseLeaderboards {
         $resultset = static::getAllResultset($release_id, $mode_id);
     
         $resultset->addFilterCriteria("l.is_deathless = 1");
+        $resultset->addFilterCriteria("l.is_score_run = 1");
         
         return $resultset;
     }
