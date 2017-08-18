@@ -5,7 +5,7 @@ use \DateTime;
 use \Framework\Core\Controllers\Cli;
 use \Framework\Api\Steam\ISteamUser;
 use \Framework\Utilities\Encryption;
-use \Framework\Api\AsyncMultiRestQueue;
+use \Framework\Utilities\RecordQueue;
 use \Modules\Necrolab\Models\SteamUsers\Database\SteamUsers as DatabaseSteamUsers;
 use \Modules\Necrolab\Models\SteamUsers\Database\RecordModels\SteamUser as DatabaseSteamUser;
 
@@ -15,14 +15,18 @@ extends Cli {
     
     protected $group_number;
     
-    public function processUsersChunk(array $user_data_groups) {
-        if(!empty($user_data_groups)) {
-            foreach($user_data_groups as $user_data_group) {
-                if(!empty($user_data_group)) {                
-                    DatabaseSteamUsers::saveJson($this->date, $this->group_number, $user_data_group);
-                    
-                    $this->group_number += 1;
-                }
+    protected $steam_api;
+    
+     public function importJsonChildProcess(array $request_steam_ids) {
+        if($request_steam_ids) {
+            foreach($request_steam_ids as $request_steam_id_group) {
+                $this->steam_api->getPlayerSummaries($request_steam_id_group);
+                
+                $this->steam_api->submitRequest();
+                
+                DatabaseSteamUsers::saveJson($this->date, $this->group_number, $this->steam_api->getResponse());
+                
+                $this->group_number += 1;
             }
         }
     }
@@ -35,27 +39,31 @@ extends Cli {
         if(!empty($users_to_update)) {
             $this->group_number = 1;
         
-            $steam_api = new ISteamUser(); 
-            $steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
+            $this->steam_api = new ISteamUser(); 
+            $this->steam_api->setApiKey(Encryption::decrypt($this->module->configuration->steam_api_key), 'key');
             
             DatabaseSteamUsers::deleteJson($this->date);
             
-            $request_queue = new AsyncMultiRestQueue();
+            $record_queue = new RecordQueue();
             
-            $request_queue->setCommitCallback(array(
+            $record_queue->setCommitCount(1);
+            
+            $record_queue->setCommitCallback(array(
                 $this,
-                'processUsersChunk'
+                'importJsonChildProcess'
             ));
+            
+            $record_queue->setCommitCallbackReattempts(5);
+            
+            $record_queue->setCommitCallbackReattemptInterval(1);
             
             $steamid_groups = array_chunk($users_to_update, 100);
         
             foreach($steamid_groups as $steamids_group) {
-                $steam_api->getPlayerSummaries($steamids_group);
-                    
-                $request_queue->addRequest($steam_api->getRequest());
+                $record_queue->addRecord($steamids_group);
             }
             
-            $request_queue->commit();
+            $record_queue->commit();
         }
     }
     
@@ -116,5 +124,5 @@ extends Cli {
             $this,
             'cacheQueueMessageReceived'
         ));
-    }  
+    }
 }
