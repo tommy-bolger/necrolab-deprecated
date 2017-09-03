@@ -152,6 +152,25 @@ extends Cli {
         $this->actionGenerate($message->body);
     }
     
+    public function actionAddToGenerateQueue($date = NULL) {
+        $date = new DateTime($date);
+        
+        DatabaseRankings::addToGenerateQueue($date);
+    }
+    
+    public function actionAddRangeToGenerateQueue($start_date, $end_date) {        
+        $start_date = new DateTime($start_date);
+        $end_date = new DateTime($end_date);
+        
+        $current_date = clone $start_date;
+        
+        while($current_date <= $end_date) {
+            DatabaseRankings::addToGenerateQueue($current_date);
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+    }
+    
     public function actionRunGenerateQueueListener() {    
         DatabaseRankings::runQueue(DatabaseRankings::getGenerateQueueName(), array(
             $this,
