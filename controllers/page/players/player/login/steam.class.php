@@ -66,10 +66,10 @@ extends Player {
     }
     
     public function actionGet() {
-        $openid_mode = request()->get->openid_mode;
+        $openid_mode = request()->get->{'openid.mode'};
         
         if(!empty($openid_mode) && $openid_mode != 'cancel' && !empty($this->open_id->validate())) {
-            $openid_steamid = SteamUsersModel::getIdFromOpenIdIdentity(request()->openid_identity);
+            $openid_steamid = SteamUsersModel::getIdFromOpenIdIdentity(request()->{'openid.identity'});
             
             if($openid_steamid == $this->steamid) {
                 $steam_user_record = SteamUsersModel::get($this->steamid);
@@ -84,7 +84,7 @@ extends Player {
                     session()->twitter_user_id = $steam_user_record['twitter_user_id'];
                     session()->youtube_user_id = $steam_user_record['youtube_user_id'];
                     
-                    Http::redirect(Http::generateUrl('/players/player/', array(
+                    Http::redirect(Http::generateUrl('/players/player', array(
                         'id' => $this->steamid
                     )));
                 }
